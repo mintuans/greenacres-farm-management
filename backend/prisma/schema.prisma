@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      String   @default("user") // user, admin
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  seasons   Season[]
+  debts     Debt[]
+}
+
+// Season model (Mùa vụ)
+model Season {
+  id          String   @id @default(uuid())
+  name        String
+  startDate   DateTime
+  endDate     DateTime?
+  description String?
+  status      String   @default("active") // active, completed, cancelled
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Debt model (Công nợ)
+model Debt {
+  id          String   @id @default(uuid())
+  creditor    String   // Người cho vay
+  amount      Float
+  description String?
+  dueDate     DateTime?
+  status      String   @default("pending") // pending, paid, overdue
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

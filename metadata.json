@@ -1,0 +1,9 @@
+
+{
+  "name": "GreenAcres Farm Management",
+  "description": "A comprehensive farm management dashboard for tracking income, expenses, inventory, seasons, and debt management with a modern aesthetic.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

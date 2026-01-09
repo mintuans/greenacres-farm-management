@@ -1,0 +1,217 @@
+-- =================================================================================
+-- HỆ THỐNG QUẢN TRỊ NÔNG NGHIỆP TỔNG HỢP (FARM ERP)
+-- Database: PostgreSQL
+-- Module: Đối tác, Sản xuất, Tài chính, Kho vận, Nhân sự (Chấm công linh hoạt)
+-- =================================================================================
+
+-- 1. KÍCH HOẠT BỘ TẠO MÃ UUID
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+-- =================================================================================
+-- PHẦN 1: QUẢN LÝ ĐỐI TÁC & CẤU HÌNH CƠ BẢN
+-- =================================================================================
+
+-- 2. Quản lý Đối tác (Đại lý, Thương lái, Người làm thuê)
+-- Nhân viên thời vụ cũng nằm ở đây với type = 'WORKER'
+CREATE TABLE partners (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    partner_code VARCHAR(20) UNIQUE NOT NULL, -- Sửa: code -> partner_code
+    partner_name VARCHAR(255) NOT NULL,       -- Sửa: name -> partner_name
+    type VARCHAR(50) NOT NULL CHECK (type IN ('SUPPLIER', 'BUYER', 'WORKER')),
+    phone VARCHAR(20),
+    address TEXT,
+    current_balance DECIMAL(15, 2) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. Quản lý Đơn vị Sản xuất (Vị trí vật lý)
+CREATE TABLE production_units (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    unit_code VARCHAR(20) UNIQUE NOT NULL,    -- Thêm mới
+    unit_name VARCHAR(100) NOT NULL,          -- Sửa: name -> unit_name
+    type VARCHAR(50), -- 'CROP', 'LIVESTOCK'
+    area_size DECIMAL(10, 2),
+    description TEXT
+);
+
+-- 4. Quản lý Mùa vụ / Lứa nuôi
+-- Đây là trung tâm để gom chi phí và tính lãi lỗ
+CREATE TABLE seasons (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    unit_id UUID REFERENCES production_units(id),
+    season_code VARCHAR(50) UNIQUE NOT NULL,  -- Thêm mới (VD: 'VU-MAN-2026')
+    season_name VARCHAR(255) NOT NULL,        -- Sửa: name -> season_name
+    start_date DATE NOT NULL,
+    end_date DATE,
+    status VARCHAR(50) DEFAULT 'ACTIVE',
+    expected_revenue DECIMAL(15, 2)
+);
+
+-- 5. Danh mục Hạng mục Thu/Chi
+CREATE TABLE categories (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    category_code VARCHAR(50) UNIQUE NOT NULL, -- Thêm mới (VD: 'CAT-PHAN-BON')
+    category_name VARCHAR(100) NOT NULL,       -- Sửa: name -> category_name
+    parent_id UUID REFERENCES categories(id),
+    scope VARCHAR(50) NOT NULL CHECK (scope IN ('FARM', 'PERSONAL', 'BOTH'))
+);
+
+
+-- =================================================================================
+-- PHẦN 2: QUẢN LÝ TÀI CHÍNH & KHO VẬN
+-- =================================================================================
+
+-- 7. Bảng Hóa đơn & Giao dịch chính (Dòng tiền)
+CREATE TABLE transactions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    account_id UUID REFERENCES accounts(id),
+    partner_id UUID REFERENCES partners(id), -- Giao dịch với ai (có thể NULL nếu chi tiêu vặt)
+    season_id UUID REFERENCES seasons(id),   -- Tính cho vụ nào (QUAN TRỌNG ĐỂ TÍNH LÃI)
+    category_id UUID REFERENCES categories(id),
+    
+    amount DECIMAL(15, 2) NOT NULL,          -- Tổng giá trị giao dịch
+    paid_amount DECIMAL(15, 2) DEFAULT 0,    -- Số tiền thực trả ngay lúc đó
+    -- Nợ = amount - paid_amount
+    
+    type VARCHAR(20) NOT NULL CHECK (type IN ('INCOME', 'EXPENSE')),
+    transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    note TEXT,
+    is_inventory_affected BOOLEAN DEFAULT FALSE -- Đánh dấu nếu giao dịch này nhập hàng vào kho
+);
+
+-- 8. Bảng Chi tiết Thanh toán Nợ (Trả dần)
+CREATE TABLE debt_payments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    transaction_id UUID REFERENCES transactions(id), -- Trả cho hóa đơn nợ nào
+    account_id UUID REFERENCES accounts(id),         -- Lấy tiền từ đâu trả
+    amount_paid DECIMAL(15, 2) NOT NULL,
+    payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    note TEXT
+);
+
+-- 9. Quản lý Kho vật tư (Đã thêm giá mua và ảnh)
+CREATE TABLE inventory (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    inventory_code VARCHAR(50) UNIQUE NOT NULL, 
+    inventory_name VARCHAR(255) NOT NULL,
+    category_id UUID REFERENCES categories(id),
+    unit_of_measure VARCHAR(50), -- 'Bao', 'Kg', 'Chai'
+    
+    stock_quantity DECIMAL(12, 2) DEFAULT 0,    -- Số lượng đang có
+    min_stock_level DECIMAL(12, 2) DEFAULT 0,   -- Mức cảnh báo 
+    -- TRƯỜNG GIÁ BẠN CẦN ĐÂY:
+    last_import_price DECIMAL(15, 2) DEFAULT 0, -- Giá mua lần gần nhất (để tham khảo)
+    image_data BYTEA,  -- Hình ảnh
+    note TEXT          -- Ghi chú
+);
+-- 10. Nhật ký Xuất kho (Sử dụng vật tư)
+CREATE TABLE inventory_usage (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    inventory_id UUID REFERENCES inventory(id),
+    season_id UUID REFERENCES seasons(id),       -- Dùng cho vụ nào (QUAN TRỌNG)
+    unit_id UUID REFERENCES production_units(id), -- Dùng ở đâu
+    
+    quantity DECIMAL(12, 2) NOT NULL,
+    purpose TEXT, -- 'Bón lót đợt 1', 'Trị bệnh nấm'
+    usage_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID -- ID người nhập liệu (nếu có hệ thống user sau này)
+);
+
+-- =================================================================================
+-- PHẦN 3: QUẢN LÝ NHÂN SỰ & CHẤM CÔNG (NEW MODEL)
+-- Logic: Chấm công hàng ngày -> Gom thành Phiếu Lương -> Thanh toán
+-- =================================================================================
+
+-- 11. Bảng Ca làm việc
+CREATE TABLE work_shifts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    shift_code VARCHAR(20) UNIQUE NOT NULL, -- Thêm mới (VD: 'SHIFT-SANG')
+    shift_name VARCHAR(50) NOT NULL,        -- Sửa: name -> shift_name
+    start_time TIME,
+    end_time TIME
+);
+
+-- 12. Bảng Loại công việc & Đơn giá
+CREATE TABLE job_types (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    job_code VARCHAR(20) UNIQUE NOT NULL, -- Thêm mới (VD: 'JOB-HAI-TRAI')
+    job_name VARCHAR(255) NOT NULL,       -- Sửa: name -> job_name
+    base_rate DECIMAL(15, 2) DEFAULT 0,
+    description TEXT
+);
+
+-- 13. Bảng Phiếu Lương / Đợt Thanh Toán
+-- Bảng này dùng để GOM các ngày công lại để trả tiền một lần
+CREATE TABLE payrolls (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    partner_id UUID REFERENCES partners(id), -- Trả cho nhân viên nào
+    title VARCHAR(255),                      -- 'Thanh toán công hái mận đợt 1'
+    
+    total_amount DECIMAL(15, 2) DEFAULT 0,   -- Tổng tiền công (tự động cộng từ daily_work_logs)
+    bonus DECIMAL(15, 2) DEFAULT 0,          -- Thưởng thêm
+    deductions DECIMAL(15, 2) DEFAULT 0,     -- Trừ (ứng lương, phạt)
+    final_amount DECIMAL(15, 2),             -- = total + bonus - deductions
+    
+    status VARCHAR(20) DEFAULT 'DRAFT',      -- 'DRAFT' (Đang tính), 'PAID' (Đã chi tiền)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    payment_date TIMESTAMP                   -- Ngày thực chi
+);
+
+-- 14. Bảng Nhật ký Công việc Hàng ngày (Daily Logs)
+-- Đây là bảng chi tiết nhất: Ai làm gì, ngày nào, bao nhiêu, giá bao nhiêu?
+CREATE TABLE daily_work_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    partner_id UUID REFERENCES partners(id),
+    
+    -- Liên kết với Phiếu lương. 
+    -- NULL = Chưa thanh toán. Có ID = Đã gộp vào phiếu lương đó.
+    payroll_id UUID REFERENCES payrolls(id), 
+
+    work_date DATE NOT NULL,
+    shift_id UUID REFERENCES work_shifts(id), -- Làm ca nào
+    job_type_id UUID REFERENCES job_types(id), -- Làm việc gì
+    
+    quantity DECIMAL(12, 2) DEFAULT 1,    -- Số lượng (VD: 1 ngày, 0.5 buổi, hoặc 50 kg)
+    
+    applied_rate DECIMAL(15, 2) NOT NULL, -- Đơn giá chốt tại thời điểm làm (Tránh việc sau này tăng giá làm sai lệch lịch sử)
+    total_amount DECIMAL(15, 2) NOT NULL, -- = quantity * applied_rate
+    
+    note TEXT -- Ghi chú: 'Làm tốt', 'Về sớm 1 tiếng'
+);
+-- 15. Bảng Lịch làm việc (Kế hoạch)
+CREATE TABLE work_schedules (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    partner_id UUID REFERENCES partners(id), -- Nhân viên nào
+    shift_id UUID REFERENCES work_shifts(id), -- Ca nào
+    job_type_id UUID REFERENCES job_types(id), -- Dự kiến làm việc gì
+    
+    work_date DATE NOT NULL,
+    
+    -- Trạng thái: 'PLANNED' (Dự kiến), 'CONFIRMED' (Chốt), 'CANCELLED' (Hủy)
+    status VARCHAR(20) DEFAULT 'PLANNED', 
+    note TEXT,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+-- 16. Bảng Sự kiện Nông trại (Farm Events)
+CREATE TABLE farm_events (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title VARCHAR(255) NOT NULL, -- Tên sự kiện: "Thu hoạch Vườn A", "Bão số 1"
+    
+    -- Loại sự kiện để tô màu trên lịch
+    -- HARVEST (Vàng), ISSUE (Đỏ), TASK (Xanh lá)
+    event_type VARCHAR(50) CHECK (event_type IN ('HARVEST', 'ISSUE', 'TASK', 'OTHER')),
+    
+    start_time TIMESTAMP NOT NULL, -- Có thể là cả ngày hoặc 1 khung giờ
+    end_time TIMESTAMP,
+    is_all_day BOOLEAN DEFAULT TRUE,
+    
+    description TEXT, -- Ghi chú chi tiết
+    
+    -- Có thể link tới Vụ mùa hoặc Đơn vị sản xuất để biết sự kiện ở đâu
+    season_id UUID REFERENCES seasons(id),
+    unit_id UUID REFERENCES production_units(id)
+);
+-- =================================================================================
+-- HẾT
+-- =================================================================================

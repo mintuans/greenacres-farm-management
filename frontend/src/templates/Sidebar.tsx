@@ -1,0 +1,195 @@
+
+import React, { useState } from 'react';
+import { NavLink } from 'react-router-dom';
+
+const Sidebar: React.FC = () => {
+    const [isMasterDataOpen, setIsMasterDataOpen] = useState(false);
+    const [isWarehouseOpen, setIsWarehouseOpen] = useState(false);
+
+    const navItems = [
+        { label: 'Tổng quan', path: '/dashboard', icon: 'dashboard' },
+        { label: 'Lịch làm việc', path: '/schedule', icon: 'calendar_month' },
+        { label: 'Vật tư Nông nghiệp', path: '/inventory', icon: 'inventory_2' },
+        { label: 'Mùa vụ', path: '/seasons', icon: 'grass' },
+        { label: 'Giao dịch', path: '/transactions', icon: 'payments' },
+        { label: 'Tài chính cá nhân', path: '/finance', icon: 'savings' },
+    ];
+
+    const masterDataItems = [
+        { label: 'Thể loại', path: '/master-data/categories', icon: 'category' },
+        { label: 'Ca làm việc', path: '/master-data/shifts', icon: 'schedule' },
+        { label: 'Công việc', path: '/master-data/jobs', icon: 'work' },
+        { label: 'Nhân viên', path: '/master-data/workers', icon: 'group' },
+        { label: 'Đơn vị sản xuất', path: '/master-data/units', icon: 'agriculture' },
+    ];
+
+    const warehouseItems = [
+        { label: 'Gia dụng', path: '/warehouse/household', icon: 'home' },
+        { label: 'Điện tử', path: '/warehouse/electronics', icon: 'devices' },
+        { label: 'Hoa kiểng', path: '/warehouse/plants', icon: 'local_florist' },
+    ];
+
+    return (
+        <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col h-full shrink-0">
+            <div className="p-6 flex flex-col gap-1">
+                <h1 className="text-slate-900 text-xl font-black tracking-tight flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[#13ec49] text-3xl">agriculture</span>
+                    GreenAcres
+                </h1>
+                <p className="text-slate-500 text-[11px] font-bold pl-9 uppercase tracking-widest">Quản lý nông trại</p>
+            </div>
+
+            <nav className="flex-1 px-4 py-4 flex flex-col gap-2 overflow-y-auto no-scrollbar">
+                {navItems.map((item) => (
+                    <NavLink
+                        key={item.path}
+                        to={item.path}
+                        className={({ isActive }) =>
+                            `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group ${isActive
+                                ? 'bg-[#13ec49]/10 text-slate-900 font-bold shadow-sm'
+                                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                            }`
+                        }
+                    >
+                        {({ isActive }) => (
+                            <>
+                                <span className={`material-symbols-outlined transition-colors ${isActive ? 'text-[#13ec49]' : 'text-slate-400 group-hover:text-[#13ec49]'
+                                    }`}>
+                                    {item.icon}
+                                </span>
+                                <span className="text-sm">{item.label}</span>
+                            </>
+                        )}
+                    </NavLink>
+                ))}
+
+                {/* Master Data Dropdown */}
+                <div>
+                    <button
+                        onClick={() => setIsMasterDataOpen(!isMasterDataOpen)}
+                        className="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl transition-all group text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                    >
+                        <div className="flex items-center gap-3">
+                            <span className="material-symbols-outlined text-slate-400 group-hover:text-[#13ec49] transition-colors">
+                                folder_open
+                            </span>
+                            <span className="text-sm">Danh mục</span>
+                        </div>
+                        <span className={`material-symbols-outlined text-sm transition-transform ${isMasterDataOpen ? 'rotate-180' : ''}`}>
+                            expand_more
+                        </span>
+                    </button>
+
+                    {/* Submenu */}
+                    <div className={`overflow-hidden transition-all duration-300 ${isMasterDataOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+                        <div className="pl-6 mt-1 space-y-1">
+                            {masterDataItems.map((item) => (
+                                <NavLink
+                                    key={item.path}
+                                    to={item.path}
+                                    className={({ isActive }) =>
+                                        `flex items-center gap-3 px-3 py-2 rounded-lg transition-all group ${isActive
+                                            ? 'bg-[#13ec49]/10 text-slate-900 font-bold'
+                                            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                                        }`
+                                    }
+                                >
+                                    {({ isActive }) => (
+                                        <>
+                                            <span className={`material-symbols-outlined text-[18px] transition-colors ${isActive ? 'text-[#13ec49]' : 'text-slate-400 group-hover:text-[#13ec49]'
+                                                }`}>
+                                                {item.icon}
+                                            </span>
+                                            <span className="text-sm">{item.label}</span>
+                                        </>
+                                    )}
+                                </NavLink>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Warehouse Dropdown */}
+                <div>
+                    <button
+                        onClick={() => setIsWarehouseOpen(!isWarehouseOpen)}
+                        className="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl transition-all group text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                    >
+                        <div className="flex items-center gap-3">
+                            <span className="material-symbols-outlined text-slate-400 group-hover:text-[#13ec49] transition-colors">
+                                warehouse
+                            </span>
+                            <span className="text-sm">Nhà kho</span>
+                        </div>
+                        <span className={`material-symbols-outlined text-sm transition-transform ${isWarehouseOpen ? 'rotate-180' : ''}`}>
+                            expand_more
+                        </span>
+                    </button>
+
+                    {/* Submenu */}
+                    <div className={`overflow-hidden transition-all duration-300 ${isWarehouseOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+                        <div className="pl-6 mt-1 space-y-1">
+                            {warehouseItems.map((item) => (
+                                <NavLink
+                                    key={item.path}
+                                    to={item.path}
+                                    className={({ isActive }) =>
+                                        `flex items-center gap-3 px-3 py-2 rounded-lg transition-all group ${isActive
+                                            ? 'bg-[#13ec49]/10 text-slate-900 font-bold'
+                                            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                                        }`
+                                    }
+                                >
+                                    {({ isActive }) => (
+                                        <>
+                                            <span className={`material-symbols-outlined text-[18px] transition-colors ${isActive ? 'text-[#13ec49]' : 'text-slate-400 group-hover:text-[#13ec49]'
+                                                }`}>
+                                                {item.icon}
+                                            </span>
+                                            <span className="text-sm">{item.label}</span>
+                                        </>
+                                    )}
+                                </NavLink>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Settings */}
+                <NavLink
+                    to="/settings"
+                    className={({ isActive }) =>
+                        `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group ${isActive
+                            ? 'bg-[#13ec49]/10 text-slate-900 font-bold shadow-sm'
+                            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                        }`
+                    }
+                >
+                    {({ isActive }) => (
+                        <>
+                            <span className={`material-symbols-outlined transition-colors ${isActive ? 'text-[#13ec49]' : 'text-slate-400 group-hover:text-[#13ec49]'
+                                }`}>
+                                settings
+                            </span>
+                            <span className="text-sm">Cài đặt hệ thống</span>
+                        </>
+                    )}
+                </NavLink>
+            </nav>
+
+            <div className="p-4 border-t border-slate-100 mt-auto">
+                <div className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer">
+                    <div className="size-10 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200">
+                        <img src="https://picsum.photos/seed/farmer/100/100" alt="John Doe" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                        <p className="text-sm font-bold text-slate-900 truncate">Lê Minh Tuấn</p>
+                        <p className="text-xs text-slate-500 truncate">Chủ vườn mận</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    );
+};
+
+export default Sidebar;
