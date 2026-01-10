@@ -1,7 +1,55 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/src/contexts/AuthContext';
+import { showcaseRegister } from '@/src/services/auth.service';
 
 const Register: React.FC = () => {
+    const [fullName, setFullName] = React.useState('');
+    const [email, setEmail] = React.useState('');
+    const [password, setPassword] = React.useState('');
+    const [confirmPassword, setConfirmPassword] = React.useState('');
+    const [error, setError] = React.useState('');
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+    const navigate = useNavigate();
+    const { login } = useAuth();
+
+    const handleRegister = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+
+        if (password !== confirmPassword) {
+            setError('Mật khẩu xác nhận không khớp');
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            const result = await showcaseRegister({
+                full_name: fullName,
+                email,
+                password
+            });
+
+            if (result.success) {
+                // Map full_name to name for context compatibility
+                const userData = {
+                    ...result.data.user,
+                    name: result.data.user.full_name
+                };
+                login(userData);
+                localStorage.setItem('farm_token', result.data.token);
+                navigate('/dashboard');
+            } else {
+                setError(result.message || 'Đăng ký thất bại');
+            }
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Đã xảy ra lỗi khi đăng ký');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     return (
         <div className="bg-background-light dark:bg-background-dark font-display text-[#111813] dark:text-white transition-colors duration-200">
             <div className="flex min-h-screen">
@@ -9,7 +57,7 @@ const Register: React.FC = () => {
                 <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
                     <div
                         className="absolute inset-0 bg-cover bg-center"
-                        style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDN76SobZt0EUeErvq_z1vuI0xD3LVAgEPqiFERdRE0VS5Orzb-AmQjiqWyYu6Wz6I4pSInNAKv90GpAZLpHCC5F0QX5WeGnGvQphB5oCW9RpwZYdKIWfQG1HAVCVMYzdt6SI6t4eyyjd4WvpIQiQS8pNzZ5dRNwkoj2QI50jw4q-clZoxuBgVhxTv7j2n3KgRr6K0zmGx3P3eeOPUtR_s7du0vVTU7wja3-XyPIXhycC3BUNiJaYHFPAt9yXuahH75REQIbU8w0ke0")' }}
+                        style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200")' }}
                     >
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-background-dark/80 to-transparent"></div>
@@ -26,9 +74,9 @@ const Register: React.FC = () => {
                         </div>
                         <div className="flex gap-4">
                             <div className="flex -space-x-2">
-                                <img alt="User" className="inline-block h-10 w-10 rounded-full ring-2 ring-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_2WMXLpF0ly-kYnW86c_1B-44uYnjzEwpH5udfOmr-wMzNzdFwo1D15pSAcatj_27zqLdZ4OEfhaO2DGz_URCoRB3vlf0-csC29bGSVJHbLLJY5GThuBxKezVnmFdDR9iSoXGD5ecMVqVdWIpgMDCLNKBF3H_PuAOZdc4Dt_KfWIeM4XbHCV7rYPUfrLxsS9KTa1VvHOS7FZFsQcsgo2DkE2TZMwCM_3gL-TjW7qGuW69_Yva8ZgJQB-FBQkWhmlvDGtaeFjq6Xej" />
-                                <img alt="User" className="inline-block h-10 w-10 rounded-full ring-2 ring-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuGNgdk2Ocbz1SW-VKm700WkqnZZST_wp6XZpGxw8hre67F1cGpVH8gTJGTRJPMNmT9kztz89vezIfo4S14Y6-mGKEfzcavi4F96JCV4HM7uVinJwQkN1UfI6qSLKCaQZ9yUVQmREHuprRDkvidU8HP2_guaMzuKE3wYPt15Z80F2Bz6b1eA8jd-NIrfyWTPeDvky2F6d-M4PhU1XOdinwlIosd1oOgU7FPEvWrF0W45oJzH8uhD-ZpAYKo5Db9wdyNpXPovyOlzJH" />
-                                <img alt="User" className="inline-block h-10 w-10 rounded-full ring-2 ring-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLN_wobeCY-G8hg0AsnPaCEK7kfxUQKiccxRf5g1tauHMG-EBrTToQxazu8DvVZWvfM__5oGBt32K8y7IdmqTdejWGzH7Q3ryqwX3a_s3769nZRVUx5zMqD_VyBWzGUkjX2hc8Xt4VQ4ZtUB5tsfkL5t00kcf7D1ZUJUsQMJuK_4QDpp33g4r6V__QgFNXdhbLQSSJk6VpRiaBkUH3Kyx_jwLnxEh7pKM4qmUiaH-1yRhjIoANp_5K5h71oC52AYTSyP4pJ1IzrGeG" />
+                                <img alt="User" className="inline-block h-10 w-10 rounded-full ring-2 ring-white" src="https://i.pravatar.cc/150?u=1" />
+                                <img alt="User" className="inline-block h-10 w-10 rounded-full ring-2 ring-white" src="https://i.pravatar.cc/150?u=2" />
+                                <img alt="User" className="inline-block h-10 w-10 rounded-full ring-2 ring-white" src="https://i.pravatar.cc/150?u=3" />
                             </div>
                             <p className="text-sm text-white/70 self-center">Trusted by farmers worldwide</p>
                         </div>
@@ -49,6 +97,12 @@ const Register: React.FC = () => {
                         <div className="mb-10">
                             <h2 className="text-3xl font-extrabold text-[#111813] dark:text-white mb-2">Create Your Account</h2>
                             <p className="text-[#61896b] dark:text-gray-400">Start managing your farm more efficiently today.</p>
+
+                            {error && (
+                                <div className="mt-4 p-3 bg-red-50 border border-red-100 text-red-600 rounded-lg text-sm w-full text-center">
+                                    {error}
+                                </div>
+                            )}
                         </div>
 
                         {/* Social Sign Up */}
@@ -72,7 +126,7 @@ const Register: React.FC = () => {
 
                         {/* Divider */}
                         <div className="relative mb-8">
-                            <div aria-hidden="true" class="absolute inset-0 flex items-center">
+                            <div aria-hidden="true" className="absolute inset-0 flex items-center">
                                 <div className="w-full border-t border-[#dbe6de] dark:border-gray-700"></div>
                             </div>
                             <div className="relative flex justify-center text-sm">
@@ -81,7 +135,7 @@ const Register: React.FC = () => {
                         </div>
 
                         {/* Form */}
-                        <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+                        <form className="space-y-5" onSubmit={handleRegister}>
                             <div>
                                 <label className="block text-sm font-semibold text-[#111813] dark:text-gray-300 mb-2" htmlFor="name">Full Name</label>
                                 <div className="relative">
@@ -93,6 +147,9 @@ const Register: React.FC = () => {
                                         id="name"
                                         placeholder="John Farmer"
                                         type="text"
+                                        value={fullName}
+                                        onChange={(e) => setFullName(e.target.value)}
+                                        required
                                     />
                                 </div>
                             </div>
@@ -108,6 +165,9 @@ const Register: React.FC = () => {
                                         id="email"
                                         placeholder="john@farm.com"
                                         type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
                                     />
                                 </div>
                             </div>
@@ -124,6 +184,9 @@ const Register: React.FC = () => {
                                             id="password"
                                             placeholder="••••••••"
                                             type="password"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -138,20 +201,27 @@ const Register: React.FC = () => {
                                             id="confirm-password"
                                             placeholder="••••••••"
                                             type="password"
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            required
                                         />
                                     </div>
                                 </div>
                             </div>
 
                             <div className="flex items-start gap-3 mt-6">
-                                <input className="mt-1 rounded text-primary focus:ring-primary h-4 w-4 border-[#dbe6de]" id="terms" type="checkbox" />
+                                <input className="mt-1 rounded text-primary focus:ring-primary h-4 w-4 border-[#dbe6de]" id="terms" type="checkbox" required />
                                 <label className="text-xs text-[#61896b] dark:text-gray-400" htmlFor="terms">
                                     I agree to the <a className="text-primary font-bold hover:underline" href="#">Terms of Service</a> and <a className="text-primary font-bold hover:underline" href="#">Privacy Policy</a>.
                                 </label>
                             </div>
 
-                            <button className="w-full bg-primary hover:bg-opacity-90 text-background-dark font-bold py-4 rounded-xl transition-all shadow-lg shadow-primary/20 transform active:scale-[0.98] mt-4" type="submit">
-                                Create My Account
+                            <button
+                                className="w-full bg-primary hover:bg-opacity-90 text-background-dark font-bold py-4 rounded-xl transition-all shadow-lg shadow-primary/20 transform active:scale-[0.98] mt-4 disabled:opacity-50"
+                                type="submit"
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? 'Creating Account...' : 'Create My Account'}
                             </button>
                         </form>
 

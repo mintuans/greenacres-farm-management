@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { getMediaFiles } from '../../services/media.service';
+import { getMediaFiles, getFarmImages } from '../../services/media.service';
 import { getMediaUrl } from '../../services/products.service';
 import { getComments, createComment, addReaction } from '../../services/comments.service';
 import { incrementVisitors, getVisitorCount } from '../../services/stats.service';
@@ -28,8 +28,9 @@ const CommentItem: React.FC<CommentItemProps> = ({
     const emojiMap: any = { like: '👍', love: '❤️', haha: '😂', wow: '😮', sad: '😢', angry: '😡' };
     const [showAllReplies, setShowAllReplies] = React.useState(false);
 
-    const visibleReplies = showAllReplies ? (comment.replies || []) : (comment.replies?.slice(0, 3) || []);
-    const hasMoreReplies = (comment.replies?.length || 0) > 3;
+    const replyCount = comment.replies?.length || 0;
+    const shouldHideInitially = replyCount >= 3;
+    const visibleReplies = (showAllReplies || !shouldHideInitially) ? (comment.replies || []) : [];
 
     return (
         <div className={`flex gap-4 group ${depth > 0 ? 'mt-3' : ''}`}>
@@ -98,12 +99,12 @@ const CommentItem: React.FC<CommentItemProps> = ({
                         Phản hồi
                     </button>
 
-                    {hasMoreReplies && !showAllReplies && (
+                    {shouldHideInitially && !showAllReplies && (
                         <button
                             onClick={() => setShowAllReplies(true)}
-                            className="text-[10px] font-bold text-primary hover:underline"
+                            className="text-[10px] font-bold text-primary hover:underline ml-2"
                         >
-                            Xem thêm {comment.replies.length - 3} phản hồi...
+                            Xem thêm {replyCount} phản hồi...
                         </button>
                     )}
                 </div>
@@ -159,7 +160,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                                 depth={depth + 1}
                             />
                         ))}
-                        {showAllReplies && hasMoreReplies && (
+                        {showAllReplies && shouldHideInitially && (
                             <button
                                 onClick={() => setShowAllReplies(false)}
                                 className="text-[10px] font-bold text-gray-400 hover:text-primary text-left"
@@ -176,13 +177,16 @@ const CommentItem: React.FC<CommentItemProps> = ({
 
 const FarmShowcase: React.FC = () => {
     const [recentMedia, setRecentMedia] = React.useState<any[]>([]);
-    const [allMedia, setAllMedia] = React.useState<any[]>([]);
+    const [farmImages, setFarmImages] = React.useState<any[]>([]);
     const [totalMediaCount, setTotalMediaCount] = React.useState(0);
+    const [totalFarmImagesCount, setTotalFarmImagesCount] = React.useState(0);
     const [showGalleryModal, setShowGalleryModal] = React.useState(false);
-    const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
+    const [selectedMediaItem, setSelectedMediaItem] = React.useState<any | null>(null);
     const [showToast, setShowToast] = React.useState(false);
     const [visibleCommentsCount, setVisibleCommentsCount] = React.useState(3);
     const [visitorCount, setVisitorCount] = React.useState<number>(0);
+    const [showFullAbout, setShowFullAbout] = React.useState(false);
+    const [heroIndex, setHeroIndex] = React.useState(0);
 
     // Comments logic state
     const [comments, setComments] = React.useState<any[]>([]);
@@ -340,10 +344,15 @@ const FarmShowcase: React.FC = () => {
     React.useEffect(() => {
         const fetchData = async () => {
             try {
-                // Fetch media
-                const mediaResponse = await getMediaFiles({ page: 1, limit: 4 });
+                // Fetch media - filter by 'gallery' for Hero
+                const mediaResponse = await getMediaFiles({ page: 1, limit: 10, category: 'gallery' });
                 setRecentMedia(mediaResponse.data);
                 setTotalMediaCount(mediaResponse.pagination.total);
+
+                // Fetch farm images specifically
+                const farmResponse = await getFarmImages(4);
+                setFarmImages(farmResponse.data);
+                setTotalFarmImagesCount(farmResponse.total);
 
                 // Fetch comments
                 fetchComments();
@@ -356,10 +365,10 @@ const FarmShowcase: React.FC = () => {
 
     const handleOpenGallery = async () => {
         setShowGalleryModal(true);
-        if (allMedia.length === 0) {
+        if (farmImages.length < totalFarmImagesCount) {
             try {
-                const response = await getMediaFiles({ page: 1, limit: 100 });
-                setAllMedia(response.data);
+                const response = await getFarmImages(100);
+                setFarmImages(response.data);
             } catch (error) {
                 console.error('Error fetching all gallery:', error);
             }
@@ -410,18 +419,69 @@ const FarmShowcase: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Featured Image (Hero) */}
-                            <div className="w-full h-[400px] md:h-[500px] rounded-2xl overflow-hidden relative group cursor-pointer">
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
-                                <div className="absolute bottom-6 left-6 z-20 text-white">
-                                    <h3 className="text-2xl font-bold">Mùa Thu hoạch 2026</h3>
-                                    <p className="opacity-90">Vườn mận chín vàng rộm vào mùa hè</p>
+                            {/* Featured Image (Hero Slider) */}
+                            <div className="w-full h-[400px] md:h-[500px] rounded-2xl overflow-hidden relative group">
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10"></div>
+
+                                <div className="absolute bottom-6 left-6 z-20 text-white animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                    <h3 className="text-2xl md:text-3xl font-bold drop-shadow-lg">
+                                        {recentMedia[heroIndex]?.image_name?.replace(/\.[^/.]+$/, "") || "Mùa Thu hoạch 2026"}
+                                    </h3>
+                                    <p className="opacity-90 font-medium drop-shadow-md">
+                                        {recentMedia[heroIndex] ? "Khoảnh khắc tuyệt đẹp tại vườn mận" : "Vườn mận chín vàng rộm vào mùa hè"}
+                                    </p>
                                 </div>
-                                <div
-                                    className="w-full h-full bg-center bg-no-repeat bg-cover transition-transform duration-700 group-hover:scale-105"
-                                    style={{ backgroundImage: `url("${recentMedia[0] ? getMediaUrl(recentMedia[0].id) : 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=1200'}")` }}
-                                ></div>
-                                <button className="absolute top-4 right-4 z-20 bg-white/20 hover:bg-white/40 backdrop-blur-md p-2 rounded-full text-white transition-colors">
+
+                                {/* Navigation Arrows */}
+                                {recentMedia.length > 1 && (
+                                    <>
+                                        <button
+                                            onClick={() => setHeroIndex(prev => (prev === 0 ? recentMedia.length - 1 : prev - 1))}
+                                            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/20 hover:bg-white/40 text-white backdrop-blur-md transition-all opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95"
+                                        >
+                                            <span className="material-symbols-outlined text-3xl">chevron_left</span>
+                                        </button>
+                                        <button
+                                            onClick={() => setHeroIndex(prev => (prev === recentMedia.length - 1 ? 0 : prev + 1))}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/20 hover:bg-white/40 text-white backdrop-blur-md transition-all opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95"
+                                        >
+                                            <span className="material-symbols-outlined text-3xl">chevron_right</span>
+                                        </button>
+
+                                        {/* Pagination Dots */}
+                                        <div className="absolute bottom-6 right-6 z-20 flex gap-1.5">
+                                            {recentMedia.map((_, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    className={`h-1.5 rounded-full transition-all duration-300 ${idx === heroIndex ? 'w-6 bg-[#13ec49]' : 'w-1.5 bg-white/40'}`}
+                                                />
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+
+                                {recentMedia[heroIndex]?.mime_type?.startsWith('video/') ? (
+                                    <video
+                                        key={heroIndex}
+                                        src={getMediaUrl(recentMedia[heroIndex].id)}
+                                        autoPlay
+                                        muted
+                                        loop
+                                        playsInline
+                                        className="w-full h-full object-cover transition-transform duration-700 hover:scale-105 animate-in fade-in duration-500"
+                                    />
+                                ) : (
+                                    <div
+                                        key={heroIndex}
+                                        className="w-full h-full bg-center bg-no-repeat bg-cover transition-transform duration-700 hover:scale-105 animate-in fade-in duration-500"
+                                        style={{ backgroundImage: `url("${recentMedia[heroIndex] ? getMediaUrl(recentMedia[heroIndex].id) : 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=1200'}")` }}
+                                    ></div>
+                                )}
+
+                                <button
+                                    onClick={handleOpenGallery}
+                                    className="absolute top-4 right-4 z-20 bg-white/20 hover:bg-white/40 backdrop-blur-md p-2 rounded-full text-white transition-colors"
+                                >
                                     <span className="material-symbols-outlined">fullscreen</span>
                                 </button>
                             </div>
@@ -437,16 +497,68 @@ const FarmShowcase: React.FC = () => {
                                 <div className="flex flex-col gap-4">
                                     <div className="flex items-center gap-3">
                                         <div className="p-2 bg-[#13ec49]/10 rounded-lg text-[#13ec49]">
-                                            <span className="material-symbols-outlined">info</span>
+                                            <span className="material-symbols-outlined">history_edu</span>
                                         </div>
-                                        <h2 className="text-2xl font-bold text-[#111813]">Giới thiệu Vườn</h2>
+                                        <h2 className="text-2xl font-bold text-[#111813]">Hành Trình Phát Triển Của Vườn Nhà</h2>
                                     </div>
-                                    <p className="text-[#3c4740] text-lg font-normal leading-relaxed">
-                                        Được thành lập từ năm 1998, Vườn Mận Lê Minh Tuấn đã trở thành một trong những vườn mận hàng đầu tại khu vực Đồng bằng Sông Cửu Long. Chúng tôi chuyên canh tác mận theo phương pháp hữu cơ, tập trung vào các giống mận chất lượng cao và bền vững với môi trường.
-                                    </p>
-                                    <p className="text-[#3c4740] text-lg font-normal leading-relaxed">
-                                        Vườn trải rộng trên địa hình đa dạng, tạo nên vi khí hậu độc đáo giúp cây mận phát triển tốt quanh năm. Từ những ngày đầu là một mảnh vườn gia đình nhỏ đến quy mô hiện tại, chúng tôi luôn cam kết mang đến sản phẩm tươi ngon nhất cho cộng đồng.
-                                    </p>
+
+                                    <div className={`relative transition-all duration-500 overflow-hidden ${!showFullAbout ? 'max-h-[220px]' : 'max-h-[2000px]'}`}>
+                                        <p className="text-[#3c4740] text-lg font-medium leading-relaxed mb-4 italic">
+                                            Từ những ngày đầu khai khẩn, khu vườn của gia đình chúng tôi đã trải qua một hành trình dài hơn hai thập kỷ, gắn liền với sự thay đổi của thổ nhưỡng và tâm huyết của những người làm vườn thực thụ.
+                                        </p>
+
+                                        <div className="flex flex-col gap-6">
+                                            <div className="bg-white/50 p-4 rounded-xl border-l-4 border-[#13ec49]">
+                                                <h3 className="text-[#111813] font-bold text-lg mb-2">1. Những bước đi đầu tiên (2003 - 2013)</h3>
+                                                <p className="text-[#3c4740] text-base leading-relaxed">
+                                                    Câu chuyện bắt đầu từ năm 2003, khi những gốc táo đầu tiên được đặt xuống đất. Sau đó, gia đình quyết định chuyển đổi sang trồng vú sữa – loại cây cho bóng mát và giá trị kinh tế cao thời bấy giờ. Đến năm 2006, cây mận chính thức xuất hiện trong vườn, ban đầu chỉ là những gốc trồng xen kẽ dưới tán vú sữa.
+                                                </p>
+                                            </div>
+
+                                            <div className="bg-white/50 p-4 rounded-xl border-l-4 border-blue-400">
+                                                <h3 className="text-[#111813] font-bold text-lg mb-2">2. Bước ngoặt và sự chuyên canh (2014 - 2024)</h3>
+                                                <p className="text-[#3c4740] text-base leading-relaxed mb-3">
+                                                    Năm 2014 đánh dấu một quyết định quan trọng: Chúng tôi nhận thấy những cây vú sữa lâu năm phát triển quá cao, gây khó khăn và nguy hiểm trong khâu thu hoạch cũng như chăm sóc. Với mục tiêu tối ưu hóa năng suất, gia đình đã quyết định chặt bỏ vú sữa để tập trung toàn lực vào cây mận.
+                                                </p>
+                                                <p className="text-[#3c4740] text-base leading-relaxed">
+                                                    Kể từ đó, mận trở thành nguồn thu nhập chính và là niềm tự hào của vườn. Để tận dụng tối đa diện tích đất và tạo hệ sinh thái đa dạng, chúng tôi còn trồng xen canh thêm hạnh (quất) và dứa (khóm). Mô hình "lấy ngắn nuôi dài" này không chỉ giúp giữ ẩm cho đất mà còn mang lại nguồn thu phụ ổn định quanh năm.
+                                                </p>
+                                            </div>
+
+                                            <div className="bg-white/50 p-4 rounded-xl border-l-4 border-orange-400">
+                                                <h3 className="text-[#111813] font-bold text-lg mb-2">3. Tầm nhìn mới: Kết hợp chăn nuôi bền vững (2025)</h3>
+                                                <p className="text-[#3c4740] text-base leading-relaxed mb-3">
+                                                    Không dừng lại ở việc canh tác cây ăn trái, giữa năm 2025, cha tôi đã tiên phong triển khai thêm mô hình nuôi ếch. Đây là bước đi chiến lược nhằm:
+                                                </p>
+                                                <ul className="list-none space-y-2 ml-2">
+                                                    <li className="flex gap-2 text-[#3c4740] text-base">
+                                                        <span className="text-[#13ec49] font-bold">•</span>
+                                                        <span><strong>Tận dụng nguồn nước:</strong> Kết hợp mương vườn sẵn có để nuôi ếch.</span>
+                                                    </li>
+                                                    <li className="flex gap-2 text-[#3c4740] text-base">
+                                                        <span className="text-[#13ec49] font-bold">•</span>
+                                                        <span><strong>Tăng giá trị kinh tế:</strong> Đa dạng hóa sản phẩm cung ứng ra thị trường ngoài trái cây tươi.</span>
+                                                    </li>
+                                                    <li className="flex gap-2 text-[#3c4740] text-base">
+                                                        <span className="text-[#13ec49] font-bold">•</span>
+                                                        <span><strong>Hướng tới nông nghiệp tuần hoàn:</strong> Tận dụng phụ phẩm nông nghiệp và tạo ra nguồn phân bón hữu cơ tự nhiên từ chất thải của ếch để nuôi dưỡng ngược lại cho gốc mận.</span>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                        {!showFullAbout && (
+                                            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#f6f8f6] to-transparent pointer-events-none"></div>
+                                        )}
+                                    </div>
+
+                                    <button
+                                        onClick={() => setShowFullAbout(!showFullAbout)}
+                                        className="flex items-center gap-2 text-[#13ec49] font-bold text-sm w-fit hover:underline pt-2"
+                                    >
+                                        <span className="material-symbols-outlined">{showFullAbout ? 'expand_less' : 'expand_more'}</span>
+                                        {showFullAbout ? 'Thu gọn' : 'Xem thêm'}
+                                    </button>
                                 </div>
 
                                 {/* Stats Grid */}
@@ -476,8 +588,8 @@ const FarmShowcase: React.FC = () => {
                                             <span className="material-symbols-outlined text-[28px]">history</span>
                                         </div>
                                         <div>
-                                            <h3 className="text-[#111813] text-lg font-bold">Thành lập 1998</h3>
-                                            <p className="text-[#61896b] text-sm">Gia đình sở hữu</p>
+                                            <h3 className="text-[#111813] text-lg font-bold">Thành lập 2003</h3>
+                                            <p className="text-[#61896b] text-sm">Hành trình 23 năm</p>
                                         </div>
                                     </div>
                                 </div>
@@ -635,7 +747,7 @@ const FarmShowcase: React.FC = () => {
 
                                 <div className="bg-white p-5 rounded-2xl border border-[#dbe6de] shadow-sm">
                                     <div className="flex justify-between items-center mb-4">
-                                        <h3 className="text-lg font-bold text-[#111813]">Hình ảnh của vườn {totalMediaCount > 0 && `(${totalMediaCount})`}</h3>
+                                        <h3 className="text-lg font-bold text-[#111813]">Hình ảnh của vườn {totalFarmImagesCount > 0 && `(${totalFarmImagesCount})`}</h3>
                                         <button
                                             onClick={handleOpenGallery}
                                             className="text-[#13ec49] hover:bg-[#13ec49]/10 p-1 rounded transition-colors flex items-center"
@@ -645,27 +757,34 @@ const FarmShowcase: React.FC = () => {
                                     </div>
                                     <div className="grid grid-cols-2 gap-3">
                                         {[0, 1, 2, 3].map((index) => {
-                                            const media = recentMedia[index];
-                                            const isLast = index === 3 && totalMediaCount > 4;
+                                            const media = farmImages[index];
+                                            const isLast = index === 3 && totalFarmImagesCount > 4;
 
                                             return (
                                                 <div
                                                     key={index}
-                                                    onClick={() => media && setSelectedImage(getMediaUrl(media.id))}
+                                                    onClick={() => media && setSelectedMediaItem(media)}
                                                     className="w-full aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-[#13ec49] transition-all relative group"
                                                 >
                                                     {media ? (
                                                         <>
-                                                            <div
-                                                                className="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110"
-                                                                style={{ backgroundImage: `url("${getMediaUrl(media.id)}")` }}
-                                                            ></div>
+                                                            {media.mime_type?.startsWith('video/') ? (
+                                                                <div className="w-full h-full flex flex-col items-center justify-center bg-gray-800 text-white">
+                                                                    <span className="material-symbols-outlined text-3xl">movie</span>
+                                                                    <span className="text-[10px] mt-1">VIDEO</span>
+                                                                </div>
+                                                            ) : (
+                                                                <div
+                                                                    className="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110"
+                                                                    style={{ backgroundImage: `url("${getMediaUrl(media.id)}")` }}
+                                                                ></div>
+                                                            )}
                                                             {isLast && (
                                                                 <div
-                                                                    className="absolute inset-0 bg-black/60 flex items-center justify-center"
+                                                                    className="absolute inset-0 bg-black/60 flex items-center justify-center text-center z-20"
                                                                     onClick={(e) => { e.stopPropagation(); handleOpenGallery(); }}
                                                                 >
-                                                                    <span className="text-white font-bold text-lg">+{totalMediaCount - 4}</span>
+                                                                    <span className="text-white font-bold text-lg">+{totalFarmImagesCount - 4}</span>
                                                                 </div>
                                                             )}
                                                         </>
@@ -758,19 +877,28 @@ const FarmShowcase: React.FC = () => {
                         </div>
                         <div className="p-6 overflow-y-auto flex-1 bg-gray-50">
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                                {allMedia.map((media) => (
+                                {farmImages.map((media) => (
                                     <div
                                         key={media.id}
-                                        onClick={() => setSelectedImage(getMediaUrl(media.id))}
+                                        onClick={() => setSelectedMediaItem(media)}
                                         className="aspect-square bg-white rounded-xl overflow-hidden cursor-pointer hover:ring-4 hover:ring-[#13ec49] hover:scale-[1.02] transition-all shadow-sm group relative"
                                     >
-                                        <img
-                                            src={getMediaUrl(media.id)}
-                                            className="w-full h-full object-cover"
-                                            alt={media.image_name}
-                                        />
+                                        {media.mime_type?.startsWith('video/') ? (
+                                            <div className="w-full h-full flex flex-col items-center justify-center bg-gray-800 text-white">
+                                                <span className="material-symbols-outlined text-4xl mb-1">movie</span>
+                                                <span className="text-[10px] opacity-70 font-bold tracking-widest">VIDEO</span>
+                                            </div>
+                                        ) : (
+                                            <img
+                                                src={getMediaUrl(media.id)}
+                                                className="w-full h-full object-cover"
+                                                alt={media.image_name}
+                                            />
+                                        )}
                                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-colors">
-                                            <span className="material-symbols-outlined text-white opacity-0 group-hover:opacity-100 scale-150 transition-all">zoom_in</span>
+                                            <span className="material-symbols-outlined text-white opacity-0 group-hover:opacity-100 scale-150 transition-all">
+                                                {media.mime_type?.startsWith('video/') ? 'play_circle' : 'zoom_in'}
+                                            </span>
                                         </div>
                                     </div>
                                 ))}
@@ -780,21 +908,35 @@ const FarmShowcase: React.FC = () => {
                 </div>
             )}
 
-            {/* Image Lightbox (Fullscreen view) */}
-            {selectedImage && (
+            {/* Media Lightbox (Fullscreen view) */}
+            {selectedMediaItem && (
                 <div
                     className="fixed inset-0 bg-black/95 z-[110] flex items-center justify-center animate-in zoom-in duration-200 cursor-zoom-out"
-                    onClick={() => setSelectedImage(null)}
+                    onClick={() => setSelectedMediaItem(null)}
                 >
-                    <button className="absolute top-6 right-6 text-white text-4xl">
+                    <button className="absolute top-6 right-6 text-white text-4xl z-20">
                         <span className="material-symbols-outlined scale-150">close</span>
                     </button>
-                    <img
-                        src={selectedImage}
-                        className="max-w-[95vw] max-h-[95vh] object-contain shadow-2xl"
-                        alt="Zoomed"
-                        onClick={(e) => e.stopPropagation()}
-                    />
+
+                    <div className="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+                        {selectedMediaItem.mime_type?.startsWith('video/') ? (
+                            <video
+                                src={getMediaUrl(selectedMediaItem.id)}
+                                controls
+                                autoPlay
+                                className="max-w-full max-h-[90vh] shadow-2xl rounded-lg"
+                            />
+                        ) : (
+                            <img
+                                src={getMediaUrl(selectedMediaItem.id)}
+                                className="max-w-full max-h-[90vh] object-contain shadow-2xl rounded-lg"
+                                alt="Zoomed"
+                            />
+                        )}
+                        <div className="absolute -bottom-10 left-0 right-0 text-center text-white/70 text-sm">
+                            {selectedMediaItem.image_name}
+                        </div>
+                    </div>
                 </div>
             )}
             {/* Share Toast Notification */}

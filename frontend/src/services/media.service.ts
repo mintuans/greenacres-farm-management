@@ -16,6 +16,7 @@ export const getMediaFiles = async (params?: {
     page?: number;
     limit?: number;
     search?: string;
+    category?: string;
 }) => {
     const response = await api.get('/management/media', { params });
     return response.data;
@@ -57,5 +58,13 @@ export const uploadMedia = async (file: File) => {
  */
 export const deleteMedia = async (id: string) => {
     const response = await api.delete(`/management/media/${id}`);
+    return response.data;
+};
+
+/**
+ * Lấy danh sách ảnh của vườn (Showcase API)
+ */
+export const getFarmImages = async (limit: number = 6) => {
+    const response = await api.get('/showcase/media/farm', { params: { limit } });
     return response.data;
 };

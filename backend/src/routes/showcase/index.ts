@@ -4,6 +4,8 @@ import blogRoutes from './blog.routes';
 import commentsRoutes from './comments.routes';
 import categoriesRoutes from './categories.routes';
 import statsRoutes from './stats.routes';
+import authRoutes from './auth.routes';
+import mediaRoutes from './media.routes';
 
 const router = Router();
 
@@ -13,5 +15,7 @@ router.use('/blog', blogRoutes);
 router.use('/comments', commentsRoutes);
 router.use('/categories', categoriesRoutes);
 router.use('/stats', statsRoutes);
+router.use('/auth', authRoutes);
+router.use('/media', mediaRoutes);
 
 export default router;

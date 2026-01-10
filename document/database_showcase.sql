@@ -228,6 +228,7 @@ CREATE TABLE public_users (
     -- Trạng thái
     is_verified BOOLEAN DEFAULT FALSE,
     is_active BOOLEAN DEFAULT TRUE,
+    login_attempts INTEGER DEFAULT 0,
     
     -- Audit
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

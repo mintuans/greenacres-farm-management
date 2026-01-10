@@ -1,22 +1,45 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/src/contexts/AuthContext';
+import { showcaseLogin } from '@/src/services/auth.service';
 
 const Login: React.FC = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const { login } = useAuth();
     const navigate = useNavigate();
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Mock standard login
-        login({
-            id: '1',
-            name: 'Nguyễn Văn A',
-            email: 'admin@farm.com',
-            role: 'admin'
-        });
-        navigate('/dashboard');
+        setError('');
+        setIsSubmitting(true);
+
+        try {
+            const result = await showcaseLogin({ email, password });
+            if (result.success) {
+                // Map full_name to name for context compatibility
+                const userData = {
+                    ...result.data.user,
+                    name: result.data.user.full_name
+                };
+                login(userData);
+
+                // Store token
+                localStorage.setItem('farm_token', result.data.token);
+
+                navigate('/dashboard');
+            } else {
+                setError(result.message || 'Đăng nhập thất bại');
+            }
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Đã xảy ra lỗi khi đăng nhập');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleGoogleLogin = () => {
@@ -69,6 +92,12 @@ const Login: React.FC = () => {
                             </div>
                             <h1 className="text-[#111813] dark:text-white tracking-light text-[32px] font-bold leading-tight text-center">Welcome Back</h1>
                             <p className="text-gray-500 dark:text-gray-400 text-base font-normal leading-normal text-center mt-2">Enter your credentials to access your farm dashboard.</p>
+
+                            {error && (
+                                <div className="mt-4 p-3 bg-red-50 border border-red-100 text-red-600 rounded-lg text-sm w-full text-center animate-in fade-in duration-300">
+                                    {error}
+                                </div>
+                            )}
                         </div>
 
                         <form className="space-y-4" onSubmit={handleLogin}>
@@ -80,6 +109,9 @@ const Login: React.FC = () => {
                                         className="form-input flex w-full rounded-xl text-[#111813] dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-[#dbe6de] dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-primary h-14 placeholder:text-gray-400 p-[15px] text-base font-normal transition-all"
                                         placeholder="e.g. farmer@example.com"
                                         type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
                                     />
                                 </div>
                             </div>
@@ -95,6 +127,9 @@ const Login: React.FC = () => {
                                         className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#111813] dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-[#dbe6de] dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-primary h-14 placeholder:text-gray-400 p-[15px] rounded-r-none border-r-0 text-base font-normal transition-all"
                                         placeholder="Enter your password"
                                         type={showPassword ? "text" : "password"}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
                                     />
                                     <div
                                         className="text-[#61896b] flex border border-[#dbe6de] dark:border-gray-700 bg-white dark:bg-gray-800 items-center justify-center pr-[15px] rounded-r-xl border-l-0 cursor-pointer hover:text-primary transition-colors"
@@ -108,8 +143,12 @@ const Login: React.FC = () => {
                             </div>
 
                             {/* Login Button */}
-                            <button className="w-full flex h-14 items-center justify-center overflow-hidden rounded-xl bg-primary text-[#111813] text-base font-bold leading-normal tracking-[0.015em] hover:shadow-lg transition-all active:scale-[0.98] mt-2" type="submit">
-                                <span>Log In</span>
+                            <button
+                                className="w-full flex h-14 items-center justify-center overflow-hidden rounded-xl bg-primary text-[#111813] text-base font-bold leading-normal tracking-[0.015em] hover:shadow-lg transition-all active:scale-[0.98] mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                type="submit"
+                                disabled={isSubmitting}
+                            >
+                                <span>{isSubmitting ? 'Logging in...' : 'Log In'}</span>
                             </button>
                         </form>
 

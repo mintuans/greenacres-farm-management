@@ -6,7 +6,7 @@ import pool from '../../config/database';
  */
 export const getAllMedia = async (req: Request, res: Response) => {
     try {
-        const { page = 1, limit = 20, search } = req.query;
+        const { page = 1, limit = 20, search, category } = req.query;
         const offset = (Number(page) - 1) * Number(limit);
 
         let query = `
@@ -15,6 +15,7 @@ export const getAllMedia = async (req: Request, res: Response) => {
                 image_name, 
                 file_size,
                 image_type as mime_type,
+                category,
                 uploaded_at as created_at
             FROM media_files
             WHERE deleted_at IS NULL
@@ -26,6 +27,12 @@ export const getAllMedia = async (req: Request, res: Response) => {
         if (search) {
             query += ` AND image_name ILIKE $${paramIndex}`;
             params.push(`%${search}%`);
+            paramIndex++;
+        }
+
+        if (category) {
+            query += ` AND category = $${paramIndex}`;
+            params.push(category);
             paramIndex++;
         }
 

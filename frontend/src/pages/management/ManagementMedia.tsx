@@ -81,19 +81,19 @@ const ManagementMedia: React.FC = () => {
         <div className="p-6">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold text-[#111813]">Quản lý Ảnh</h1>
+                <h1 className="text-2xl font-bold text-[#111813]">Quản lý Media</h1>
                 <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
                     className="px-4 py-2 bg-[#13ec49] text-[#102215] font-bold rounded-lg hover:bg-[#10d63f] transition-colors disabled:opacity-50"
                 >
-                    {uploading ? 'Đang upload...' : '+ Upload ảnh'}
+                    {uploading ? 'Đang upload...' : '+ Upload file'}
                 </button>
                 <input
                     ref={fileInputRef}
                     type="file"
                     multiple
-                    accept="image/*"
+                    accept="image/*,video/*"
                     className="hidden"
                     onChange={handleFileSelect}
                 />
@@ -126,16 +126,22 @@ const ManagementMedia: React.FC = () => {
                                 className="group relative aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
                                 onClick={() => handleViewDetail(media)}
                             >
-                                <img
-                                    src={getMediaUrl(media.id)}
-                                    alt={media.image_name}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                    onError={(e) => {
-                                        // Ngăn chặn loop vô tận nếu placeholder cũng lỗi
-                                        e.currentTarget.onerror = null;
-                                        e.currentTarget.src = 'https://placehold.co/300x300?text=Image+Error';
-                                    }}
-                                />
+                                {media.mime_type?.startsWith('video/') ? (
+                                    <div className="w-full h-full flex flex-col items-center justify-center bg-gray-800 text-white">
+                                        <span className="material-symbols-outlined text-4xl mb-1">movie</span>
+                                        <span className="text-[10px] opacity-70">VIDEO</span>
+                                    </div>
+                                ) : (
+                                    <img
+                                        src={getMediaUrl(media.id)}
+                                        alt={media.image_name}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                        onError={(e) => {
+                                            e.currentTarget.onerror = null;
+                                            e.currentTarget.src = 'https://placehold.co/300x300?text=Image+Error';
+                                        }}
+                                    />
+                                )}
                                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity flex items-center justify-center">
                                     <div className="opacity-0 group-hover:opacity-100 transition-opacity text-white text-center p-2">
                                         <p className="text-xs font-medium truncate">{media.image_name}</p>
@@ -171,13 +177,23 @@ const ManagementMedia: React.FC = () => {
                                 </button>
                             </div>
 
-                            {/* Image Preview */}
-                            <div className="mb-4 bg-gray-100 rounded-lg overflow-hidden">
-                                <img
-                                    src={selectedMedia.image_data || getMediaUrl(selectedMedia.id)}
-                                    alt={selectedMedia.image_name}
-                                    className="w-full h-auto max-h-[60vh] object-contain"
-                                />
+                            {/* Media Preview */}
+                            <div className="mb-4 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center min-h-[300px]">
+                                {selectedMedia.mime_type?.startsWith('video/') ? (
+                                    <video
+                                        src={selectedMedia.image_data || getMediaUrl(selectedMedia.id)}
+                                        controls
+                                        className="w-full max-h-[60vh]"
+                                    >
+                                        Trình duyệt của bạn không hỗ trợ file video.
+                                    </video>
+                                ) : (
+                                    <img
+                                        src={selectedMedia.image_data || getMediaUrl(selectedMedia.id)}
+                                        alt={selectedMedia.image_name}
+                                        className="w-full h-auto max-h-[60vh] object-contain"
+                                    />
+                                )}
                             </div>
 
                             {/* Actions */}

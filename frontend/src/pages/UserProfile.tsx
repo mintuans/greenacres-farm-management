@@ -98,42 +98,10 @@ const UserProfile: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Details Grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Navigation Menu */}
-                        <div className="lg:col-span-1">
-                            <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex flex-col gap-2 sticky top-[80px]">
-                                <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#13ec49]/10 text-[#13ec49] border border-[#13ec49]/20 group cursor-pointer transition-all shadow-sm shadow-[#13ec49]/5">
-                                    <span className="material-symbols-outlined group-hover:scale-110 transition-transform">person</span>
-                                    <p className="text-sm font-bold leading-normal">Personal Info</p>
-                                </div>
-                                <div className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 border border-transparent hover:border-slate-200 cursor-pointer transition-all group">
-                                    <span className="material-symbols-outlined group-hover:rotate-12 transition-transform">shield</span>
-                                    <p className="text-sm font-medium leading-normal">Security & Password</p>
-                                </div>
-                                <div className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 border border-transparent hover:border-slate-200 cursor-pointer transition-all group">
-                                    <span className="material-symbols-outlined group-hover:scale-110 transition-transform">notifications</span>
-                                    <p className="text-sm font-medium leading-normal">Notifications</p>
-                                </div>
-                                <div className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 border border-transparent hover:border-slate-200 cursor-pointer transition-all group">
-                                    <span className="material-symbols-outlined group-hover:scale-110 transition-transform">payments</span>
-                                    <p className="text-sm font-medium leading-normal">Plan & Billing</p>
-                                </div>
-                                <div className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 border border-transparent hover:border-slate-200 cursor-pointer transition-all group">
-                                    <span className="material-symbols-outlined group-hover:scale-110 transition-transform">group</span>
-                                    <p className="text-sm font-medium leading-normal">Team Management</p>
-                                </div>
-                                <div className="mt-4 pt-4 border-t border-slate-100">
-                                    <button className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-dashed border-slate-200 text-slate-400 hover:border-[#13ec49] hover:text-[#13ec49] hover:bg-[#13ec49]/5 transition-all text-sm font-medium group">
-                                        <span className="material-symbols-outlined text-lg group-hover:rotate-90 transition-transform">add</span>
-                                        Add Work Profile
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
+                    {/* Details Container */}
+                    <div className="flex flex-col gap-6 max-w-3xl mx-auto w-full">
                         {/* Information Content Area */}
-                        <div className="lg:col-span-2 flex flex-col gap-6">
+                        <div className="flex flex-col gap-6">
                             {/* Personal Information Section */}
                             <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
                                 <h2 className="text-slate-900 text-xl font-bold mb-6 flex items-center gap-2">
@@ -174,31 +142,6 @@ const UserProfile: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Work & Preferences Section */}
-                            <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-                                <h2 className="text-slate-900 text-xl font-bold mb-6 flex items-center gap-2">
-                                    <span className="w-1.5 h-6 bg-[#13ec49] rounded-full"></span>
-                                    Work Details
-                                </h2>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {[
-                                        { label: 'Primary Role', value: role, icon: 'work' },
-                                        { label: 'Language', value: 'English (US)', icon: 'language' },
-                                        { label: 'Timezone', value: 'PST (UTC-8)', icon: 'schedule' },
-                                        { label: 'Last Login', value: 'Today, 08:15 AM', icon: 'calendar_today' },
-                                    ].map((item, idx) => (
-                                        <div key={idx} className="p-4 rounded-xl border border-slate-100 bg-slate-50 flex items-start gap-4 hover:border-[#13ec49]/30 transition-all hover:bg-white shadow-sm hover:shadow-md group">
-                                            <div className="bg-[#13ec49]/10 p-2.5 rounded-lg text-[#13ec49] shrink-0 group-hover:scale-110 transition-transform">
-                                                <span className="material-symbols-outlined">{item.icon}</span>
-                                            </div>
-                                            <div>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{item.label}</p>
-                                                <p className="text-slate-900 font-bold mt-0.5 text-sm">{item.value}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
