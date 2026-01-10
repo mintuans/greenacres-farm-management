@@ -12,7 +12,7 @@ const Sidebar: React.FC = () => {
         { label: 'Vật tư Nông nghiệp', path: '/inventory', icon: 'inventory_2' },
         { label: 'Mùa vụ', path: '/seasons', icon: 'grass' },
         { label: 'Giao dịch', path: '/transactions', icon: 'payments' },
-        { label: 'Tài chính cá nhân', path: '/finance', icon: 'savings' },
+        // { label: 'Tài chính cá nhân', path: '/finance', icon: 'savings' },
     ];
 
     const masterDataItems = [
@@ -21,6 +21,10 @@ const Sidebar: React.FC = () => {
         { label: 'Công việc', path: '/master-data/jobs', icon: 'work' },
         { label: 'Nhân viên', path: '/master-data/workers', icon: 'group' },
         { label: 'Đơn vị sản xuất', path: '/master-data/units', icon: 'agriculture' },
+        { label: '─────────', path: '#', icon: '', disabled: true }, // Separator
+        { label: 'Sản phẩm Showcase', path: '/master-data/showcase-products', icon: 'shopping_bag' },
+        { label: 'Quản lý Ảnh', path: '/master-data/media', icon: 'image' },
+        { label: 'Blog Showcase', path: '/master-data/showcase-blog', icon: 'article' },
     ];
 
     const warehouseItems = [
@@ -84,26 +88,32 @@ const Sidebar: React.FC = () => {
                     <div className={`overflow-hidden transition-all duration-300 ${isMasterDataOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
                         <div className="pl-6 mt-1 space-y-1">
                             {masterDataItems.map((item) => (
-                                <NavLink
-                                    key={item.path}
-                                    to={item.path}
-                                    className={({ isActive }) =>
-                                        `flex items-center gap-3 px-3 py-2 rounded-lg transition-all group ${isActive
-                                            ? 'bg-[#13ec49]/10 text-slate-900 font-bold'
-                                            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-                                        }`
-                                    }
-                                >
-                                    {({ isActive }) => (
-                                        <>
-                                            <span className={`material-symbols-outlined text-[18px] transition-colors ${isActive ? 'text-[#13ec49]' : 'text-slate-400 group-hover:text-[#13ec49]'
-                                                }`}>
-                                                {item.icon}
-                                            </span>
-                                            <span className="text-sm">{item.label}</span>
-                                        </>
-                                    )}
-                                </NavLink>
+                                item.disabled ? (
+                                    <div key={item.label} className="px-3 py-1 text-slate-300 text-xs">
+                                        {item.label}
+                                    </div>
+                                ) : (
+                                    <NavLink
+                                        key={item.path}
+                                        to={item.path}
+                                        className={({ isActive }) =>
+                                            `flex items-center gap-3 px-3 py-2 rounded-lg transition-all group ${isActive
+                                                ? 'bg-[#13ec49]/10 text-slate-900 font-bold'
+                                                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                                            }`
+                                        }
+                                    >
+                                        {({ isActive }) => (
+                                            <>
+                                                <span className={`material-symbols-outlined text-[18px] transition-colors ${isActive ? 'text-[#13ec49]' : 'text-slate-400 group-hover:text-[#13ec49]'
+                                                    }`}>
+                                                    {item.icon}
+                                                </span>
+                                                <span className="text-sm">{item.label}</span>
+                                            </>
+                                        )}
+                                    </NavLink>
+                                )
                             ))}
                         </div>
                     </div>

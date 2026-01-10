@@ -20,6 +20,11 @@ export default {
           800: '#166534',
           900: '#14532d',
         },
+        'background-light': '#f6f8f6',
+        'background-dark': '#102215',
+      },
+      fontFamily: {
+        display: ['Plus Jakarta Sans', 'Work Sans', 'sans-serif'],
       },
     },
   },

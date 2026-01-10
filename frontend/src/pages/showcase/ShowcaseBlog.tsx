@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import ShowcaseHeader from '../../templates/ShowcaseHeader';
 
 interface BlogPost {
     id: string;
@@ -102,38 +103,11 @@ const ShowcaseBlog: React.FC = () => {
 
     return (
         <div className="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden bg-[#f6f8f6]">
-            {/* Top Navigation Bar */}
-            <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e5e9e6] bg-white px-10 py-3 sticky top-0 z-50">
-                <div className="flex items-center gap-8">
-                    <div className="flex items-center gap-4 text-[#111813]">
-                        <div className="size-8 rounded bg-[#13ec49]/20 flex items-center justify-center text-[#13ec49]">
-                            <span className="material-symbols-outlined">agriculture</span>
-                        </div>
-                        <h2 className="text-lg font-bold leading-tight tracking-[-0.015em]">GreenAcres</h2>
-                    </div>
-                    <div className="hidden md:flex items-center gap-9">
-                        <Link to="/showcase" className="text-[#111813] text-sm font-medium leading-normal hover:text-[#13ec49] transition-colors">Trang chủ</Link>
-                        <Link to="/showcase/products" className="text-[#111813] text-sm font-medium leading-normal hover:text-[#13ec49] transition-colors">Sản phẩm</Link>
-                        <Link to="/showcase/blog" className="text-[#13ec49] text-sm font-bold leading-normal">Tin tức</Link>
-                    </div>
-                </div>
-                <div className="flex flex-1 justify-end gap-8">
-                    <label className="hidden md:flex flex-col min-w-40 !h-10 max-w-64">
-                        <div className="flex w-full flex-1 items-stretch rounded-xl h-full">
-                            <div className="text-[#61896b] flex border-none bg-[#f0f4f1] items-center justify-center pl-4 rounded-l-xl border-r-0">
-                                <span className="material-symbols-outlined text-[20px]">search</span>
-                            </div>
-                            <input
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#111813] focus:outline-0 focus:ring-0 border-none bg-[#f0f4f1] focus:border-none h-full placeholder:text-[#61896b] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal"
-                                placeholder="Tìm bài viết..."
-                            />
-                        </div>
-                    </label>
-                    <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-[#13ec49]/20" style={{ backgroundImage: 'url("https://picsum.photos/seed/farmer/100/100")' }}></div>
-                </div>
-            </header>
+            <ShowcaseHeader
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                placeholder="Tìm bài viết..."
+            />
 
             <div className="layout-container flex h-full grow flex-col">
                 <div className="px-4 md:px-10 lg:px-40 flex flex-1 justify-center py-8">

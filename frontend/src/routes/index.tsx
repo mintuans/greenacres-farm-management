@@ -8,6 +8,11 @@ import Transactions from '@/src/pages/Transactions';
 import PersonalFinance from '@/src/pages/PersonalFinance';
 import MasterData from '@/src/pages/MasterData';
 
+// Showcase pages
+import FarmShowcase from '@/src/pages/showcase/FarmShowcase';
+import ShowcaseProducts from '@/src/pages/showcase/ShowcaseProducts';
+import ShowcaseBlog from '@/src/pages/showcase/ShowcaseBlog';
+
 /**
  * Cấu hình routes cho ứng dụng
  */
@@ -37,10 +42,10 @@ export const routes: RouteObject[] = [
         element: <Transactions />,
     },
 
-    {
-        path: '/finance',
-        element: <PersonalFinance />,
-    },
+    // {
+    //     path: '/finance',
+    //     element: <PersonalFinance />,
+    // },
     {
         path: '/settings',
         element: <MasterData />,
@@ -77,11 +82,11 @@ export const routeMetadata = {
         description: 'Quản lý giao dịch thu chi',
     },
 
-    '/finance': {
-        title: 'Tài chính cá nhân',
-        icon: 'savings',
-        description: 'Quản lý tài chính cá nhân',
-    },
+    // '/finance': {
+    //     title: 'Tài chính cá nhân',
+    //     icon: 'savings',
+    //     description: 'Quản lý tài chính cá nhân',
+    // },
     '/settings': {
         title: 'Cài đặt hệ thống',
         icon: 'settings',

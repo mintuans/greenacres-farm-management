@@ -1,0 +1,219 @@
+import React from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '@/src/contexts/AuthContext';
+
+const UserProfile: React.FC = () => {
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
+
+    // Default values if data is missing
+    const displayName = user?.name || 'John Doe';
+    const email = user?.email || 'user@example.com';
+    const role = user?.role || 'Farm Manager';
+    const avatarUrl = user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=13ec49&color=fff&size=128`;
+
+    return (
+        <div className="bg-[#f6f8f6] min-h-screen flex flex-col font-['Plus_Jakarta_Sans',_sans-serif]">
+            {/* Top Navigation Bar */}
+            <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 bg-white px-10 py-3 sticky top-0 z-50">
+                <div className="flex items-center gap-8">
+                    <div onClick={() => navigate('/showcase')} className="flex items-center gap-4 text-slate-900 cursor-pointer hover:opacity-80 transition-opacity">
+                        <div className="size-6 text-[#13ec49]">
+                            <span className="material-symbols-outlined text-3xl">agriculture</span>
+                        </div>
+                        <h2 className="text-slate-900 text-lg font-bold leading-tight tracking-[-0.015em]">FarmTrack</h2>
+                    </div>
+                    <label className="flex flex-col min-w-40 !h-10 max-w-64 hidden md:flex">
+                        <div className="flex w-full flex-1 items-stretch rounded-xl h-full">
+                            <div className="text-slate-500 flex border-none bg-slate-100 items-center justify-center pl-4 rounded-l-xl border-r-0">
+                                <span className="material-symbols-outlined text-xl">search</span>
+                            </div>
+                            <input className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-slate-900 focus:outline-0 focus:ring-0 border-none bg-slate-100 focus:border-none h-full placeholder:text-slate-500 px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" placeholder="Search" />
+                        </div>
+                    </label>
+                </div>
+                <div className="flex flex-1 justify-end gap-8">
+                    <div className="flex items-center gap-9 hidden lg:flex">
+                        <Link to="/dashboard" className="text-slate-700 text-sm font-medium leading-normal hover:text-[#13ec49] transition-colors">Dashboard</Link>
+                        <a className="text-slate-700 text-sm font-medium leading-normal hover:text-[#13ec49] transition-colors" href="#">Expenses</a>
+                        <a className="text-slate-700 text-sm font-medium leading-normal hover:text-[#13ec49] transition-colors" href="#">Income</a>
+                        <a className="text-slate-700 text-sm font-medium leading-normal hover:text-[#13ec49] transition-colors" href="#">Inventory</a>
+                    </div>
+                    <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-[#13ec49] ring-offset-2 overflow-hidden border-2 border-white shadow-sm">
+                        <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+                    </div>
+                </div>
+            </header>
+
+            <div className="flex flex-1 justify-center py-8 px-4 md:px-10 lg:px-40">
+                <div className="layout-content-container flex flex-col max-w-[1024px] flex-1 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    {/* Breadcrumbs */}
+                    <div className="flex flex-wrap gap-2 items-center">
+                        <Link to="/settings" className="text-slate-500 text-sm font-medium leading-normal hover:underline">Settings</Link>
+                        <span className="text-slate-400 text-sm font-medium leading-normal">/</span>
+                        <span className="text-slate-900 text-sm font-medium leading-normal">User Profile</span>
+                    </div>
+
+                    {/* Profile Header Card */}
+                    <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                            <div className="flex flex-col md:flex-row items-center md:items-start gap-6 w-full">
+                                <div className="relative group">
+                                    <div className="aspect-square rounded-full h-32 w-32 ring-4 ring-[#13ec49]/20 overflow-hidden border-4 border-white shadow-lg shadow-[#13ec49]/10 transition-transform duration-500 hover:scale-105">
+                                        <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+                                    </div>
+                                    <button className="absolute bottom-0 right-0 bg-[#13ec49] text-slate-900 p-2.5 rounded-full shadow-lg hover:scale-110 active:scale-95 transition-all flex items-center justify-center border-4 border-white">
+                                        <span className="material-symbols-outlined text-base">photo_camera</span>
+                                    </button>
+                                </div>
+                                <div className="flex flex-col justify-center text-center md:text-left grow">
+                                    <h1 className="text-slate-900 text-3xl font-bold leading-tight tracking-[-0.015em]">{displayName}</h1>
+                                    <p className="text-slate-500 text-base font-normal leading-normal">{role} • Since 2021</p>
+                                    <div className="flex items-center justify-center md:justify-start gap-2 mt-1 text-slate-500">
+                                        <span className="material-symbols-outlined text-sm">location_on</span>
+                                        <span className="text-sm">Central Valley Farm, CA</span>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2 mt-4 justify-center md:justify-start">
+                                        <span className="bg-[#13ec49]/10 text-slate-900 text-xs font-bold px-3 py-1 rounded-full border border-[#13ec49]/20 uppercase tracking-tighter">Active Owner</span>
+                                        <span className="bg-slate-100 text-slate-600 text-xs font-medium px-3 py-1 rounded-full border border-slate-200">3 Connected Farms</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex w-full md:w-auto gap-3 flex-col sm:flex-row shrink-0 mt-4 md:mt-0">
+                                <button className="flex min-w-[120px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl h-12 px-5 bg-[#13ec49] text-slate-900 text-sm font-bold leading-normal tracking-[0.015em] hover:shadow-lg hover:shadow-[#13ec49]/30 transition-all hover:scale-[1.02] active:scale-95">
+                                    <span className="material-symbols-outlined">edit</span>
+                                    <span className="truncate">Edit Profile</span>
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        logout();
+                                        navigate('/showcase');
+                                    }}
+                                    className="flex min-w-[120px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl h-12 px-5 bg-rose-50 text-rose-600 text-sm font-bold leading-normal tracking-[0.015em] border border-rose-100 hover:bg-rose-100 hover:scale-[1.02] active:scale-95 transition-all"
+                                >
+                                    <span className="material-symbols-outlined">logout</span>
+                                    <span className="truncate">Log Out</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Details Grid */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Navigation Menu */}
+                        <div className="lg:col-span-1">
+                            <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex flex-col gap-2 sticky top-[80px]">
+                                <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#13ec49]/10 text-[#13ec49] border border-[#13ec49]/20 group cursor-pointer transition-all shadow-sm shadow-[#13ec49]/5">
+                                    <span className="material-symbols-outlined group-hover:scale-110 transition-transform">person</span>
+                                    <p className="text-sm font-bold leading-normal">Personal Info</p>
+                                </div>
+                                <div className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 border border-transparent hover:border-slate-200 cursor-pointer transition-all group">
+                                    <span className="material-symbols-outlined group-hover:rotate-12 transition-transform">shield</span>
+                                    <p className="text-sm font-medium leading-normal">Security & Password</p>
+                                </div>
+                                <div className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 border border-transparent hover:border-slate-200 cursor-pointer transition-all group">
+                                    <span className="material-symbols-outlined group-hover:scale-110 transition-transform">notifications</span>
+                                    <p className="text-sm font-medium leading-normal">Notifications</p>
+                                </div>
+                                <div className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 border border-transparent hover:border-slate-200 cursor-pointer transition-all group">
+                                    <span className="material-symbols-outlined group-hover:scale-110 transition-transform">payments</span>
+                                    <p className="text-sm font-medium leading-normal">Plan & Billing</p>
+                                </div>
+                                <div className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 border border-transparent hover:border-slate-200 cursor-pointer transition-all group">
+                                    <span className="material-symbols-outlined group-hover:scale-110 transition-transform">group</span>
+                                    <p className="text-sm font-medium leading-normal">Team Management</p>
+                                </div>
+                                <div className="mt-4 pt-4 border-t border-slate-100">
+                                    <button className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-dashed border-slate-200 text-slate-400 hover:border-[#13ec49] hover:text-[#13ec49] hover:bg-[#13ec49]/5 transition-all text-sm font-medium group">
+                                        <span className="material-symbols-outlined text-lg group-hover:rotate-90 transition-transform">add</span>
+                                        Add Work Profile
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Information Content Area */}
+                        <div className="lg:col-span-2 flex flex-col gap-6">
+                            {/* Personal Information Section */}
+                            <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                                <h2 className="text-slate-900 text-xl font-bold mb-6 flex items-center gap-2">
+                                    <span className="w-1.5 h-6 bg-[#13ec49] rounded-full"></span>
+                                    Personal Information
+                                </h2>
+                                <div className="space-y-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                        <div className="flex flex-col gap-1.5 group">
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider group-focus-within:text-[#13ec49] transition-colors">Full Name</label>
+                                            <div className="text-slate-900 text-base font-medium p-3.5 bg-slate-50 rounded-xl border border-slate-100 group-hover:border-[#13ec49]/30 transition-colors shadow-inner">
+                                                {displayName}
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col gap-1.5 group">
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider group-focus-within:text-[#13ec49] transition-colors">Phone Number</label>
+                                            <div className="text-slate-900 text-base font-medium p-3.5 bg-slate-50 rounded-xl border border-slate-100 group-hover:border-[#13ec49]/30 transition-colors shadow-inner">
+                                                +1 (555) 123-4567
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col gap-1.5 group">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider group-focus-within:text-[#13ec49] transition-colors">Email Address</label>
+                                        <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-100 group-hover:border-[#13ec49]/30 transition-colors shadow-inner">
+                                            <span className="text-slate-900 text-base font-medium">{email}</span>
+                                            <div className="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
+                                                <span className="material-symbols-outlined text-base">verified</span>
+                                                <span className="text-[10px] font-bold uppercase tracking-tight">Verified</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col gap-1.5 group">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider group-focus-within:text-[#13ec49] transition-colors">Bio / Notes</label>
+                                        <div className="text-slate-600 text-sm leading-relaxed p-3.5 bg-slate-50 rounded-xl border border-slate-100 min-h-[100px] group-hover:border-[#13ec49]/30 transition-colors shadow-inner">
+                                            Managing the Central Valley organic crops since 2021. Specializing in sustainable irrigation and automated harvest tracking.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Work & Preferences Section */}
+                            <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                                <h2 className="text-slate-900 text-xl font-bold mb-6 flex items-center gap-2">
+                                    <span className="w-1.5 h-6 bg-[#13ec49] rounded-full"></span>
+                                    Work Details
+                                </h2>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {[
+                                        { label: 'Primary Role', value: role, icon: 'work' },
+                                        { label: 'Language', value: 'English (US)', icon: 'language' },
+                                        { label: 'Timezone', value: 'PST (UTC-8)', icon: 'schedule' },
+                                        { label: 'Last Login', value: 'Today, 08:15 AM', icon: 'calendar_today' },
+                                    ].map((item, idx) => (
+                                        <div key={idx} className="p-4 rounded-xl border border-slate-100 bg-slate-50 flex items-start gap-4 hover:border-[#13ec49]/30 transition-all hover:bg-white shadow-sm hover:shadow-md group">
+                                            <div className="bg-[#13ec49]/10 p-2.5 rounded-lg text-[#13ec49] shrink-0 group-hover:scale-110 transition-transform">
+                                                <span className="material-symbols-outlined">{item.icon}</span>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{item.label}</p>
+                                                <p className="text-slate-900 font-bold mt-0.5 text-sm">{item.value}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Footer Branding */}
+            <footer className="mt-auto py-10 text-center border-t border-slate-100 bg-white">
+                <div className="flex items-center justify-center gap-2 text-slate-400 mb-1">
+                    <span className="material-symbols-outlined text-[18px]">agriculture</span>
+                    <p className="text-sm font-medium">© 2024 FarmTrack Management Systems</p>
+                </div>
+                <p className="text-slate-300 text-xs">Empowering farmers with smart digital tools.</p>
+            </footer>
+        </div>
+    );
+};
+
+export default UserProfile;

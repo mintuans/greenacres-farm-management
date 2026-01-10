@@ -1,0 +1,811 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { getMediaFiles } from '../../services/media.service';
+import { getMediaUrl } from '../../services/products.service';
+import { getComments, createComment, addReaction } from '../../services/comments.service';
+import { incrementVisitors, getVisitorCount } from '../../services/stats.service';
+import ShowcaseHeader from '../../templates/ShowcaseHeader';
+import { useAuth } from '@/src/contexts/AuthContext';
+
+interface CommentItemProps {
+    comment: any;
+    replyingTo: number | null;
+    setReplyingTo: (id: number | null) => void;
+    replyContent: string;
+    setReplyContent: (content: string) => void;
+    handleSubmitReply: (parentId: number) => void;
+    isSubmitting: boolean;
+    handleReaction: (id: number, type: string) => void;
+    user: any;
+    depth?: number;
+}
+
+const CommentItem: React.FC<CommentItemProps> = ({
+    comment, replyingTo, setReplyingTo, replyContent, setReplyContent,
+    handleSubmitReply, isSubmitting, handleReaction, user, depth = 0
+}) => {
+    const isRoot = depth === 0;
+    const emojiMap: any = { like: '👍', love: '❤️', haha: '😂', wow: '😮', sad: '😢', angry: '😡' };
+    const [showAllReplies, setShowAllReplies] = React.useState(false);
+
+    const visibleReplies = showAllReplies ? (comment.replies || []) : (comment.replies?.slice(0, 3) || []);
+    const hasMoreReplies = (comment.replies?.length || 0) > 3;
+
+    return (
+        <div className={`flex gap-4 group ${depth > 0 ? 'mt-3' : ''}`}>
+            <div className={`${isRoot ? 'size-12' : 'size-9'} rounded-full overflow-hidden border-2 border-white shadow-sm shrink-0`}>
+                <img src={comment.avatar} alt={comment.user} className="w-full h-full object-cover" />
+            </div>
+            <div className="flex-1 flex flex-col gap-2">
+                <div className={`${isRoot ? 'bg-white' : 'bg-[#f0f4f1]'} p-4 rounded-2xl rounded-tl-none border border-gray-100 shadow-sm relative transition-all hover:border-primary/20`}>
+                    <div className="flex justify-between items-start mb-1">
+                        <h4 className="font-bold text-[#111813] text-sm">
+                            {comment.user}
+                            {comment.is_admin && <span className="ml-1.5 bg-primary text-white text-[9px] px-1.5 py-0.5 rounded-full uppercase tracking-tighter shadow-sm">Admin</span>}
+                        </h4>
+                        <span className="text-[10px] text-gray-400 uppercase font-bold tracking-tight">{comment.time}</span>
+                    </div>
+
+                    {isRoot && (
+                        <div className="flex gap-0.5 mb-2 scale-90 origin-left">
+                            {[...Array(5)].map((_, i) => (
+                                <span key={i} className={`material-symbols-outlined text-[16px] ${i < comment.rating ? 'text-[#f59e0b] fill-1' : 'text-gray-200'}`}>star</span>
+                            ))}
+                        </div>
+                    )}
+
+                    <p className={`${isRoot ? 'text-[#3c4740] text-sm' : 'text-[#4a554e] text-xs'} leading-relaxed`}>{comment.content}</p>
+
+                    {/* Floating Reactions Display */}
+                    {comment.likes > 0 && (
+                        <div className="absolute -bottom-3 right-4 flex bg-white px-2 py-0.5 rounded-full shadow-md border border-gray-100 gap-1 text-[11px] animate-in zoom-in duration-300">
+                            {(comment.reactions || []).map((r: string, idx: number) => <span key={idx}>{r}</span>)}
+                            <span className="text-gray-500 ml-1 font-bold">{comment.likes}</span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-6 px-2 items-center">
+                    <div className="relative group/react-recursive">
+                        <button
+                            onClick={() => handleReaction(comment.id, 'like')}
+                            className="flex items-center gap-1.5 hover:text-primary transition-all font-bold text-[11px] text-[#61896b]"
+                        >
+                            <span className="material-symbols-outlined text-[16px]">thumb_up</span>
+                            Thích
+                        </button>
+                        <div className="absolute bottom-[100%] left-0 pb-3 hidden group-hover/react-recursive:flex animate-in zoom-in-50 duration-200 z-10">
+                            <div className="bg-white shadow-2xl rounded-full p-2 border border-gray-100 flex gap-2 items-center">
+                                {Object.keys(emojiMap).map(type => (
+                                    <button
+                                        key={type}
+                                        onClick={() => handleReaction(comment.id, type)}
+                                        className="hover:scale-[1.6] transform transition-all cursor-pointer p-1 text-2xl leading-none border-none bg-transparent"
+                                        title={type}
+                                    >
+                                        {emojiMap[type]}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                    <button
+                        className={`transition-colors font-bold text-[11px] hover:text-primary flex items-center gap-1.5 ${replyingTo === comment.id ? 'text-primary' : 'text-[#61896b]'}`}
+                        onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+                    >
+                        <span className="material-symbols-outlined text-[16px]">reply</span>
+                        Phản hồi
+                    </button>
+
+                    {hasMoreReplies && !showAllReplies && (
+                        <button
+                            onClick={() => setShowAllReplies(true)}
+                            className="text-[10px] font-bold text-primary hover:underline"
+                        >
+                            Xem thêm {comment.replies.length - 3} phản hồi...
+                        </button>
+                    )}
+                </div>
+
+                {/* Reply Input Box */}
+                {replyingTo === comment.id && (
+                    <div className="mt-3 flex gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
+                            <span className="material-symbols-outlined text-primary text-sm">agriculture</span>
+                        </div>
+                        <div className="flex-1 flex flex-col gap-2">
+                            <textarea
+                                autoFocus
+                                placeholder={`Phản hồi ${comment.user}...`}
+                                className="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none h-20 shadow-inner"
+                                value={replyContent}
+                                onChange={(e) => setReplyContent(e.target.value)}
+                            ></textarea>
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    className="px-4 py-1.5 rounded-lg text-xs font-bold text-gray-400 hover:bg-gray-100 transition-colors"
+                                    onClick={() => setReplyingTo(null)}
+                                >
+                                    Hủy
+                                </button>
+                                <button
+                                    className="bg-primary text-white px-5 py-1.5 rounded-lg text-xs font-bold hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50 active:scale-95"
+                                    onClick={() => handleSubmitReply(comment.id)}
+                                    disabled={!replyContent.trim() || isSubmitting}
+                                >
+                                    {isSubmitting ? 'Đang gửi...' : 'Gửi phản hồi'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Recursively Render Sub-Replies */}
+                {visibleReplies.length > 0 && (
+                    <div className="flex flex-col gap-4 mt-2 ml-4 md:ml-8 border-l-2 border-primary/10 pl-4 md:pl-6">
+                        {visibleReplies.map((reply: any) => (
+                            <CommentItem
+                                key={reply.id}
+                                comment={reply}
+                                replyingTo={replyingTo}
+                                setReplyingTo={setReplyingTo}
+                                replyContent={replyContent}
+                                setReplyContent={setReplyContent}
+                                handleSubmitReply={handleSubmitReply}
+                                isSubmitting={isSubmitting}
+                                handleReaction={handleReaction}
+                                user={user}
+                                depth={depth + 1}
+                            />
+                        ))}
+                        {showAllReplies && hasMoreReplies && (
+                            <button
+                                onClick={() => setShowAllReplies(false)}
+                                className="text-[10px] font-bold text-gray-400 hover:text-primary text-left"
+                            >
+                                Thu gọn phản hồi
+                            </button>
+                        )}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+const FarmShowcase: React.FC = () => {
+    const [recentMedia, setRecentMedia] = React.useState<any[]>([]);
+    const [allMedia, setAllMedia] = React.useState<any[]>([]);
+    const [totalMediaCount, setTotalMediaCount] = React.useState(0);
+    const [showGalleryModal, setShowGalleryModal] = React.useState(false);
+    const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
+    const [showToast, setShowToast] = React.useState(false);
+    const [visibleCommentsCount, setVisibleCommentsCount] = React.useState(3);
+    const [visitorCount, setVisitorCount] = React.useState<number>(0);
+
+    // Comments logic state
+    const [comments, setComments] = React.useState<any[]>([]);
+    const [newComment, setNewComment] = React.useState('');
+    const [rating, setRating] = React.useState(5);
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
+    const [replyingTo, setReplyingTo] = React.useState<number | null>(null);
+    const [replyContent, setReplyContent] = React.useState('');
+    const { user } = useAuth();
+
+    const FARM_ID = 'farm-001'; // Unique ID for this farm showcase
+
+    const fetchStats = async () => {
+        try {
+            const count = await getVisitorCount();
+            setVisitorCount(count);
+        } catch (error) {
+            console.error('Error fetching stats:', error);
+        }
+    };
+
+    const handleVisit = async () => {
+        try {
+            const sessionVisited = sessionStorage.getItem('visited');
+            if (!sessionVisited) {
+                const count = await incrementVisitors();
+                setVisitorCount(count);
+                sessionStorage.setItem('visited', 'true');
+            } else {
+                fetchStats();
+            }
+        } catch (error) {
+            console.error('Error handling visit:', error);
+        }
+    };
+
+    React.useEffect(() => {
+        handleVisit();
+    }, []);
+
+    const fetchComments = async () => {
+        try {
+            const response = await getComments('FARM', FARM_ID);
+            const rawComments = response.data;
+            const tree: any[] = [];
+            const map = new Map();
+
+            const emojiMap: any = { like: '👍', love: '❤️', haha: '😂', wow: '😮', sad: '😢', angry: '😡' };
+            rawComments.forEach((c: any) => {
+                map.set(c.id, {
+                    ...c,
+                    user: c.commenter_name || 'Khách',
+                    avatar: `https://i.pravatar.cc/150?u=${c.id}`,
+                    time: new Date(c.created_at).toLocaleDateString('vi-VN'),
+                    likes: parseInt(c.reaction_count) || 0,
+                    reactions: (c.reaction_types || []).map((type: string) => emojiMap[type] || '👍'),
+                    replies: []
+                });
+            });
+
+            rawComments.forEach((c: any) => {
+                if (c.parent_id && map.has(c.parent_id)) {
+                    map.get(c.parent_id).replies.push(map.get(c.id));
+                } else {
+                    tree.push(map.get(c.id));
+                }
+            });
+
+            setComments(tree);
+        } catch (error) {
+            console.error('Error fetching comments:', error);
+        }
+    };
+
+    const handleSubmitComment = async () => {
+        if (!newComment.trim()) return;
+        setIsSubmitting(true);
+        try {
+            await createComment({
+                commentable_type: 'FARM',
+                commentable_id: FARM_ID,
+                content: newComment,
+                rating: rating,
+                commenter_name: user?.name || 'Khách tham quan',
+                commenter_email: user?.email || 'khach@gmail.com'
+            });
+            setNewComment('');
+            fetchComments();
+        } catch (error) {
+            console.error('Error posting comment:', error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleSubmitReply = async (parentId: number) => {
+        if (!replyContent.trim()) return;
+        setIsSubmitting(true);
+        try {
+            await createComment({
+                commentable_type: 'FARM',
+                commentable_id: FARM_ID,
+                content: replyContent,
+                parent_id: parentId,
+                rating: 5, // Default rating for replies
+                commenter_name: user?.name || 'Vườn mận - Admin',
+                commenter_email: user?.email || 'admin@farm.com'
+            });
+            setReplyContent('');
+            setReplyingTo(null);
+            fetchComments();
+        } catch (error) {
+            console.error('Error posting reply:', error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleReaction = async (commentId: number, type: string) => {
+        try {
+            const sessionId = localStorage.getItem('guest_session_id') || Math.random().toString(36).substring(7);
+            localStorage.setItem('guest_session_id', sessionId);
+            await addReaction(commentId, type, sessionId);
+            fetchComments();
+        } catch (error) {
+            console.error('Error adding reaction:', error);
+        }
+    };
+
+    const handleShare = async () => {
+        const shareData = {
+            title: 'Vườn Mận Lê Minh Tuấn',
+            text: 'Ghé thăm vườn mận hữu cơ chất lượng cao tại Mỹ Tho, Tiền Giang!',
+            url: window.location.href,
+        };
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                console.log('Share cancelled or failed');
+            }
+        } else {
+            // Fallback: Copy to clipboard
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                setShowToast(true);
+                setTimeout(() => setShowToast(false), 3000);
+            } catch (err) {
+                alert('Không thể sao chép liên kết');
+            }
+        }
+    };
+
+    React.useEffect(() => {
+        const fetchData = async () => {
+            try {
+                // Fetch media
+                const mediaResponse = await getMediaFiles({ page: 1, limit: 4 });
+                setRecentMedia(mediaResponse.data);
+                setTotalMediaCount(mediaResponse.pagination.total);
+
+                // Fetch comments
+                fetchComments();
+            } catch (error) {
+                console.error('Error fetching initial data:', error);
+            }
+        };
+        fetchData();
+    }, []);
+
+    const handleOpenGallery = async () => {
+        setShowGalleryModal(true);
+        if (allMedia.length === 0) {
+            try {
+                const response = await getMediaFiles({ page: 1, limit: 100 });
+                setAllMedia(response.data);
+            } catch (error) {
+                console.error('Error fetching all gallery:', error);
+            }
+        }
+    };
+
+    return (
+        <div className="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden bg-[#f6f8f6]">
+            {/* Top Navigation Bar */}
+            <ShowcaseHeader />
+
+            <div className="layout-container flex h-full grow flex-col">
+                <div className="px-4 md:px-10 lg:px-40 flex flex-1 justify-center py-8">
+                    <div className="layout-content-container flex flex-col max-w-[1200px] flex-1 gap-8">
+
+                        {/* Page Heading & Hero Section */}
+                        <div className="flex flex-col gap-6">
+                            <div className="flex flex-wrap justify-between items-end gap-4 p-4 border-b border-gray-100 pb-6">
+                                <div className="flex min-w-72 flex-col gap-2">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="bg-[#13ec49]/20 text-[#13ec49] text-xs font-bold px-2 py-1 rounded uppercase tracking-wider">Welcome</span>
+                                        <span className="flex items-center gap-1 bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-1 rounded-full border border-gray-200 shadow-sm animate-pulse-slow">
+                                            <span className="material-symbols-outlined text-[14px]">visibility</span>
+                                            {visitorCount.toLocaleString('vi-VN')}
+                                        </span>
+                                    </div>
+                                    <h1 className="text-[#111813] text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em]">Vườn Mận Lê Minh Tuấn</h1>
+                                    <div className="flex items-center gap-2 text-[#61896b]">
+                                        <span className="material-symbols-outlined text-[20px]">location_on</span>
+                                        <p className="text-base font-normal leading-normal">Mỹ Tho, Tiền Giang, Việt Nam</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={handleShare}
+                                        className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-white border border-gray-200 text-[#111813] text-sm font-bold shadow-sm hover:bg-gray-50 transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-[20px] mr-2">share</span>
+                                        <span className="truncate">Chia sẻ</span>
+                                    </button>
+                                    <button
+                                        onClick={handleOpenGallery}
+                                        className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-[#13ec49] text-[#102215] text-sm font-bold shadow-md hover:brightness-110 transition-all decoration-none"
+                                    >
+                                        <span className="material-symbols-outlined text-[20px] mr-2">photo_library</span>
+                                        <span className="truncate">Xem Gallery</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Featured Image (Hero) */}
+                            <div className="w-full h-[400px] md:h-[500px] rounded-2xl overflow-hidden relative group cursor-pointer">
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
+                                <div className="absolute bottom-6 left-6 z-20 text-white">
+                                    <h3 className="text-2xl font-bold">Mùa Thu hoạch 2026</h3>
+                                    <p className="opacity-90">Vườn mận chín vàng rộm vào mùa hè</p>
+                                </div>
+                                <div
+                                    className="w-full h-full bg-center bg-no-repeat bg-cover transition-transform duration-700 group-hover:scale-105"
+                                    style={{ backgroundImage: `url("${recentMedia[0] ? getMediaUrl(recentMedia[0].id) : 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=1200'}")` }}
+                                ></div>
+                                <button className="absolute top-4 right-4 z-20 bg-white/20 hover:bg-white/40 backdrop-blur-md p-2 rounded-full text-white transition-colors">
+                                    <span className="material-symbols-outlined">fullscreen</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Main Content Grid */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-4">
+
+                            {/* Left Column: Info & Stats */}
+                            <div className="lg:col-span-2 flex flex-col gap-10">
+
+                                {/* About Section */}
+                                <div className="flex flex-col gap-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-[#13ec49]/10 rounded-lg text-[#13ec49]">
+                                            <span className="material-symbols-outlined">info</span>
+                                        </div>
+                                        <h2 className="text-2xl font-bold text-[#111813]">Giới thiệu Vườn</h2>
+                                    </div>
+                                    <p className="text-[#3c4740] text-lg font-normal leading-relaxed">
+                                        Được thành lập từ năm 1998, Vườn Mận Lê Minh Tuấn đã trở thành một trong những vườn mận hàng đầu tại khu vực Đồng bằng Sông Cửu Long. Chúng tôi chuyên canh tác mận theo phương pháp hữu cơ, tập trung vào các giống mận chất lượng cao và bền vững với môi trường.
+                                    </p>
+                                    <p className="text-[#3c4740] text-lg font-normal leading-relaxed">
+                                        Vườn trải rộng trên địa hình đa dạng, tạo nên vi khí hậu độc đáo giúp cây mận phát triển tốt quanh năm. Từ những ngày đầu là một mảnh vườn gia đình nhỏ đến quy mô hiện tại, chúng tôi luôn cam kết mang đến sản phẩm tươi ngon nhất cho cộng đồng.
+                                    </p>
+                                </div>
+
+                                {/* Stats Grid */}
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div className="flex flex-col gap-3 rounded-xl border border-[#dbe6de] bg-white p-5 shadow-sm hover:border-[#13ec49]/50 transition-colors cursor-default group">
+                                        <div className="text-[#13ec49] bg-[#13ec49]/10 w-fit p-3 rounded-full mb-1 group-hover:bg-[#13ec49] group-hover:text-[#102215] transition-colors">
+                                            <span className="material-symbols-outlined text-[28px]">verified</span>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-[#111813] text-lg font-bold">Đang cập nhật</h3>
+                                            <p className="text-[#61896b] text-sm">Chứng nhận VietGAP</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col gap-3 rounded-xl border border-[#dbe6de] bg-white p-5 shadow-sm hover:border-[#13ec49]/50 transition-colors cursor-default group">
+                                        <div className="text-[#13ec49] bg-[#13ec49]/10 w-fit p-3 rounded-full mb-1 group-hover:bg-[#13ec49] group-hover:text-[#102215] transition-colors">
+                                            <span className="material-symbols-outlined text-[28px]">landscape</span>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-[#111813] text-lg font-bold">2.5 Hecta</h3>
+                                            <p className="text-[#61896b] text-sm">Diện tích canh tác</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col gap-3 rounded-xl border border-[#dbe6de] bg-white p-5 shadow-sm hover:border-[#13ec49]/50 transition-colors cursor-default group">
+                                        <div className="text-[#13ec49] bg-[#13ec49]/10 w-fit p-3 rounded-full mb-1 group-hover:bg-[#13ec49] group-hover:text-[#102215] transition-colors">
+                                            <span className="material-symbols-outlined text-[28px]">history</span>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-[#111813] text-lg font-bold">Thành lập 1998</h3>
+                                            <p className="text-[#61896b] text-sm">Gia đình sở hữu</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Seasonal Highlights */}
+                                <div className="flex flex-col gap-4 mt-4">
+                                    <div className="flex justify-between items-center">
+                                        <h3 className="text-xl font-bold text-[#111813]">Sản phẩm nổi bật</h3>
+                                        <Link to="/showcase/products" className="text-[#13ec49] text-sm font-bold hover:underline cursor-pointer">Xem kho hàng →</Link>
+                                    </div>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+                                        {/* Crop Card 1 */}
+                                        <div className="relative group overflow-hidden rounded-xl aspect-[4/3] cursor-pointer">
+                                            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors z-10"></div>
+                                            <div
+                                                className="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110"
+                                                style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1601493700631-2b16ec4b4716?w=400")' }}
+                                            ></div>
+                                            <div className="absolute bottom-3 left-3 z-20">
+                                                <p className="text-white font-bold text-lg">Mận Hậu Giang</p>
+                                                <p className="text-white/80 text-xs">Mùa hè</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Crop Card 2 */}
+                                        <div className="relative group overflow-hidden rounded-xl aspect-[4/3] cursor-pointer">
+                                            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors z-10"></div>
+                                            <div
+                                                className="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110"
+                                                style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1587049352846-4a222e784acc?w=400")' }}
+                                            ></div>
+                                            <div className="absolute bottom-3 left-3 z-20">
+                                                <p className="text-white font-bold text-lg">Cam Sành</p>
+                                                <p className="text-white/80 text-xs">Thu đông</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Crop Card 3 */}
+                                        <div className="relative group overflow-hidden rounded-xl aspect-[4/3] cursor-pointer">
+                                            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors z-10"></div>
+                                            <div
+                                                className="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110"
+                                                style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=400")' }}
+                                            ></div>
+                                            <div className="absolute bottom-3 left-3 z-20">
+                                                <p className="text-white font-bold text-lg">Rau Sạch</p>
+                                                <p className="text-white/80 text-xs">Quanh năm</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Add New Card */}
+                                        <Link to="/master-data/showcase-products" className="flex flex-col items-center justify-center bg-white border-2 border-dashed border-gray-300 rounded-xl aspect-[4/3] cursor-pointer hover:border-[#13ec49] transition-colors group decoration-none">
+                                            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-[#13ec49] group-hover:text-[#102215] transition-colors mb-2">
+                                                <span className="material-symbols-outlined">add</span>
+                                            </div>
+                                            <p className="text-sm font-medium text-gray-500 group-hover:text-[#13ec49]">Thêm sản phẩm</p>
+                                        </Link>
+                                    </div>
+                                </div>
+
+                                {/* Reviews & Comments Section */}
+                                <div className="flex flex-col gap-6 mt-6 pb-10">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-[#13ec49]/10 rounded-lg text-[#13ec49]">
+                                                <span className="material-symbols-outlined">reviews</span>
+                                            </div>
+                                            <h2 className="text-2xl font-bold text-[#111813]">Đánh giá & Bình luận</h2>
+                                        </div>
+                                        <div className="flex items-center gap-2 bg-white px-3 py-1 rounded-full border border-gray-100 shadow-sm">
+                                            <span className="text-[#f59e0b] material-symbols-outlined fill-1">star</span>
+                                            <span className="font-bold text-[#111813]">4.9</span>
+                                            <span className="text-gray-400 text-xs">(128 đánh giá)</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Add Comment Input */}
+                                    <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex gap-4">
+                                        <div className="size-10 rounded-full bg-gray-100 shrink-0 overflow-hidden border">
+                                            <img src="https://i.pravatar.cc/150?u=me" alt="Me" />
+                                        </div>
+                                        <div className="flex-1 flex flex-col gap-3">
+                                            <textarea
+                                                placeholder="Chia sẻ cảm nghĩ của bạn về vườn..."
+                                                className="w-full bg-[#f8faf8] border-none rounded-lg p-3 text-sm focus:ring-1 focus:ring-[#13ec49] focus:bg-white transition-all resize-none h-20"
+                                                value={newComment}
+                                                onChange={(e) => setNewComment(e.target.value)}
+                                                disabled={isSubmitting}
+                                            ></textarea>
+                                            <div className="flex justify-between items-center">
+                                                <div className="flex gap-1">
+                                                    {[1, 2, 3, 4, 5].map(s => (
+                                                        <span
+                                                            key={s}
+                                                            onClick={() => setRating(s)}
+                                                            className={`material-symbols-outlined cursor-pointer hover:text-[#f59e0b] transition-colors text-xl ${s <= rating ? 'text-[#f59e0b] fill-1' : 'text-gray-300'}`}
+                                                        >
+                                                            star
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                                <button
+                                                    onClick={handleSubmitComment}
+                                                    disabled={isSubmitting || !newComment.trim()}
+                                                    className="bg-[#13ec49] text-[#102215] px-6 py-2 rounded-lg font-bold text-sm hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                                >
+                                                    {isSubmitting ? 'Đang gửi...' : 'Gửi đánh giá'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* List of Comments */}
+                                    <div className="flex flex-col gap-8">
+                                        {comments.slice(0, visibleCommentsCount).map((comment) => (
+                                            <CommentItem
+                                                key={comment.id}
+                                                comment={comment}
+                                                replyingTo={replyingTo}
+                                                setReplyingTo={setReplyingTo}
+                                                replyContent={replyContent}
+                                                setReplyContent={setReplyContent}
+                                                handleSubmitReply={handleSubmitReply}
+                                                isSubmitting={isSubmitting}
+                                                handleReaction={handleReaction}
+                                                user={user}
+                                            />
+                                        ))}
+
+                                        {comments.length > visibleCommentsCount && (
+                                            <button
+                                                onClick={() => setVisibleCommentsCount(prev => prev + 5)}
+                                                className="w-full py-3 bg-white border border-gray-100 rounded-xl text-primary font-bold text-sm hover:bg-primary/5 transition-all shadow-sm flex items-center justify-center gap-2 mt-4"
+                                            >
+                                                <span className="material-symbols-outlined text-[18px]">expand_more</span>
+                                                Xem thêm {comments.length - visibleCommentsCount} bình luận...
+                                            </button>
+                                        )}
+
+                                        {visibleCommentsCount > 3 && (
+                                            <button
+                                                onClick={() => setVisibleCommentsCount(3)}
+                                                className="text-center text-xs text-gray-400 hover:text-primary transition-colors py-2"
+                                            >
+                                                Thu gọn bình luận
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Right Column: Gallery Grid & Contact */}
+                            <div className="flex flex-col gap-6">
+
+                                <div className="bg-white p-5 rounded-2xl border border-[#dbe6de] shadow-sm">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="text-lg font-bold text-[#111813]">Hình ảnh của vườn {totalMediaCount > 0 && `(${totalMediaCount})`}</h3>
+                                        <button
+                                            onClick={handleOpenGallery}
+                                            className="text-[#13ec49] hover:bg-[#13ec49]/10 p-1 rounded transition-colors flex items-center"
+                                        >
+                                            <span className="material-symbols-outlined">arrow_forward</span>
+                                        </button>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {[0, 1, 2, 3].map((index) => {
+                                            const media = recentMedia[index];
+                                            const isLast = index === 3 && totalMediaCount > 4;
+
+                                            return (
+                                                <div
+                                                    key={index}
+                                                    onClick={() => media && setSelectedImage(getMediaUrl(media.id))}
+                                                    className="w-full aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-[#13ec49] transition-all relative group"
+                                                >
+                                                    {media ? (
+                                                        <>
+                                                            <div
+                                                                className="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110"
+                                                                style={{ backgroundImage: `url("${getMediaUrl(media.id)}")` }}
+                                                            ></div>
+                                                            {isLast && (
+                                                                <div
+                                                                    className="absolute inset-0 bg-black/60 flex items-center justify-center"
+                                                                    onClick={(e) => { e.stopPropagation(); handleOpenGallery(); }}
+                                                                >
+                                                                    <span className="text-white font-bold text-lg">+{totalMediaCount - 4}</span>
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-300">
+                                                            <span className="material-symbols-outlined text-4xl">image</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* Location & Contact */}
+                                <div className="bg-white p-0 rounded-2xl border border-[#dbe6de] shadow-sm overflow-hidden flex flex-col">
+                                    <div className="h-64 bg-gray-200 relative">
+                                        <iframe
+                                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d981.1265571161107!2d106.2545571274932!3d10.38130837899188!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x310abb777529f873%3A0x5cb1dc2a4a25519e!2zTG9uZyDEkOG7i25oLCBUaMOgbmggcGjhu5EgTeG7uSBUaG8sIFRp4buBbiBHaWFuZywgVmnhu4d0IE5hbQ!5e0!3m2!1svi!2s!4v1768016922481!5m2!1svi!2s"
+                                            width="100%"
+                                            height="100%"
+                                            style={{ border: 0 }}
+                                            allowFullScreen={true}
+                                            loading="lazy"
+                                            referrerPolicy="no-referrer-when-downgrade"
+                                            title="Bản đồ vườn"
+                                        ></iframe>
+                                    </div>
+                                    <div className="p-5 flex flex-col gap-4">
+                                        <div>
+                                            <h3 className="text-lg font-bold text-[#111813] mb-1">Ghé thăm chúng tôi</h3>
+                                            <p className="text-[#61896b] text-sm">Đông Hòa, Thành phố Mỹ Tho, Tiền Giang, Việt Nam</p>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-3 text-sm">
+                                                <span className="material-symbols-outlined text-[#13ec49]">call</span>
+                                                <span className="text-[#111813]">0901 234 567</span>
+                                            </div>
+                                            <div className="flex items-center gap-3 text-sm">
+                                                <span className="material-symbols-outlined text-[#13ec49]">mail</span>
+                                                <span className="text-[#111813]">lmtuan21082003@gmail.com</span>
+                                            </div>
+                                            <div className="flex items-center gap-3 text-sm">
+                                                <span className="material-symbols-outlined text-[#13ec49]">schedule</span>
+                                                <span className="text-[#111813]">T2 - T7: 8:00 - 17:00</span>
+                                            </div>
+                                        </div>
+                                        <button className="w-full mt-2 py-2 rounded-lg bg-[#f0f4f1] text-[#111813] font-bold text-sm hover:bg-gray-200 transition-colors">
+                                            Chỉ đường
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Footer Copyright */}
+            <footer className="mt-auto border-t border-[#e5e9e6] bg-white py-8 px-10">
+                <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-[#61896b] text-sm">
+                    <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[#13ec49]">agriculture</span>
+                        <span className="font-bold text-[#111813]">GreenAcres</span>
+                        <span className="mx-2">|</span>
+                        <span>© {new Date().getFullYear()} Vườn Mận Lê Minh Tuấn. All rights reserved.</span>
+                    </div>
+                    <div className="flex gap-6">
+                        <a href="#" className="hover:text-[#13ec49] transition-colors">Chính sách bảo mật</a>
+                        <a href="#" className="hover:text-[#13ec49] transition-colors">Điều khoản dịch vụ</a>
+                        <a href="#" className="hover:text-[#13ec49] transition-colors">Liên hệ</a>
+                    </div>
+                </div>
+            </footer>
+            {/* Full Gallery Modal */}
+            {showGalleryModal && (
+                <div className="fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4 md:p-8 animate-in fade-in duration-300">
+                    <div className="bg-white rounded-2xl w-full max-w-6xl max-h-full flex flex-col overflow-hidden shadow-2xl">
+                        <div className="p-6 border-b flex items-center justify-between bg-white sticky top-0 z-10">
+                            <h3 className="text-2xl font-bold flex items-center gap-2">
+                                <span className="material-symbols-outlined text-[#13ec49]">photo_library</span>
+                                Bộ sưu tập ảnh vườn
+                            </h3>
+                            <button
+                                onClick={() => setShowGalleryModal(false)}
+                                className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors"
+                            >
+                                <span className="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+                        <div className="p-6 overflow-y-auto flex-1 bg-gray-50">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                {allMedia.map((media) => (
+                                    <div
+                                        key={media.id}
+                                        onClick={() => setSelectedImage(getMediaUrl(media.id))}
+                                        className="aspect-square bg-white rounded-xl overflow-hidden cursor-pointer hover:ring-4 hover:ring-[#13ec49] hover:scale-[1.02] transition-all shadow-sm group relative"
+                                    >
+                                        <img
+                                            src={getMediaUrl(media.id)}
+                                            className="w-full h-full object-cover"
+                                            alt={media.image_name}
+                                        />
+                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-colors">
+                                            <span className="material-symbols-outlined text-white opacity-0 group-hover:opacity-100 scale-150 transition-all">zoom_in</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Image Lightbox (Fullscreen view) */}
+            {selectedImage && (
+                <div
+                    className="fixed inset-0 bg-black/95 z-[110] flex items-center justify-center animate-in zoom-in duration-200 cursor-zoom-out"
+                    onClick={() => setSelectedImage(null)}
+                >
+                    <button className="absolute top-6 right-6 text-white text-4xl">
+                        <span className="material-symbols-outlined scale-150">close</span>
+                    </button>
+                    <img
+                        src={selectedImage}
+                        className="max-w-[95vw] max-h-[95vh] object-contain shadow-2xl"
+                        alt="Zoomed"
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                </div>
+            )}
+            {/* Share Toast Notification */}
+            {showToast && (
+                <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-[#111813] text-white px-6 py-3 rounded-full shadow-2xl z-[200] flex items-center gap-3 animate-in slide-in-from-bottom-5 duration-300">
+                    <span className="material-symbols-outlined text-[#13ec49]">check_circle</span>
+                    <span className="font-medium text-sm">Đã sao chép liên kết vào bộ nhớ tạm!</span>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default FarmShowcase;

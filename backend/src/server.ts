@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 
 // Middlewares
 app.use(cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174'],
     credentials: true,
 }));
 app.use(express.json());
@@ -37,13 +37,13 @@ app.get('/api', (_req: Request, res: Response) => {
     });
 });
 
-// TODO: Import and use routes
-// import authRoutes from './routes/auth.routes';
-// import seasonRoutes from './routes/season.routes';
-// import debtRoutes from './routes/debt.routes';
-// app.use('/api/auth', authRoutes);
-// app.use('/api/seasons', seasonRoutes);
-// app.use('/api/debts', debtRoutes);
+// Routes
+import showcaseRoutes from './routes/showcase';
+import managementRoutes from './routes/management';
+
+app.use('/api/showcase', showcaseRoutes);
+app.use('/api/management', managementRoutes);
+
 
 // 404 handler
 app.use((req: Request, res: Response) => {
@@ -63,10 +63,21 @@ app.use((err: Error, _req: Request, res: Response, _next: any) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`🚀 Server is running on port ${PORT}`);
     console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🔗 API: http://localhost:${PORT}/api`);
+
+    // Test database connection
+    try {
+        const pool = (await import('./config/database')).default;
+        const result = await pool.query('SELECT NOW()');
+        console.log('✅ Database connected successfully!');
+        console.log(`📅 Database time: ${result.rows[0].now}`);
+    } catch (error: any) {
+        console.error('❌ Database connection failed!');
+        console.error('Error:', error.message);
+    }
 });
 
 export default app;
