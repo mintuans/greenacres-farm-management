@@ -1,69 +1,42 @@
-import { api } from './client';
+import axios from 'axios';
 
-/**
- * Interface cho Inventory Item
- */
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 export interface InventoryItem {
-    id?: string;
-    name: string;
-    sku: string;
-    category: string;
-    quantity: number;
-    unit: string;
-    cost: number;
-    supplier?: string;
-    minStock?: number;
-    description?: string;
-    status?: 'Còn hàng' | 'Sắp hết' | 'Cần đặt thêm';
-    createdAt?: string;
-    updatedAt?: string;
+    id: string;
+    inventory_code: string;
+    inventory_name: string;
+    category_id?: string;
+    category_name?: string;
+    unit_of_measure?: string;
+    stock_quantity: number;
+    min_stock_level: number;
+    last_import_price: number;
+    thumbnail_id?: string;
+    note?: string;
 }
 
-/**
- * API functions cho Inventory management
- */
-export const inventoryAPI = {
-    /**
-     * Lấy tất cả vật tư
-     */
-    getAll: () => api.get<InventoryItem[]>('/inventory'),
+export const getInventory = async (categoryId?: string): Promise<InventoryItem[]> => {
+    const params = categoryId ? { category_id: categoryId } : {};
+    const response = await axios.get(`${API_URL}/management/inventory`, { params });
+    return response.data.data;
+};
 
-    /**
-     * Lấy vật tư theo ID
-     */
-    getById: (id: string) => api.get<InventoryItem>(`/inventory/${id}`),
+export const getInventoryStats = async (): Promise<any> => {
+    const response = await axios.get(`${API_URL}/management/inventory/stats`);
+    return response.data.data;
+};
 
-    /**
-     * Tạo vật tư mới
-     */
-    create: (data: Omit<InventoryItem, 'id' | 'createdAt' | 'updatedAt'>) =>
-        api.post<InventoryItem>('/inventory', data),
+export const createItem = async (data: any): Promise<InventoryItem> => {
+    const response = await axios.post(`${API_URL}/management/inventory`, data);
+    return response.data.data;
+};
 
-    /**
-     * Cập nhật vật tư
-     */
-    update: (id: string, data: Partial<InventoryItem>) =>
-        api.put<InventoryItem>(`/inventory/${id}`, data),
+export const updateItem = async (id: string, data: any): Promise<InventoryItem> => {
+    const response = await axios.put(`${API_URL}/management/inventory/${id}`, data);
+    return response.data.data;
+};
 
-    /**
-     * Xóa vật tư
-     */
-    delete: (id: string) => api.delete<void>(`/inventory/${id}`),
-
-    /**
-     * Tìm kiếm vật tư
-     */
-    search: (query: string) =>
-        api.get<InventoryItem[]>(`/inventory/search?q=${encodeURIComponent(query)}`),
-
-    /**
-     * Lọc theo danh mục
-     */
-    filterByCategory: (category: string) =>
-        api.get<InventoryItem[]>(`/inventory?category=${encodeURIComponent(category)}`),
-
-    /**
-     * Lấy vật tư sắp hết
-     */
-    getLowStock: () => api.get<InventoryItem[]>('/inventory/low-stock'),
+export const deleteItem = async (id: string): Promise<void> => {
+    await axios.delete(`${API_URL}/management/inventory/${id}`);
 };

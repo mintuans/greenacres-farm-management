@@ -22,9 +22,9 @@ const Sidebar: React.FC = () => {
         { label: 'Nhân viên', path: '/master-data/workers', icon: 'group' },
         { label: 'Đơn vị sản xuất', path: '/master-data/units', icon: 'agriculture' },
         { label: '─────────', path: '#', icon: '', disabled: true }, // Separator
-        { label: 'Sản phẩm Showcase', path: '/master-data/showcase-products', icon: 'shopping_bag' },
+        { label: 'Sản phẩm ', path: '/master-data/showcase-products', icon: 'shopping_bag' },
         { label: 'Quản lý Ảnh', path: '/master-data/media', icon: 'image' },
-        { label: 'Blog Showcase', path: '/master-data/showcase-blog', icon: 'article' },
+        { label: 'Tin tức ', path: '/master-data/showcase-blog', icon: 'article' },
     ];
 
     const warehouseItems = [

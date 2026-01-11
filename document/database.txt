@@ -64,7 +64,6 @@ CREATE TABLE categories (
 -- 7. Bảng Hóa đơn & Giao dịch chính (Dòng tiền)
 CREATE TABLE transactions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    account_id UUID REFERENCES accounts(id),
     partner_id UUID REFERENCES partners(id), -- Giao dịch với ai (có thể NULL nếu chi tiêu vặt)
     season_id UUID REFERENCES seasons(id),   -- Tính cho vụ nào (QUAN TRỌNG ĐỂ TÍNH LÃI)
     category_id UUID REFERENCES categories(id),
@@ -83,7 +82,6 @@ CREATE TABLE transactions (
 CREATE TABLE debt_payments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     transaction_id UUID REFERENCES transactions(id), -- Trả cho hóa đơn nợ nào
-    account_id UUID REFERENCES accounts(id),         -- Lấy tiền từ đâu trả
     amount_paid DECIMAL(15, 2) NOT NULL,
     payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     note TEXT
@@ -99,10 +97,9 @@ CREATE TABLE inventory (
     
     stock_quantity DECIMAL(12, 2) DEFAULT 0,    -- Số lượng đang có
     min_stock_level DECIMAL(12, 2) DEFAULT 0,   -- Mức cảnh báo 
-    -- TRƯỜNG GIÁ BẠN CẦN ĐÂY:
-    last_import_price DECIMAL(15, 2) DEFAULT 0, -- Giá mua lần gần nhất (để tham khảo)
-    image_data BYTEA,  -- Hình ảnh
-    note TEXT          -- Ghi chú
+    last_import_price DECIMAL(15, 2) DEFAULT 0, -- Giá mua gần nhất
+    thumbnail_id UUID REFERENCES media_files(id), -- Ảnh từ media_library
+    note TEXT                                   -- Ghi chú
 );
 -- 10. Nhật ký Xuất kho (Sử dụng vật tư)
 CREATE TABLE inventory_usage (
@@ -119,7 +116,13 @@ CREATE TABLE inventory_usage (
 
 -- =================================================================================
 -- PHẦN 3: QUẢN LÝ NHÂN SỰ & CHẤM CÔNG (NEW MODEL)
--- Logic: Chấm công hàng ngày -> Gom thành Phiếu Lương -> Thanh toán
+-- Logic: Chấm công hàng ngày -> Gom thành Phiếu Lương -> Thanh toán -> Giao dịch
+-- 
+-- Luồng dữ liệu:
+-- 1. partners (type='WORKER') - Danh sách nhân viên
+-- 2. daily_work_logs - Chấm công hàng ngày (partner_id, payroll_id=NULL khi chưa thanh toán)
+-- 3. payrolls - Gom các ngày công thành phiếu lương (partner_id, transaction_id=NULL khi chưa chi tiền)
+-- 4. transactions - Giao dịch chi tiền thực tế (partner_id, type='EXPENSE')
 -- =================================================================================
 
 -- 11. Bảng Ca làm việc
@@ -154,7 +157,10 @@ CREATE TABLE payrolls (
     
     status VARCHAR(20) DEFAULT 'DRAFT',      -- 'DRAFT' (Đang tính), 'PAID' (Đã chi tiền)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    payment_date TIMESTAMP                   -- Ngày thực chi
+    payment_date TIMESTAMP,                  -- Ngày thực chi
+    
+    -- Liên kết với giao dịch chi tiền thực tế
+    transaction_id UUID REFERENCES transactions(id) -- NULL nếu chưa chi tiền, có giá trị khi đã PAID
 );
 
 -- 14. Bảng Nhật ký Công việc Hàng ngày (Daily Logs)

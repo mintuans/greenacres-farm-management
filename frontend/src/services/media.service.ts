@@ -33,7 +33,7 @@ export const getMediaById = async (id: string) => {
 /**
  * Upload media file
  */
-export const uploadMedia = async (file: File) => {
+export const uploadMedia = async (file: File, category?: string) => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = async () => {
@@ -41,7 +41,8 @@ export const uploadMedia = async (file: File) => {
                 const response = await api.post('/management/media', {
                     image_name: file.name,
                     image_data: reader.result,
-                    mime_type: file.type
+                    mime_type: file.type,
+                    category: category
                 });
                 resolve(response.data);
             } catch (error) {

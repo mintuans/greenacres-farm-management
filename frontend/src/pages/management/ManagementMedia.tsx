@@ -8,6 +8,12 @@ const ManagementMedia: React.FC = () => {
     const [uploading, setUploading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedMedia, setSelectedMedia] = useState<MediaFile | null>(null);
+    const [categories, setCategories] = useState<string[]>(['gallery', 'product', 'blog', 'avatar', 'images_farm']);
+    const [showUploadModal, setShowUploadModal] = useState(false);
+    const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+    const [uploadCategory, setUploadCategory] = useState('gallery');
+    const [newCategoryName, setNewCategoryName] = useState('');
+    const [showCategoryManager, setShowCategoryManager] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -26,26 +32,44 @@ const ManagementMedia: React.FC = () => {
         }
     };
 
-    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (!files || files.length === 0) return;
+        setPendingFiles(Array.from(files));
+        setShowUploadModal(true);
+    };
+
+    const handleConfirmUpload = async () => {
+        if (pendingFiles.length === 0) return;
 
         setUploading(true);
         try {
-            for (let i = 0; i < files.length; i++) {
-                await uploadMedia(files[i]);
+            for (const file of pendingFiles) {
+                await uploadMedia(file, uploadCategory);
             }
-            alert('Upload ảnh thành công!');
+            alert('Upload media thành công!');
+            setShowUploadModal(false);
+            setPendingFiles([]);
             loadMedia();
         } catch (error) {
             console.error('Error uploading:', error);
-            alert('Có lỗi khi upload ảnh!');
+            alert('Có lỗi khi upload media!');
         } finally {
             setUploading(false);
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
             }
         }
+    };
+
+    const handleAddCategory = () => {
+        if (!newCategoryName.trim()) return;
+        if (categories.includes(newCategoryName.trim())) {
+            alert('Thể loại này đã tồn tại!');
+            return;
+        }
+        setCategories([...categories, newCategoryName.trim()]);
+        setNewCategoryName('');
     };
 
     const handleDelete = async (id: string) => {
@@ -85,8 +109,9 @@ const ManagementMedia: React.FC = () => {
                 <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
-                    className="px-4 py-2 bg-[#13ec49] text-[#102215] font-bold rounded-lg hover:bg-[#10d63f] transition-colors disabled:opacity-50"
+                    className="px-4 py-2 bg-[#13ec49] text-[#102215] font-bold rounded-lg hover:bg-[#10d63f] transition-colors disabled:opacity-50 flex items-center gap-2"
                 >
+                    <span className="material-symbols-outlined">cloud_upload</span>
                     {uploading ? 'Đang upload...' : '+ Upload file'}
                 </button>
                 <input
@@ -97,6 +122,53 @@ const ManagementMedia: React.FC = () => {
                     className="hidden"
                     onChange={handleFileSelect}
                 />
+            </div>
+
+            {/* Category Filter - Always Visible */}
+            <div className="mb-6 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                <div className="flex items-center gap-3 mb-3">
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                    {categories.map((cat, index) => (
+                        <button
+                            key={cat}
+                            className="group px-4 py-2 bg-[#13ec49] text-white rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-[#10d63f] transition-all duration-200 shadow-sm hover:shadow-md"
+                        >
+                            <span className="material-symbols-outlined text-base">label</span>
+                            <span>{cat}</span>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCategories(categories.filter(c => c !== cat));
+                                }}
+                                className="ml-1 p-0.5 rounded hover:bg-white/20 transition-all duration-200"
+                                title="Xóa thể loại"
+                            >
+                                <span className="material-symbols-outlined text-sm">close</span>
+                            </button>
+                        </button>
+                    ))}
+
+                    {/* Add New Category Inline */}
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="text"
+                            placeholder="Tên thể loại mới..."
+                            className="text-sm px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#13ec49] focus:border-[#13ec49] outline-none transition-all duration-200 w-40"
+                            value={newCategoryName}
+                            onChange={(e) => setNewCategoryName(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
+                        />
+                        <button
+                            onClick={handleAddCategory}
+                            className="p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-all duration-200"
+                            title="Thêm thể loại"
+                        >
+                            <span className="material-symbols-outlined text-xl">add</span>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             {/* Search */}
@@ -212,6 +284,61 @@ const ManagementMedia: React.FC = () => {
                                     className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                                 >
                                     Xóa ảnh
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Upload Modal (Category Selection) */}
+            {showUploadModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+                    <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200">
+                        <div className="p-6">
+                            <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
+                                <span className="material-symbols-outlined text-[#13ec49]">category</span>
+                                Chọn thể loại trước khi lưu
+                            </h2>
+
+                            <p className="text-gray-500 text-sm mb-6">
+                                Bạn đang chuẩn bị tải lên <strong>{pendingFiles.length}</strong> tệp tin. Vui lòng chọn danh mục phù hợp.
+                            </p>
+
+                            <div className="space-y-4 mb-8">
+                                <label className="block text-sm font-bold text-gray-700">Thể loại</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {categories.map(cat => (
+                                        <button
+                                            key={cat}
+                                            onClick={() => setUploadCategory(cat)}
+                                            className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all ${uploadCategory === cat
+                                                ? 'border-[#13ec49] bg-[#13ec49]/10 text-[#13ec49]'
+                                                : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-gray-200'
+                                                }`}
+                                        >
+                                            {cat}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => {
+                                        setShowUploadModal(false);
+                                        setPendingFiles([]);
+                                    }}
+                                    className="flex-1 py-3 rounded-xl font-bold text-gray-500 border border-gray-200 hover:bg-gray-50 transition-all"
+                                >
+                                    Hủy bỏ
+                                </button>
+                                <button
+                                    onClick={handleConfirmUpload}
+                                    disabled={uploading}
+                                    className="flex-1 py-3 rounded-xl font-bold bg-[#13ec49] text-[#102215] hover:bg-[#10d63f] transition-all disabled:opacity-50"
+                                >
+                                    {uploading ? 'Đang thực hiện...' : 'Bắt đầu lưu'}
                                 </button>
                             </div>
                         </div>

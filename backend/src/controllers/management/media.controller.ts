@@ -64,10 +64,10 @@ export const getAllMedia = async (req: Request, res: Response) => {
  */
 export const uploadMedia = async (req: Request, res: Response) => {
     try {
-        const { image_name, image_data, mime_type } = req.body;
+        const { image_name, image_data, mime_type, category } = req.body;
 
         if (!image_name || !image_data) {
-            return res.status(400).json({ success: false, message: 'Thiếu thông tin ảnh' });
+            return res.status(400).json({ success: false, message: 'Thiếu thông tin media' });
         }
 
         // Convert base64 to buffer
@@ -75,14 +75,14 @@ export const uploadMedia = async (req: Request, res: Response) => {
         const file_size = buffer.length;
 
         const result = await pool.query(`
-            INSERT INTO media_files (image_name, image_data, file_size, image_type)
-            VALUES ($1, $2, $3, $4)
-            RETURNING id, image_name, file_size, image_type as mime_type, uploaded_at as created_at
-        `, [image_name, buffer, file_size, mime_type || 'image/jpeg']);
+            INSERT INTO media_files (image_name, image_data, file_size, image_type, category)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING id, image_name, file_size, image_type as mime_type, category, uploaded_at as created_at
+        `, [image_name, buffer, file_size, mime_type || 'image/jpeg', category || 'gallery']);
 
         res.status(201).json({
             success: true,
-            message: 'Upload ảnh thành công',
+            message: 'Upload media thành công',
             data: result.rows[0]
         });
     } catch (error: any) {
@@ -103,7 +103,6 @@ export const getMediaById = async (req: Request, res: Response) => {
             FROM media_files
             WHERE id = $1 AND deleted_at IS NULL
         `, [id]);
-
         if (result.rows.length === 0) {
             return res.status(404).json({ success: false, message: 'Không tìm thấy ảnh' });
         }

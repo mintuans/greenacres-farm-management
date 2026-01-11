@@ -5,6 +5,8 @@ node_modules/
 .env
 .env.local
 .env.*.local
+.env.example
+.env.root
 
 # Build output
 dist/

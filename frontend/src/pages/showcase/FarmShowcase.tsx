@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getMediaFiles, getFarmImages } from '../../services/media.service';
 import { getMediaUrl } from '../../services/products.service';
 import { getComments, createComment, addReaction } from '../../services/comments.service';
@@ -196,6 +196,7 @@ const FarmShowcase: React.FC = () => {
     const [replyingTo, setReplyingTo] = React.useState<number | null>(null);
     const [replyContent, setReplyContent] = React.useState('');
     const { user } = useAuth();
+    const navigate = useNavigate();
 
     const FARM_ID = 'farm-001'; // Unique ID for this farm showcase
 
@@ -262,6 +263,14 @@ const FarmShowcase: React.FC = () => {
     };
 
     const handleSubmitComment = async () => {
+        // Kiểm tra đăng nhập
+        if (!user) {
+            if (confirm('Bạn cần đăng nhập để bình luận. Chuyển đến trang đăng nhập?')) {
+                navigate('/login');
+            }
+            return;
+        }
+
         if (!newComment.trim()) return;
         setIsSubmitting(true);
         try {
@@ -270,13 +279,15 @@ const FarmShowcase: React.FC = () => {
                 commentable_id: FARM_ID,
                 content: newComment,
                 rating: rating,
-                commenter_name: user?.name || 'Khách tham quan',
-                commenter_email: user?.email || 'khach@gmail.com'
+                commenter_name: user.name,
+                commenter_email: user.email
             });
             setNewComment('');
+            setRating(0);
             fetchComments();
         } catch (error) {
             console.error('Error posting comment:', error);
+            alert('Có lỗi khi gửi bình luận. Vui lòng thử lại!');
         } finally {
             setIsSubmitting(false);
         }

@@ -24,16 +24,21 @@ import PlantsWarehouse from '@/src/pages/PlantsWarehouse';
 import FarmShowcase from '@/src/pages/showcase/FarmShowcase';
 import ShowcaseProducts from '@/src/pages/showcase/ShowcaseProducts';
 import ShowcaseBlog from '@/src/pages/showcase/ShowcaseBlog';
+import BlogDetail from '@/src/pages/showcase/BlogDetail';
 import UserProfile from '@/src/pages/UserProfile';
 
 // Management pages
 import ManagementProducts from '@/src/pages/management/ManagementProducts';
 import ManagementMedia from '@/src/pages/management/ManagementMedia';
+import ManagementBlog from '@/src/pages/management/ManagementBlog';
+import AddBlog from '@/src/pages/management/AddBlog';
+import EditBlog from '@/src/pages/management/EditBlog';
 
 // Auth pages
 import Login from '@/src/pages/auth/Login';
 import Register from '@/src/pages/auth/Register';
 import LoginRequired from '@/src/pages/auth/LoginRequired';
+import AuthCallback from '@/src/pages/auth/AuthCallback';
 
 const App: React.FC = () => {
     return (
@@ -43,9 +48,11 @@ const App: React.FC = () => {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/login-required" element={<LoginRequired />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/showcase" element={<FarmShowcase />} />
                 <Route path="/showcase/products" element={<ShowcaseProducts />} />
                 <Route path="/showcase/blog" element={<ShowcaseBlog />} />
+                <Route path="/showcase/blog/:slug" element={<BlogDetail />} />
                 <Route path="/profile" element={<UserProfile />} />
 
                 {/* Admin Routes - With Sidebar/Header */}
@@ -73,6 +80,9 @@ const App: React.FC = () => {
                                     <Route path="/master-data/units" element={<ProductionUnits />} />
                                     <Route path="/master-data/showcase-products" element={<ManagementProducts />} />
                                     <Route path="/master-data/media" element={<ManagementMedia />} />
+                                    <Route path="/master-data/showcase-blog" element={<ManagementBlog />} />
+                                    <Route path="/master-data/showcase-blog/add" element={<AddBlog />} />
+                                    <Route path="/master-data/showcase-blog/edit/:id" element={<EditBlog />} />
                                     <Route path="/settings" element={<MasterData />} />
                                     <Route path="*" element={<Navigate to="/dashboard" replace />} />
                                 </Routes>

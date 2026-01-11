@@ -12,8 +12,7 @@ export const getBlogPosts = async (req: Request, res: Response) => {
         let query = `
             SELECT 
                 bp.*,
-                bc.category_name,
-                (SELECT COUNT(*) FROM comments WHERE commentable_type = 'blog_post' AND commentable_id = bp.id) as comment_count
+                bc.category_name
             FROM blog_posts bp
             LEFT JOIN blog_categories bc ON bp.category_id = bc.id
             WHERE bp.status = 'PUBLISHED' AND bp.deleted_at IS NULL

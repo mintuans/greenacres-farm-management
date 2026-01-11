@@ -40,9 +40,15 @@ app.get('/api', (_req: Request, res: Response) => {
 // Routes
 import showcaseRoutes from './routes/showcase';
 import managementRoutes from './routes/management';
+import oauthRoutes from './routes/auth/oauth.routes';
+import passport from './config/passport';
+
+// Initialize Passport
+app.use(passport.initialize());
 
 app.use('/api/showcase', showcaseRoutes);
 app.use('/api/management', managementRoutes);
+app.use('/api/auth', oauthRoutes);
 
 
 // 404 handler
