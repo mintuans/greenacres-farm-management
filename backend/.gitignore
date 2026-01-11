@@ -7,7 +7,9 @@ node_modules/
 .env.*.local
 .env.example
 .env.root
-
+BACKEND_STRUCTURE.md
+INSTALL_POSTGRESQL.md
+POSTGRESQL_CONNECTION.md
 # Build output
 dist/
 build/
