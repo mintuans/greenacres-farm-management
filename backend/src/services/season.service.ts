@@ -167,3 +167,26 @@ export const getSeasonStats = async (): Promise<any> => {
     const result = await pool.query(query);
     return result.rows;
 };
+
+// Lấy mã vụ mùa tiếp theo (MUAVU01, MUAVU02...)
+export const getNextSeasonCode = async (): Promise<string> => {
+    const query = `
+        SELECT season_code 
+        FROM seasons 
+        WHERE season_code LIKE 'MUAVU%' 
+        ORDER BY season_code DESC 
+        LIMIT 1
+    `;
+    const result = await pool.query(query);
+
+    if (result.rows.length === 0) {
+        return 'MUAVU01';
+    }
+
+    const lastCode = result.rows[0].season_code;
+    const lastNumber = parseInt(lastCode.replace('MUAVU', ''), 10);
+    const nextNumber = isNaN(lastNumber) ? 1 : lastNumber + 1;
+
+    // Format thành MUAVUXX (ít nhất 2 chữ số)
+    return `MUAVU${nextNumber.toString().padStart(2, '0')}`;
+};

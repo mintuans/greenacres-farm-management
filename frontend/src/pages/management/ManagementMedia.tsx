@@ -8,7 +8,8 @@ const ManagementMedia: React.FC = () => {
     const [uploading, setUploading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedMedia, setSelectedMedia] = useState<MediaFile | null>(null);
-    const [categories, setCategories] = useState<string[]>(['gallery', 'product', 'blog', 'avatar', 'images_farm']);
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [categories, setCategories] = useState<string[]>(['gallery', 'product', 'blog', 'avatar', 'images_farm', 'household', 'electronics', 'plants']);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [pendingFiles, setPendingFiles] = useState<File[]>([]);
     const [uploadCategory, setUploadCategory] = useState('gallery');
@@ -18,12 +19,15 @@ const ManagementMedia: React.FC = () => {
 
     useEffect(() => {
         loadMedia();
-    }, [searchQuery]);
+    }, [searchQuery, selectedCategory]);
 
     const loadMedia = async () => {
         try {
             setLoading(true);
-            const response = await getMediaFiles({ search: searchQuery || undefined });
+            const response = await getMediaFiles({
+                search: searchQuery || undefined,
+                category: selectedCategory || undefined
+            });
             setMediaFiles(response.data);
         } catch (error) {
             console.error('Error loading media:', error);
@@ -125,24 +129,37 @@ const ManagementMedia: React.FC = () => {
             </div>
 
             {/* Category Filter - Always Visible */}
-            <div className="mb-6 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                <div className="flex items-center gap-3 mb-3">
-                </div>
+            <div className="mb-6 bg-white p-4 md:p-6 rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
+                <div className="flex items-center gap-4 overflow-x-auto no-scrollbar pb-2">
+                    <button
+                        onClick={() => setSelectedCategory(null)}
+                        className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 shadow-sm hover:shadow-md flex items-center gap-2 whitespace-nowrap flex-shrink-0 ${selectedCategory === null
+                            ? 'bg-slate-900 text-white'
+                            : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                            }`}
+                    >
+                        <span className="material-symbols-outlined text-[20px]">apps</span>
+                        Tất cả
+                    </button>
 
-                <div className="flex flex-wrap items-center gap-2">
                     {categories.map((cat, index) => (
                         <button
                             key={cat}
-                            className="group px-4 py-2 bg-[#13ec49] text-white rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-[#10d63f] transition-all duration-200 shadow-sm hover:shadow-md"
+                            onClick={() => setSelectedCategory(cat)}
+                            className={`group px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md whitespace-nowrap flex-shrink-0 ${selectedCategory === cat
+                                ? 'bg-[#13ec49] text-white'
+                                : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                                }`}
                         >
-                            <span className="material-symbols-outlined text-base">label</span>
-                            <span>{cat}</span>
+                            <span className="material-symbols-outlined text-[20px]">label</span>
+                            <span className="capitalize">{cat}</span>
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setCategories(categories.filter(c => c !== cat));
+                                    if (selectedCategory === cat) setSelectedCategory(null);
                                 }}
-                                className="ml-1 p-0.5 rounded hover:bg-white/20 transition-all duration-200"
+                                className="ml-1 p-0.5 rounded hover:bg-black/10 transition-all duration-200"
                                 title="Xóa thể loại"
                             >
                                 <span className="material-symbols-outlined text-sm">close</span>

@@ -69,7 +69,7 @@ const EditBlog: React.FC = () => {
 
     const loadMedia = async () => {
         try {
-            const response = await getMediaFiles({ limit: 100 });
+            const response = await getMediaFiles({ category: 'blog', limit: 100 });
             setMediaFiles(response.data || []);
         } catch (error) {
             console.error('Error loading media:', error);
@@ -378,8 +378,8 @@ const EditBlog: React.FC = () => {
                                             setShowMediaModal(false);
                                         }}
                                         className={`aspect-square rounded-lg overflow-hidden cursor-pointer border-2 transition-all hover:scale-105 ${formData.thumbnail_id === media.id
-                                                ? 'border-[#13ec49] ring-2 ring-[#13ec49]/50'
-                                                : 'border-transparent hover:border-gray-300'
+                                            ? 'border-[#13ec49] ring-2 ring-[#13ec49]/50'
+                                            : 'border-transparent hover:border-gray-300'
                                             }`}
                                     >
                                         <img

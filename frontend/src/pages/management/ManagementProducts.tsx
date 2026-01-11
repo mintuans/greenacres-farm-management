@@ -101,7 +101,7 @@ const ManagementProducts: React.FC = () => {
         setShowMediaPicker(true);
         setLoadingMedia(true);
         try {
-            const response = await getMediaFiles();
+            const response = await getMediaFiles({ category: 'product' });
             setMediaFiles(response.data);
         } catch (error) {
             console.error('Error loading media:', error);

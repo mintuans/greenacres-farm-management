@@ -1,0 +1,66 @@
+import pool from '../config/database';
+
+export interface Transaction {
+    id: string;
+    partner_id?: string;
+    season_id?: string;
+    category_id?: string;
+    amount: number;
+    paid_amount: number;
+    type: 'INCOME' | 'EXPENSE';
+    transaction_date: Date;
+    note?: string;
+    is_inventory_affected: boolean;
+    partner_name?: string;
+    category_name?: string;
+    season_name?: string;
+}
+
+export const getTransactions = async (seasonId?: string): Promise<Transaction[]> => {
+    let query = `
+        SELECT t.*, p.partner_name, c.category_name, s.season_name
+        FROM transactions t
+        LEFT JOIN partners p ON t.partner_id = p.id
+        LEFT JOIN categories c ON t.category_id = c.id
+        LEFT JOIN seasons s ON t.season_id = s.id
+        WHERE 1=1
+    `;
+    const values: any[] = [];
+    if (seasonId) {
+        query += ` AND t.season_id = $1`;
+        values.push(seasonId);
+    }
+    query += ` ORDER BY t.transaction_date DESC`;
+    const result = await pool.query(query, values);
+    return result.rows;
+};
+
+export const createTransaction = async (data: any): Promise<Transaction> => {
+    const query = `
+        INSERT INTO transactions (
+            partner_id, season_id, category_id, amount, paid_amount, 
+            type, transaction_date, note, is_inventory_affected
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        RETURNING *
+    `;
+    const values = [
+        data.partner_id || null,
+        data.season_id || null,
+        data.category_id || null,
+        data.amount,
+        data.paid_amount || 0,
+        data.type,
+        data.transaction_date || new Date(),
+        data.note || null,
+        data.is_inventory_affected || false
+    ];
+    const result = await pool.query(query, values);
+    return result.rows[0];
+};
+
+export const deleteTransaction = async (id: string): Promise<boolean> => {
+    const query = 'DELETE FROM transactions WHERE id = $1';
+    const result = await pool.query(query, [id]);
+    return (result.rowCount ?? 0) > 0;
+};

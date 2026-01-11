@@ -8,7 +8,7 @@ const Sidebar: React.FC = () => {
 
     const navItems = [
         { label: 'Tổng quan', path: '/dashboard', icon: 'dashboard' },
-        { label: 'Lịch làm việc', path: '/schedule', icon: 'calendar_month' },
+        { label: 'Lịch sự kiện', path: '/schedule', icon: 'calendar_month' },
         { label: 'Vật tư Nông nghiệp', path: '/inventory', icon: 'inventory_2' },
         { label: 'Mùa vụ', path: '/seasons', icon: 'grass' },
         { label: 'Giao dịch', path: '/transactions', icon: 'payments' },
@@ -16,6 +16,8 @@ const Sidebar: React.FC = () => {
     ];
 
     const masterDataItems = [
+        { label: 'Sự kiện', path: '/master-data/farm-events', icon: 'notification_important' },
+        { label: 'Lịch làm việc', path: '/master-data/work-schedules', icon: 'event_note' },
         { label: 'Thể loại', path: '/master-data/categories', icon: 'category' },
         { label: 'Ca làm việc', path: '/master-data/shifts', icon: 'schedule' },
         { label: 'Công việc', path: '/master-data/jobs', icon: 'work' },
@@ -85,7 +87,7 @@ const Sidebar: React.FC = () => {
                     </button>
 
                     {/* Submenu */}
-                    <div className={`overflow-hidden transition-all duration-300 ${isMasterDataOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+                    <div className={`overflow-hidden transition-all duration-300 ${isMasterDataOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'}`}>
                         <div className="pl-6 mt-1 space-y-1">
                             {masterDataItems.map((item) => (
                                 item.disabled ? (

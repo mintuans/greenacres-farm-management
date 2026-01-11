@@ -19,6 +19,8 @@ import ProductionUnits from '@/src/pages/ProductionUnits';
 import HouseholdWarehouse from '@/src/pages/HouseholdWarehouse';
 import ElectronicsWarehouse from '@/src/pages/ElectronicsWarehouse';
 import PlantsWarehouse from '@/src/pages/PlantsWarehouse';
+import FarmEvents from '@/src/pages/FarmEvents';
+import WorkSchedules from '@/src/pages/WorkSchedules';
 
 // Showcase pages
 import FarmShowcase from '@/src/pages/showcase/FarmShowcase';
@@ -83,6 +85,8 @@ const App: React.FC = () => {
                                     <Route path="/master-data/showcase-blog" element={<ManagementBlog />} />
                                     <Route path="/master-data/showcase-blog/add" element={<AddBlog />} />
                                     <Route path="/master-data/showcase-blog/edit/:id" element={<EditBlog />} />
+                                    <Route path="/master-data/farm-events" element={<FarmEvents />} />
+                                    <Route path="/master-data/work-schedules" element={<WorkSchedules />} />
                                     <Route path="/settings" element={<MasterData />} />
                                     <Route path="*" element={<Navigate to="/dashboard" replace />} />
                                 </Routes>

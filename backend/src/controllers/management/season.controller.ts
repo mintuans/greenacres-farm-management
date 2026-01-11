@@ -163,3 +163,19 @@ export const getSeasonStats = async (_req: Request, res: Response) => {
         });
     }
 };
+
+export const getNextSeasonCode = async (_req: Request, res: Response) => {
+    try {
+        const nextCode = await seasonService.getNextSeasonCode();
+        res.json({
+            success: true,
+            data: nextCode
+        });
+    } catch (error: any) {
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to get next code'
+        });
+    }
+};
+

@@ -21,6 +21,7 @@ CREATE TABLE partners (
     phone VARCHAR(20),
     address TEXT,
     current_balance DECIMAL(15, 2) DEFAULT 0,
+    thumbnail_id UUID REFERENCES media_files(id), -- Thêm ảnh đại diện
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -44,7 +45,8 @@ CREATE TABLE seasons (
     start_date DATE NOT NULL,
     end_date DATE,
     status VARCHAR(50) DEFAULT 'ACTIVE',
-    expected_revenue DECIMAL(15, 2)
+    expected_revenue DECIMAL(15, 2),
+    thumbnail_id UUID REFERENCES media_files(id) -- Thêm ảnh vụ mùa
 );
 
 -- 5. Danh mục Hạng mục Thu/Chi
@@ -53,7 +55,8 @@ CREATE TABLE categories (
     category_code VARCHAR(50) UNIQUE NOT NULL, -- Thêm mới (VD: 'CAT-PHAN-BON')
     category_name VARCHAR(100) NOT NULL,       -- Sửa: name -> category_name
     parent_id UUID REFERENCES categories(id),
-    scope VARCHAR(50) NOT NULL CHECK (scope IN ('FARM', 'PERSONAL', 'BOTH'))
+    scope VARCHAR(50) NOT NULL CHECK (scope IN ('FARM', 'PERSONAL', 'BOTH')),
+    thumbnail_id UUID REFERENCES media_files(id) -- Thêm ảnh danh mục
 );
 
 
@@ -218,6 +221,129 @@ CREATE TABLE farm_events (
     season_id UUID REFERENCES seasons(id),
     unit_id UUID REFERENCES production_units(id)
 );
+-- 17. Bảng Tổng hợp Lịch trình (Consolidated Schedules)
+-- Dùng để query nhanh toàn bộ sự kiện trên lịch từ nhiều nguồn khác nhau
+CREATE TABLE schedules (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    
+    -- Phân loại nguồn: 'WORK_SHIFT' (từ work_schedules), 'FARM_EVENT' (từ farm_events)
+    source_type VARCHAR(50) NOT NULL, 
+    source_id UUID NOT NULL, -- ID của bản ghi gốc ở bảng tương ứng
+    
+    title VARCHAR(255) NOT NULL,
+    event_date DATE NOT NULL,
+    
+    -- Trạng thái để đồng bộ màu sắc và trạng thái xử lý
+    status VARCHAR(20), 
+    description TEXT,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =================================================================================
+-- PHẦN 4: QUẢN LÝ KHO LÝ (Gia dụng, Điện tử, Hoa kiểng)
+-- =================================================================================
+
+-- 18. Kho Gia dụng
+CREATE TABLE warehouse_household (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    item_code VARCHAR(20) UNIQUE NOT NULL,
+    item_name VARCHAR(255) NOT NULL,
+    category VARCHAR(100),
+    quantity DECIMAL(12, 2) DEFAULT 0,
+    unit VARCHAR(50),
+    price DECIMAL(15, 2) DEFAULT 0,
+    location VARCHAR(255),
+    thumbnail_id UUID REFERENCES media_files(id),
+    note TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 19. Kho Điện tử
+CREATE TABLE warehouse_electronics (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    item_code VARCHAR(20) UNIQUE NOT NULL,
+    item_name VARCHAR(255) NOT NULL,
+    category VARCHAR(100),
+    quantity DECIMAL(12, 2) DEFAULT 0,
+    unit VARCHAR(50),
+    price DECIMAL(15, 2) DEFAULT 0,
+    location VARCHAR(255),
+    thumbnail_id UUID REFERENCES media_files(id),
+    note TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 20. Kho Hoa kiểng
+CREATE TABLE warehouse_plants (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    item_code VARCHAR(20) UNIQUE NOT NULL,
+    item_name VARCHAR(255) NOT NULL,
+    category VARCHAR(100),
+    quantity DECIMAL(12, 2) DEFAULT 0,
+    unit VARCHAR(50),
+    price DECIMAL(15, 2) DEFAULT 0,
+    location VARCHAR(255),
+    thumbnail_id UUID REFERENCES media_files(id),
+    note TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- =================================================================================
 -- HẾT
 -- =================================================================================
+CREATE OR REPLACE FUNCTION get_daily_schedules(target_date DATE)
+RETURNS TABLE (
+    event_id UUID,
+    event_type VARCHAR(50), -- 'WORK_SHIFT' hoặc 'FARM_EVENT'
+    title TEXT,
+    start_time TIME,
+    end_time TIME,
+    status VARCHAR(20),
+    description TEXT,
+    display_color VARCHAR(20) -- Màu sắc gợi ý cho Frontend
+) 
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    -- 1. Lấy dữ liệu từ bảng Kế hoạch làm việc (Ai làm, ca nào, việc gì)
+    SELECT 
+        ws.id AS event_id,
+        'WORK_SHIFT'::VARCHAR(50) AS event_type,
+        (p.partner_name || ' - ' || j.job_name)::TEXT AS title,
+        s.start_time,
+        s.end_time,
+        ws.status,
+        ws.note AS description,
+        '#13ec49'::VARCHAR(20) AS display_color -- Màu xanh cho công việc
+    FROM work_schedules ws
+    JOIN partners p ON ws.partner_id = p.id
+    JOIN work_shifts s ON ws.shift_id = s.id
+    JOIN job_types j ON ws.job_type_id = j.id
+    WHERE ws.work_date = target_date
+
+    UNION ALL
+
+    -- 2. Lấy dữ liệu từ bảng Sự kiện nông trại (Thu hoạch, vấn đề...)
+    SELECT 
+        fe.id AS event_id,
+        'FARM_EVENT'::VARCHAR(50) AS event_type,
+        fe.title::TEXT,
+        fe.start_time::TIME,
+        fe.end_time::TIME,
+        'CONFIRMED'::VARCHAR(20) AS status,
+        fe.description,
+        CASE 
+            WHEN fe.event_type = 'HARVEST' THEN '#fbbf24' -- Vàng cho thu hoạch
+            WHEN fe.event_type = 'ISSUE' THEN '#ef4444'   -- Đỏ cho vấn đề
+            ELSE '#3b82f6'                                -- Xanh dương cho khác
+        END AS display_color
+    FROM farm_events fe
+    WHERE fe.start_time::DATE = target_date;
+END;
+$$;

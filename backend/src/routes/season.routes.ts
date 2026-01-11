@@ -7,6 +7,7 @@ const router = Router();
 router.post('/', seasonController.createSeason);
 router.get('/', seasonController.getSeasons);
 router.get('/stats', seasonController.getSeasonStats);
+router.get('/next-code', seasonController.getNextSeasonCode);
 router.get('/:id', seasonController.getSeasonById);
 router.put('/:id', seasonController.updateSeason);
 router.delete('/:id', seasonController.deleteSeason);

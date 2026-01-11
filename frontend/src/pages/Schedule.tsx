@@ -1,27 +1,50 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     generateCalendarDays,
     getMonthName,
     isSameDay,
-    CalendarDay
+    CalendarDay,
+    formatDate
 } from '@/src/utils/calendar.utils';
 import { ScheduleEvent, EventType } from '@/src/@types/schedule.types';
+import { getPartners, Partner } from '../api/partner.api';
+import { getWorkShifts, WorkShift } from '../api/work-shift.api';
+import { getJobTypes, JobType } from '../api/job-type.api';
 
 const Schedule: React.FC = () => {
     // State cho tháng/năm hiện tại
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedFilter, setSelectedFilter] = useState<'all' | 'field' | 'machine'>('all');
 
+    // State cho việc hiển thị chi tiết ngày
+    const [selectedDay, setSelectedDay] = useState<CalendarDay | null>(null);
+    const [showDayModal, setShowDayModal] = useState(false);
+
+    // State cho Modal thêm ca làm việc
+    const [showAddShiftModal, setShowAddShiftModal] = useState(false);
+    const [workers, setWorkers] = useState<Partner[]>([]);
+    const [shiftTemplates, setShiftTemplates] = useState<WorkShift[]>([]);
+    const [jobTypes, setJobTypes] = useState<JobType[]>([]);
+    const [loadingData, setLoadingData] = useState(false);
+
+    const [formShift, setFormShift] = useState({
+        worker_id: '',
+        shift_id: '',
+        job_id: '',
+        date: new Date().toISOString().split('T')[0],
+        note: ''
+    });
+
     const currentYear = currentDate.getFullYear();
     const currentMonth = currentDate.getMonth();
 
-    // Sample events data - Sau này sẽ lấy từ API
-    const [events] = useState<ScheduleEvent[]>([
+    // Sample events data
+    const [events, setEvents] = useState<ScheduleEvent[]>([
         {
             id: '1',
             title: 'Bắt đầu mùa trồng',
             type: 'task',
-            date: new Date(2026, 0, 8), // 8/1/2026
+            date: new Date(2026, 0, 8),
             description: 'Chuẩn bị đất và gieo hạt',
         },
         {
@@ -32,214 +55,206 @@ const Schedule: React.FC = () => {
             startTime: '06:00',
             endTime: '12:00',
         },
-        {
-            id: '3',
-            title: 'Bảo trì máy móc',
-            type: 'maintenance',
-            date: new Date(2026, 0, 9),
-            description: 'Kiểm tra và bảo dưỡng máy cày',
-        },
-        {
-            id: '4',
-            title: 'Ca làm việc đầy đủ',
-            type: 'staff',
-            date: new Date(2026, 0, 10),
-        },
-        {
-            id: '5',
-            title: 'Thu hoạch ngô',
-            type: 'harvest',
-            date: new Date(2026, 0, 12),
-            description: 'Thu hoạch khu vực B',
-        },
-        {
-            id: '6',
-            title: 'Kiểm tra tưới tiêu',
-            type: 'task',
-            date: new Date(2026, 0, 13),
-        },
-        {
-            id: '7',
-            title: 'Thiếu nhân sự',
-            type: 'issue',
-            date: new Date(2026, 0, 15),
-            description: '3 công nhân nghỉ ốm',
-        },
-        {
-            id: '8',
-            title: 'Ca làm việc',
-            type: 'staff',
-            date: new Date(2026, 0, 16),
-        },
-        {
-            id: '9',
-            title: 'Kiểm kê thiết bị',
-            type: 'maintenance',
-            date: new Date(2026, 0, 18),
-        },
-        {
-            id: '10',
-            title: 'Phân công - James L.',
-            type: 'staff',
-            date: new Date(2026, 0, 19),
-        },
     ]);
 
-    // Tạo lịch cho tháng hiện tại
+    useEffect(() => {
+        const fetchFormData = async () => {
+            try {
+                setLoadingData(true);
+                const [w, s, j] = await Promise.all([
+                    getPartners('WORKER'),
+                    getWorkShifts(),
+                    getJobTypes()
+                ]);
+                setWorkers(w);
+                setShiftTemplates(s);
+                setJobTypes(j);
+            } catch (error) {
+                console.error('Error fetching form data:', error);
+            } finally {
+                setLoadingData(false);
+            }
+        };
+        fetchFormData();
+    }, []);
+
     const calendarDays = useMemo(() => {
         return generateCalendarDays(currentYear, currentMonth);
     }, [currentYear, currentMonth]);
 
-    // Lấy events cho một ngày cụ thể
     const getEventsForDay = (day: CalendarDay): ScheduleEvent[] => {
         return events.filter(event => isSameDay(event.date, day.date));
     };
 
-    // Chuyển sang tháng trước
+    const handleRemoveEvent = (eventId: string) => {
+        if (window.confirm('Bạn có chắc chắn muốn gỡ sự kiện này khỏi lịch?')) {
+            setEvents(prev => prev.filter(event => event.id !== eventId));
+        }
+    };
+
+    const handleAddShiftSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        const worker = workers.find(w => w.id === formShift.worker_id);
+        const shift = shiftTemplates.find(s => s.id === formShift.shift_id);
+        const job = jobTypes.find(j => j.id === formShift.job_id);
+
+        if (!worker || !shift) return;
+
+        const newEvent: ScheduleEvent = {
+            id: Date.now().toString(),
+            title: `${worker.partner_name} - ${shift.shift_name} (${job?.job_name || 'Công việc'})`,
+            type: 'staff',
+            date: new Date(formShift.date),
+            startTime: shift.start_time,
+            endTime: shift.end_time,
+            description: formShift.note
+        };
+
+        setEvents(prev => [...prev, newEvent]);
+        setShowAddShiftModal(false);
+        setFormShift({
+            worker_id: '',
+            shift_id: '',
+            job_id: '',
+            date: new Date().toISOString().split('T')[0],
+            note: ''
+        });
+    };
+
     const goToPreviousMonth = () => {
         setCurrentDate(new Date(currentYear, currentMonth - 1, 1));
     };
 
-    // Chuyển sang tháng sau
     const goToNextMonth = () => {
         setCurrentDate(new Date(currentYear, currentMonth + 1, 1));
     };
 
-    // Về tháng hiện tại
     const goToToday = () => {
         setCurrentDate(new Date());
     };
 
-    // Lấy màu cho từng loại event
     const getEventColor = (type: EventType): string => {
         switch (type) {
-            case 'staff':
-                return 'bg-blue-500';
-            case 'task':
-                return 'bg-green-500';
-            case 'harvest':
-                return 'bg-yellow-500';
-            case 'issue':
-                return 'bg-red-500';
-            case 'maintenance':
-                return 'bg-orange-400';
-            default:
-                return 'bg-gray-400';
+            case 'staff': return 'bg-blue-500';
+            case 'task': return 'bg-green-500';
+            case 'harvest': return 'bg-yellow-500';
+            case 'issue': return 'bg-red-500';
+            case 'maintenance': return 'bg-orange-400';
+            default: return 'bg-gray-400';
         }
     };
 
-    // Tên tháng hiện tại
+    const getEventLabel = (type: EventType): string => {
+        switch (type) {
+            case 'staff': return 'Nhân viên';
+            case 'task': return 'Công việc';
+            case 'harvest': return 'Thu hoạch';
+            case 'issue': return 'Vấn đề';
+            case 'maintenance': return 'Bảo trì';
+            default: return 'Khác';
+        }
+    };
+
     const monthYearDisplay = `${getMonthName(currentMonth)} ${currentYear}`;
 
     return (
-        <div className="p-6 md:p-8 space-y-8 max-w-[1440px] mx-auto">
+        <div className="p-6 md:p-8 space-y-8 max-w-[1440px] mx-auto bg-slate-50/20 min-h-screen">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div className="flex flex-col gap-2">
-                    <h1 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900">
+                <div>
+                    <h1 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 drop-shadow-sm">
                         Lịch làm việc
                     </h1>
-                    <p className="text-slate-500">Quản lý ca làm việc và sự kiện trang trại hàng tháng</p>
+                    <p className="text-slate-500 mt-1 font-medium">Quản lý ca làm việc và sự kiện trang trại hàng tháng</p>
                 </div>
-                <button className="flex items-center gap-2 bg-[#13ec49] hover:bg-[#13ec49]/90 text-black font-bold h-11 px-6 rounded-xl shadow-lg shadow-[#13ec49]/20 transition-all active:scale-95">
-                    <span className="material-symbols-outlined text-[20px]">add</span>
+                <button
+                    onClick={() => setShowAddShiftModal(true)}
+                    className="flex items-center gap-2 bg-[#13ec49] hover:bg-[#10d63f] text-black font-black h-12 px-8 rounded-2xl shadow-xl shadow-[#13ec49]/30 transition-all active:scale-95 group"
+                >
+                    <span className="material-symbols-outlined font-black text-[22px] group-hover:rotate-90 transition-transform">add</span>
                     <span>Thêm ca làm việc</span>
                 </button>
             </div>
 
             {/* Calendar Card */}
-            <div className="flex flex-col gap-6 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="bg-white border border-slate-200 rounded-[32px] shadow-2xl shadow-slate-200/50 overflow-hidden flex flex-col">
                 {/* Filters and Controls */}
-                <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between p-4 border-b border-slate-200 gap-4">
+                <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between p-6 border-b border-slate-100 gap-6">
                     <div className="flex flex-wrap gap-2 items-center">
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-500 mr-2">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mr-2">
                             Bộ lọc:
                         </span>
-                        <button
-                            onClick={() => setSelectedFilter('all')}
-                            className={`px-4 py-1.5 rounded-lg text-sm font-medium border transition-colors ${selectedFilter === 'all'
-                                    ? 'bg-[#13ec49]/20 text-slate-900 border-[#13ec49]/30'
-                                    : 'bg-transparent hover:bg-slate-100 text-slate-500 border-transparent'
-                                }`}
-                        >
-                            Tất cả vai trò
-                        </button>
-                        <button
-                            onClick={() => setSelectedFilter('field')}
-                            className={`px-4 py-1.5 rounded-lg text-sm font-medium border transition-colors ${selectedFilter === 'field'
-                                    ? 'bg-[#13ec49]/20 text-slate-900 border-[#13ec49]/30'
-                                    : 'bg-transparent hover:bg-slate-100 text-slate-500 border-transparent'
-                                }`}
-                        >
-                            Công nhân đồng ruộng
-                        </button>
-                        <button
-                            onClick={() => setSelectedFilter('machine')}
-                            className={`px-4 py-1.5 rounded-lg text-sm font-medium border transition-colors ${selectedFilter === 'machine'
-                                    ? 'bg-[#13ec49]/20 text-slate-900 border-[#13ec49]/30'
-                                    : 'bg-transparent hover:bg-slate-100 text-slate-500 border-transparent'
-                                }`}
-                        >
-                            Người vận hành máy
-                        </button>
+                        {(['all', 'field', 'machine'] as const).map((filter) => (
+                            <button
+                                key={filter}
+                                onClick={() => setSelectedFilter(filter)}
+                                className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${selectedFilter === filter
+                                    ? 'bg-[#13ec49]/15 text-black border-2 border-[#13ec49]/30'
+                                    : 'bg-slate-50 text-slate-500 border-2 border-transparent hover:bg-slate-100'
+                                    }`}
+                            >
+                                {filter === 'all' ? 'Tất cả vai trò' : filter === 'field' ? 'Công nhân đồng ruộng' : 'Người vận hành máy'}
+                            </button>
+                        ))}
                     </div>
 
                     {/* Legend */}
-                    <div className="flex items-center gap-4 text-xs">
-                        <div className="flex items-center gap-1.5">
-                            <div className="size-2.5 rounded-full bg-blue-500"></div>
-                            <span className="text-slate-500">Nhân viên</span>
+                    <div className="flex flex-wrap items-center gap-5 text-[11px] font-black uppercase tracking-wider">
+                        <div className="flex items-center gap-2 text-blue-600/80">
+                            <div className="size-2.5 rounded-full bg-blue-500 shadow-sm ring-4 ring-blue-50"></div>
+                            <span>Nhân viên</span>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                            <div className="size-2.5 rounded-full bg-green-500"></div>
-                            <span className="text-slate-500">Công việc</span>
+                        <div className="flex items-center gap-2 text-green-600/80">
+                            <div className="size-2.5 rounded-full bg-green-500 shadow-sm ring-4 ring-green-50"></div>
+                            <span>Công việc</span>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                            <div className="size-2.5 rounded-full bg-yellow-500"></div>
-                            <span className="text-slate-500">Thu hoạch</span>
+                        <div className="flex items-center gap-2 text-yellow-600/80">
+                            <div className="size-2.5 rounded-full bg-yellow-500 shadow-sm ring-4 ring-yellow-50"></div>
+                            <span>Thu hoạch</span>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                            <div className="size-2.5 rounded-full bg-red-500"></div>
-                            <span className="text-slate-500">Vấn đề</span>
+                        <div className="flex items-center gap-2 text-red-600/80">
+                            <div className="size-2.5 rounded-full bg-red-500 shadow-sm ring-4 ring-red-50"></div>
+                            <span>Vấn đề</span>
                         </div>
                     </div>
 
                     {/* Month Navigation */}
-                    <div className="flex items-center gap-4 w-full xl:w-auto justify-between xl:justify-end">
+                    <div className="flex items-center gap-6 w-full xl:w-auto justify-between xl:justify-end">
                         <button
                             onClick={goToToday}
-                            className="text-sm font-medium text-[#13ec49] hover:underline"
+                            className="text-[10px] font-black uppercase tracking-widest text-[#13ec49] hover:text-[#10d63f] transition-colors"
                         >
                             Hôm nay
                         </button>
-                        <div className="flex items-center bg-slate-100 rounded-lg p-1">
+                        <div className="flex items-center bg-slate-50 rounded-2xl p-1.5 border border-slate-100">
                             <button
-                                className="size-8 flex items-center justify-center rounded hover:bg-white shadow-sm transition-all text-slate-900"
+                                className="size-9 flex items-center justify-center rounded-xl hover:bg-white hover:shadow-lg transition-all text-slate-900"
                                 onClick={goToPreviousMonth}
                             >
-                                <span className="material-symbols-outlined text-sm">chevron_left</span>
+                                <span className="material-symbols-outlined text-lg">chevron_left</span>
                             </button>
-                            <span className="px-4 text-sm font-bold text-slate-900 min-w-[140px] text-center">
+                            <span className="px-6 text-sm font-black text-slate-900 min-w-[150px] text-center">
                                 {monthYearDisplay}
                             </span>
                             <button
-                                className="size-8 flex items-center justify-center rounded hover:bg-white shadow-sm transition-all text-slate-900"
+                                className="size-9 flex items-center justify-center rounded-xl hover:bg-white hover:shadow-lg transition-all text-slate-900"
                                 onClick={goToNextMonth}
                             >
-                                <span className="material-symbols-outlined text-sm">chevron_right</span>
+                                <span className="material-symbols-outlined text-lg">chevron_right</span>
                             </button>
                         </div>
                     </div>
                 </div>
 
                 {/* Calendar Grid */}
-                <div className="w-full overflow-x-auto pb-4">
+                <div className="w-full overflow-x-auto">
                     {/* Day Headers */}
-                    <div className="min-w-[800px] grid grid-cols-7 border-b border-slate-200 bg-slate-50">
+                    <div className="min-w-[800px] grid grid-cols-7 border-b border-slate-100 bg-slate-50/30">
                         {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'].map((day, idx) => (
                             <div
                                 key={idx}
-                                className="p-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider border-r border-slate-200 last:border-r-0"
+                                className="p-4 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest border-r border-slate-100 last:border-r-0"
                             >
                                 {day}
                             </div>
@@ -254,21 +269,24 @@ const Schedule: React.FC = () => {
                             return (
                                 <div
                                     key={idx}
-                                    className={`min-h-[110px] p-2 border-b border-r border-slate-200 group transition-colors relative flex flex-col justify-between cursor-pointer ${!day.isCurrentMonth
-                                            ? 'bg-slate-50'
-                                            : day.isToday
-                                                ? 'bg-[#13ec49]/5 hover:bg-[#13ec49]/10'
-                                                : 'hover:bg-slate-50'
+                                    onClick={() => {
+                                        setSelectedDay(day);
+                                        setShowDayModal(true);
+                                    }}
+                                    className={`min-h-[140px] p-3 border-b border-r border-slate-100 group transition-all relative flex flex-col justify-between cursor-pointer ${!day.isCurrentMonth
+                                        ? 'bg-slate-50/40 opacity-40'
+                                        : day.isToday
+                                            ? 'bg-[#13ec49]/5 hover:bg-[#13ec49]/10'
+                                            : 'hover:bg-slate-50/60'
                                         } ${idx % 7 === 6 ? 'border-r-0' : ''}`}
-                                    title={dayEvents.map(e => e.title).join(', ')}
                                 >
                                     <div className="flex justify-between items-start">
                                         <span
-                                            className={`text-sm font-medium p-1 rounded-full size-7 flex items-center justify-center ${day.isToday
-                                                    ? 'bg-[#13ec49] text-black font-bold shadow-sm'
-                                                    : day.isCurrentMonth
-                                                        ? 'text-slate-900'
-                                                        : 'text-slate-400'
+                                            className={`text-sm font-black p-1 rounded-xl size-8 flex items-center justify-center transition-all ${day.isToday
+                                                ? 'bg-[#13ec49] text-black shadow-lg shadow-[#13ec49]/30'
+                                                : day.isCurrentMonth
+                                                    ? 'text-slate-900 group-hover:scale-110'
+                                                    : 'text-slate-300'
                                                 }`}
                                         >
                                             {day.dayOfMonth}
@@ -277,15 +295,17 @@ const Schedule: React.FC = () => {
 
                                     {/* Event Indicators */}
                                     {dayEvents.length > 0 && (
-                                        <div className="flex gap-1.5 flex-wrap p-1">
+                                        <div className="flex gap-2 flex-wrap p-1">
                                             {dayEvents.map((event, eventIdx) => (
                                                 <div
                                                     key={eventIdx}
-                                                    className={`h-2.5 w-2.5 rounded-full ${getEventColor(event.type)} ${event.type === 'harvest' ? 'ring-2 ring-yellow-200' : ''
-                                                        }`}
+                                                    className={`h-2.5 w-2.5 rounded-full shadow-sm ${getEventColor(event.type)} transition-all group-hover:scale-150 ring-2 ring-white`}
                                                     title={event.title}
                                                 ></div>
                                             ))}
+                                            {dayEvents.length > 4 && (
+                                                <span className="text-[9px] font-black text-slate-400">+{dayEvents.length - 4}</span>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -295,48 +315,224 @@ const Schedule: React.FC = () => {
                 </div>
             </div>
 
+            {/* Modal - Chi tiết ngày & Gỡ sự kiện */}
+            {showDayModal && selectedDay && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+                    <div className="bg-white rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-8 pb-4 flex justify-between items-center border-b border-slate-50">
+                            <div>
+                                <h2 className="text-2xl font-black text-slate-900">Sự kiện ngày</h2>
+                                <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-1">
+                                    {formatDate(selectedDay.date)}
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setShowDayModal(false)}
+                                className="size-11 flex items-center justify-center rounded-[18px] bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-500 transition-all shadow-sm"
+                            >
+                                <span className="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+
+                        <div className="p-8 space-y-4 max-h-[50vh] overflow-y-auto custom-scrollbar">
+                            {getEventsForDay(selectedDay).length === 0 ? (
+                                <div className="text-center py-12">
+                                    <div className="size-20 bg-slate-50 rounded-[28px] flex items-center justify-center mx-auto mb-4 border border-slate-100">
+                                        <span className="material-symbols-outlined text-slate-200 text-5xl">event_busy</span>
+                                    </div>
+                                    <p className="text-slate-400 font-bold italic">Không có sự kiện</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {getEventsForDay(selectedDay).map((event) => (
+                                        <div
+                                            key={event.id}
+                                            className="bg-slate-50/50 rounded-[24px] p-5 flex items-center justify-between gap-5 border-2 border-transparent hover:border-white hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all group/item"
+                                        >
+                                            <div className="flex items-start gap-4">
+                                                <div className={`mt-1.5 h-3 w-3 rounded-full shrink-0 ${getEventColor(event.type)} shadow-sm ring-4 ring-white`}></div>
+                                                <div>
+                                                    <h4 className="font-black text-slate-900 leading-tight">
+                                                        {event.title}
+                                                    </h4>
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1.5 flex items-center gap-2">
+                                                        <span className="material-symbols-outlined text-[14px]">schedule</span>
+                                                        {getEventLabel(event.type)} {event.startTime ? `• ${event.startTime}` : ''}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => handleRemoveEvent(event.id)}
+                                                className="size-10 rounded-[14px] bg-white border border-slate-100 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm group-hover/item:scale-110"
+                                                title="Gỡ sự kiện"
+                                            >
+                                                <span className="material-symbols-outlined text-lg">delete_sweep</span>
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="p-8 bg-slate-50/50 flex gap-4">
+                            <button
+                                onClick={() => setShowDayModal(false)}
+                                className="flex-1 py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-black transition-all active:scale-95 shadow-xl shadow-slate-900/20"
+                            >
+                                Đóng
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setFormShift({ ...formShift, date: selectedDay.date.toISOString().split('T')[0] });
+                                    setShowDayModal(false);
+                                    setShowAddShiftModal(true);
+                                }}
+                                className="px-6 py-4 bg-[#13ec49] text-black font-black rounded-2xl hover:bg-[#10d63f] transition-all flex items-center gap-2 active:scale-95 shadow-xl shadow-[#13ec49]/20"
+                            >
+                                <span className="material-symbols-outlined font-black">add</span>
+                                <span>Thêm mới</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal - Thêm ca làm việc cho nhân viên */}
+            {showAddShiftModal && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[110] p-4">
+                    <div className="bg-white rounded-[32px] w-full max-w-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+                        <form onSubmit={handleAddShiftSubmit}>
+                            <div className="p-8 pb-4 flex justify-between items-center border-b border-slate-50">
+                                <div>
+                                    <h2 className="text-2xl font-black text-slate-900">Lên lịch làm việc</h2>
+                                    <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-1">
+                                        Phân công ca làm cho nhân viên
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAddShiftModal(false)}
+                                    className="size-11 flex items-center justify-center rounded-[18px] bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-500 transition-all shadow-sm"
+                                >
+                                    <span className="material-symbols-outlined">close</span>
+                                </button>
+                            </div>
+
+                            <div className="p-8 space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2">Chọn nhân viên</label>
+                                        <select
+                                            required
+                                            value={formShift.worker_id}
+                                            onChange={e => setFormShift({ ...formShift, worker_id: e.target.value })}
+                                            className="w-full bg-slate-50 border-2 border-transparent focus:border-[#13ec49]/30 focus:bg-white rounded-2xl px-5 py-4 outline-none font-bold transition-all appearance-none"
+                                        >
+                                            <option value="">-- Chọn nhân sự --</option>
+                                            {workers.map(w => (
+                                                <option key={w.id} value={w.id}>{w.partner_name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2">Chọn ca làm</label>
+                                        <select
+                                            required
+                                            value={formShift.shift_id}
+                                            onChange={e => setFormShift({ ...formShift, shift_id: e.target.value })}
+                                            className="w-full bg-slate-50 border-2 border-transparent focus:border-[#13ec49]/30 focus:bg-white rounded-2xl px-5 py-4 outline-none font-bold transition-all appearance-none"
+                                        >
+                                            <option value="">-- Chọn ca --</option>
+                                            {shiftTemplates.map(s => (
+                                                <option key={s.id} value={s.id}>{s.shift_name} ({s.start_time}-{s.end_time})</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2">Loại công việc</label>
+                                        <select
+                                            value={formShift.job_id}
+                                            onChange={e => setFormShift({ ...formShift, job_id: e.target.value })}
+                                            className="w-full bg-slate-50 border-2 border-transparent focus:border-[#13ec49]/30 focus:bg-white rounded-2xl px-5 py-4 outline-none font-bold transition-all appearance-none"
+                                        >
+                                            <option value="">-- Chọn loại việc --</option>
+                                            {jobTypes.map(j => (
+                                                <option key={j.id} value={j.id}>{j.job_name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2">Ngày làm việc</label>
+                                        <input
+                                            type="date"
+                                            required
+                                            value={formShift.date}
+                                            onChange={e => setFormShift({ ...formShift, date: e.target.value })}
+                                            className="w-full bg-slate-50 border-2 border-transparent focus:border-[#13ec49]/30 focus:bg-white rounded-2xl px-5 py-3.5 outline-none font-bold transition-all"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2">Ghi chú công việc</label>
+                                    <textarea
+                                        rows={3}
+                                        value={formShift.note}
+                                        onChange={e => setFormShift({ ...formShift, note: e.target.value })}
+                                        placeholder="Giao nhiệm vụ cụ thể cho nhân viên..."
+                                        className="w-full bg-slate-50 border-2 border-transparent focus:border-[#13ec49]/30 focus:bg-white rounded-2xl px-5 py-4 outline-none font-medium transition-all"
+                                    ></textarea>
+                                </div>
+                            </div>
+
+                            <div className="p-8 bg-slate-50/50 flex gap-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAddShiftModal(false)}
+                                    className="flex-1 py-4 font-black text-slate-500 hover:bg-slate-100 rounded-2xl transition-all"
+                                >
+                                    Hủy bỏ
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-[2] py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-black transition-all active:scale-95 shadow-2xl shadow-slate-900/30 flex items-center justify-center gap-3"
+                                >
+                                    <span className="material-symbols-outlined font-black">calendar_add_on</span>
+                                    <span>Xác nhận lên lịch</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
             {/* Event Summary */}
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
-                <h3 className="text-lg font-black text-slate-900 mb-4">
-                    Sự kiện tháng {getMonthName(currentMonth)}
+            <div className="bg-white border border-slate-200 rounded-[32px] shadow-xl shadow-slate-200/50 p-8">
+                <h3 className="text-xl font-black text-slate-900 mb-8 flex items-center gap-3">
+                    <span className="material-symbols-outlined text-[#13ec49] text-2xl">analytics</span>
+                    Thống kê tiến độ tháng {getMonthName(currentMonth)}
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
-                        <div className="flex items-center gap-2 mb-2">
-                            <div className="size-3 rounded-full bg-blue-500"></div>
-                            <span className="text-sm font-bold text-slate-700">Nhân viên</span>
-                        </div>
-                        <p className="text-2xl font-black text-slate-900">
-                            {events.filter(e => e.type === 'staff').length}
-                        </p>
-                    </div>
-                    <div className="p-4 bg-green-50 rounded-xl border border-green-200">
-                        <div className="flex items-center gap-2 mb-2">
-                            <div className="size-3 rounded-full bg-green-500"></div>
-                            <span className="text-sm font-bold text-slate-700">Công việc</span>
-                        </div>
-                        <p className="text-2xl font-black text-slate-900">
-                            {events.filter(e => e.type === 'task').length}
-                        </p>
-                    </div>
-                    <div className="p-4 bg-yellow-50 rounded-xl border border-yellow-200">
-                        <div className="flex items-center gap-2 mb-2">
-                            <div className="size-3 rounded-full bg-yellow-500"></div>
-                            <span className="text-sm font-bold text-slate-700">Thu hoạch</span>
-                        </div>
-                        <p className="text-2xl font-black text-slate-900">
-                            {events.filter(e => e.type === 'harvest').length}
-                        </p>
-                    </div>
-                    <div className="p-4 bg-red-50 rounded-xl border border-red-200">
-                        <div className="flex items-center gap-2 mb-2">
-                            <div className="size-3 rounded-full bg-red-500"></div>
-                            <span className="text-sm font-bold text-slate-700">Vấn đề</span>
-                        </div>
-                        <p className="text-2xl font-black text-slate-900">
-                            {events.filter(e => e.type === 'issue').length}
-                        </p>
-                    </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    {(['staff', 'task', 'harvest', 'issue'] as EventType[]).map((type) => {
+                        const count = events.filter(e => e.type === type).length;
+                        const label = getEventLabel(type);
+                        const colorClass = type === 'staff' ? 'border-blue-100 bg-blue-50/50 text-blue-600' :
+                            type === 'task' ? 'border-green-100 bg-green-50/50 text-green-600' :
+                                type === 'harvest' ? 'border-yellow-100 bg-yellow-50/50 text-yellow-600' :
+                                    'border-red-100 bg-red-50/50 text-red-600';
+
+                        return (
+                            <div key={type} className={`p-6 rounded-[28px] border-2 transition-all hover:shadow-xl hover:bg-white ${colorClass} group`}>
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className={`size-3 rounded-full ${getEventColor(type)} shadow-sm ring-4 ring-white`}></div>
+                                    <span className="text-[10px] font-black uppercase tracking-widest opacity-70 group-hover:opacity-100">{label}</span>
+                                </div>
+                                <div className="flex items-baseline gap-2">
+                                    <p className="text-4xl font-black text-slate-900">{count}</p>
+                                    <span className="text-[11px] font-black uppercase opacity-40">Sự kiện</span>
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </div>

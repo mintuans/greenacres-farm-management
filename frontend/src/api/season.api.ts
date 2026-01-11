@@ -68,3 +68,8 @@ export const getSeasonStats = async (): Promise<any> => {
     const response = await axios.get(`${API_URL}/management/seasons/stats`);
     return response.data.data;
 };
+
+export const getNextSeasonCode = async (): Promise<string> => {
+    const response = await axios.get(`${API_URL}/management/seasons/next-code`);
+    return response.data.data;
+};

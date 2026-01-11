@@ -9,8 +9,16 @@ import categoryRoutes from '../category.routes';
 import workShiftRoutes from '../work-shift.routes';
 import jobTypeRoutes from '../job-type.routes';
 import inventoryRoutes from '../inventory.routes';
+import workScheduleRoutes from './work-schedule.routes';
+import farmEventRoutes from './farm-event.routes';
+import transactionRoutes from './transaction.routes';
+import warehouseRoutes from './warehouse.routes';
 
 const router = Router();
+
+router.use('/household', warehouseRoutes);
+router.use('/electronics', warehouseRoutes);
+router.use('/plants', warehouseRoutes);
 
 console.log('🔧 Management routes loaded!');
 console.log('📦 Partner routes:', typeof partnerRoutes);
@@ -31,5 +39,8 @@ router.use('/categories', categoryRoutes);
 router.use('/work-shifts', workShiftRoutes);
 router.use('/job-types', jobTypeRoutes);
 router.use('/inventory', inventoryRoutes);
+router.use('/work-schedules', workScheduleRoutes);
+router.use('/farm-events', farmEventRoutes);
+router.use('/transactions', transactionRoutes);
 
 export default router;
