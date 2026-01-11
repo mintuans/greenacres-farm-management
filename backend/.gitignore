@@ -10,6 +10,7 @@ node_modules/
 BACKEND_STRUCTURE.md
 INSTALL_POSTGRESQL.md
 POSTGRESQL_CONNECTION.md
+readme.md   
 # Build output
 dist/
 build/

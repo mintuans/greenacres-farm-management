@@ -13,6 +13,8 @@ import workScheduleRoutes from './work-schedule.routes';
 import farmEventRoutes from './farm-event.routes';
 import transactionRoutes from './transaction.routes';
 import warehouseRoutes from './warehouse.routes';
+import dailyWorkLogRoutes from './daily-work-log.routes';
+
 
 const router = Router();
 
@@ -42,5 +44,7 @@ router.use('/inventory', inventoryRoutes);
 router.use('/work-schedules', workScheduleRoutes);
 router.use('/farm-events', farmEventRoutes);
 router.use('/transactions', transactionRoutes);
+router.use('/daily-work-logs', dailyWorkLogRoutes);
+
 
 export default router;
