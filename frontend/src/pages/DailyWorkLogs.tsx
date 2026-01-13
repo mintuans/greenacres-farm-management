@@ -482,7 +482,7 @@ const DailyWorkLogs: React.FC = () => {
                                         <tr className="font-sans uppercase text-[10px] font-black text-slate-400 tracking-wider">
                                             <th className="py-3 text-left">Ngày làm / Nội dung</th>
                                             <th className="py-3 text-center">Ca</th>
-                                            <th className="py-3 text-center">Mandays</th>
+                                            <th className="py-3 text-center">Ngày công</th>
                                             <th className="py-3 text-right">Thành tiền</th>
                                         </tr>
                                     </thead>

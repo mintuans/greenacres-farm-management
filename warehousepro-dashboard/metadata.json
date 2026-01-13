@@ -1,0 +1,8 @@
+
+{
+  "name": "WarehousePro Dashboard",
+  "description": "A high-performance warehouse management dashboard featuring inventory tracking, real-time scanning simulation, and detailed analytics.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
