@@ -14,13 +14,18 @@ import farmEventRoutes from './farm-event.routes';
 import transactionRoutes from './transaction.routes';
 import warehouseRoutes from './warehouse.routes';
 import dailyWorkLogRoutes from './daily-work-log.routes';
+import warehouseTypeRoutes from './warehouse-type.routes';
+import inventoryUsageRoutes from '../inventory-usage.routes';
+import payrollRoutes from '../payroll.routes';
+import publicUserRoutes from './public-user.routes';
+import roleRoutes from './role.routes';
+import permissionRoutes from './permission.routes';
+import auditLogRoutes from './audit-log.routes';
 
 
 const router = Router();
 
-router.use('/household', warehouseRoutes);
-router.use('/electronics', warehouseRoutes);
-router.use('/plants', warehouseRoutes);
+router.use('/warehouse-items', warehouseRoutes);
 
 console.log('🔧 Management routes loaded!');
 console.log('📦 Partner routes:', typeof partnerRoutes);
@@ -45,6 +50,15 @@ router.use('/work-schedules', workScheduleRoutes);
 router.use('/farm-events', farmEventRoutes);
 router.use('/transactions', transactionRoutes);
 router.use('/daily-work-logs', dailyWorkLogRoutes);
+router.use('/warehouse-types', warehouseTypeRoutes);
+router.use('/inventory-usage', inventoryUsageRoutes);
+router.use('/payrolls', payrollRoutes);
+
+// System settings
+router.use('/users', publicUserRoutes);
+router.use('/roles', roleRoutes);
+router.use('/permissions', permissionRoutes);
+router.use('/audit-logs', auditLogRoutes);
 
 
 export default router;

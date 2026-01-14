@@ -2,9 +2,10 @@ import pool from '../config/database';
 
 export interface WarehouseItem {
     id: string;
+    warehouse_type_id: string;
     item_code: string;
+    sku?: string;
     item_name: string;
-    category?: string;
     quantity: number;
     unit?: string;
     price: number;
@@ -12,44 +13,46 @@ export interface WarehouseItem {
     thumbnail_id?: string;
     note?: string;
     created_at?: string;
+    updated_at?: string;
+    warehouse_name?: string; // Joined from warehouse_types
 }
 
-const getTableName = (type: string) => {
-    switch (type) {
-        case 'household': return 'warehouse_household';
-        case 'electronics': return 'warehouse_electronics';
-        case 'plants': return 'warehouse_plants';
-        default: throw new Error('Invalid warehouse type');
-    }
-};
-
-export const getItems = async (type: string, search?: string): Promise<WarehouseItem[]> => {
-    const tableName = getTableName(type);
-    let query = `SELECT * FROM ${tableName} WHERE 1=1`;
+export const getItems = async (typeId?: string, search?: string): Promise<WarehouseItem[]> => {
+    let query = `
+        SELECT wi.*, wt.warehouse_name 
+        FROM warehouse_items wi
+        JOIN warehouse_types wt ON wi.warehouse_type_id = wt.id
+        WHERE 1=1
+    `;
     const values: any[] = [];
 
-    if (search) {
-        query += ` AND (item_name ILIKE $1 OR item_code ILIKE $1)`;
-        values.push(`%${search}%`);
+    if (typeId) {
+        values.push(typeId);
+        query += ` AND wi.warehouse_type_id = $${values.length}`;
     }
 
-    query += ` ORDER BY created_at DESC`;
+    if (search) {
+        values.push(`%${search}%`);
+        query += ` AND (wi.item_name ILIKE $${values.length} OR wi.item_code ILIKE $${values.length} OR wi.sku ILIKE $${values.length})`;
+    }
+
+    query += ` ORDER BY wi.created_at DESC`;
     const result = await pool.query(query, values);
     return result.rows;
 };
 
-export const createItem = async (type: string, data: any): Promise<WarehouseItem> => {
-    const tableName = getTableName(type);
+export const createItem = async (data: any): Promise<WarehouseItem> => {
     const query = `
-        INSERT INTO ${tableName} (
-            item_code, item_name, category, quantity, unit, price, location, thumbnail_id, note
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        INSERT INTO warehouse_items (
+            warehouse_type_id, item_code, sku, item_name, quantity, unit, price, location, thumbnail_id, note
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         RETURNING *
     `;
     const values = [
+        data.warehouse_type_id,
         data.item_code,
+        data.sku,
         data.item_name,
-        data.category,
         data.quantity || 0,
         data.unit,
         data.price || 0,
@@ -61,10 +64,9 @@ export const createItem = async (type: string, data: any): Promise<WarehouseItem
     return result.rows[0];
 };
 
-export const updateItem = async (type: string, id: string, data: any): Promise<WarehouseItem | null> => {
-    const tableName = getTableName(type);
+export const updateItem = async (id: string, data: any): Promise<WarehouseItem | null> => {
     const fields = [
-        'item_name', 'category', 'quantity', 'unit', 'price', 'location', 'thumbnail_id', 'note'
+        'warehouse_type_id', 'sku', 'item_name', 'quantity', 'unit', 'price', 'location', 'thumbnail_id', 'note'
     ];
     const values: any[] = [];
     const setClauses = fields
@@ -81,7 +83,7 @@ export const updateItem = async (type: string, id: string, data: any): Promise<W
 
     values.push(id);
     const query = `
-        UPDATE ${tableName} 
+        UPDATE warehouse_items 
         SET ${setClauses.join(', ')} 
         WHERE id = $${values.length} 
         RETURNING *
@@ -90,37 +92,36 @@ export const updateItem = async (type: string, id: string, data: any): Promise<W
     return result.rows[0];
 };
 
-export const deleteItem = async (type: string, id: string): Promise<boolean> => {
-    const tableName = getTableName(type);
-    const result = await pool.query(`DELETE FROM ${tableName} WHERE id = $1`, [id]);
+export const deleteItem = async (id: string): Promise<boolean> => {
+    const result = await pool.query(`DELETE FROM warehouse_items WHERE id = $1`, [id]);
     return (result.rowCount ?? 0) > 0;
 };
 
-export const getNextCode = async (type: string): Promise<string> => {
-    const tableName = getTableName(type);
-    let prefix = 'ITEM';
-    switch (type) {
-        case 'household': prefix = 'GD'; break;
-        case 'electronics': prefix = 'DT'; break;
-        case 'plants': prefix = 'HK'; break;
-    }
+export const getNextCode = async (typeId: string): Promise<string> => {
+    // Get prefix from warehouse_types.warehouse_code (e.g., 'KHO-GIA-DUNG' -> 'GD')
+    const typeResult = await pool.query('SELECT warehouse_code FROM warehouse_types WHERE id = $1', [typeId]);
+    if (typeResult.rows.length === 0) throw new Error('Invalid warehouse type');
+
+    const warehouseCode = typeResult.rows[0].warehouse_code;
+    const parts = warehouseCode.split('-');
+    const prefix = parts.length > 1 ? parts.map((p: string) => p[0]).join('') : warehouseCode.substring(0, 2).toUpperCase();
 
     const query = `
         SELECT item_code 
-        FROM ${tableName} 
-        WHERE item_code LIKE $1 
+        FROM warehouse_items 
+        WHERE warehouse_type_id = $1
         ORDER BY item_code DESC 
         LIMIT 1
     `;
-    const result = await pool.query(query, [`${prefix}-%`]);
+    const result = await pool.query(query, [typeId]);
 
     if (result.rows.length === 0) {
         return `${prefix}-001`;
     }
 
     const lastCode = result.rows[0].item_code;
-    const lastNum = parseInt(lastCode.split('-')[1]);
-    const nextNum = (lastNum + 1).toString().padStart(3, '0');
+    const codeParts = lastCode.split('-');
+    const lastNum = parseInt(codeParts[codeParts.length - 1]);
+    const nextNum = (isNaN(lastNum) ? 1 : lastNum + 1).toString().padStart(3, '0');
     return `${prefix}-${nextNum}`;
 };
-

@@ -22,7 +22,9 @@ export interface DailyWorkLog {
     applied_rate: number;
     total_amount: number;
     mandays: number;
+    status: string;
     note?: string;
+    season_name?: string;
     created_at?: string;
 }
 

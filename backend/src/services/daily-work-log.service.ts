@@ -20,18 +20,20 @@ export interface DailyWorkLog {
     applied_rate: number;
     total_amount: number;
     mandays: number;
+    status: string;
     note?: string;
     created_at?: string;
 }
 
 export const getDailyWorkLogs = async (): Promise<DailyWorkLog[]> => {
     const query = `
-        SELECT dl.*, p.partner_name, s.shift_name, jt.job_name, pr.payroll_code
+        SELECT dl.*, p.partner_name, s.shift_name, jt.job_name, pr.payroll_code, sn.season_name
         FROM daily_work_logs dl
         LEFT JOIN partners p ON dl.partner_id = p.id
         LEFT JOIN work_shifts s ON dl.shift_id = s.id
         LEFT JOIN job_types jt ON dl.job_type_id = jt.id
         LEFT JOIN payrolls pr ON dl.payroll_id = pr.id
+        LEFT JOIN seasons sn ON dl.season_id = sn.id
         ORDER BY dl.work_date DESC, dl.created_at DESC
     `;
     const result = await pool.query(query);
@@ -43,15 +45,19 @@ export const createDailyWorkLog = async (data: any): Promise<DailyWorkLog> => {
         INSERT INTO daily_work_logs (
             partner_id, season_id, unit_id, schedule_id, work_date, 
             shift_id, job_type_id, quantity, unit, applied_rate, 
-            total_amount, mandays, note
+            total_amount, mandays, status, note
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
         RETURNING *
     `;
     const values = [
-        data.partner_id, data.season_id, data.unit_id, data.schedule_id, data.work_date,
+        data.partner_id,
+        data.season_id && data.season_id !== '' ? data.season_id : null,
+        data.unit_id && data.unit_id !== '' ? data.unit_id : null,
+        data.schedule_id && data.schedule_id !== '' ? data.schedule_id : null,
+        data.work_date,
         data.shift_id, data.job_type_id, data.quantity, data.unit, data.applied_rate,
-        data.total_amount, data.mandays, data.note
+        data.total_amount, data.mandays, data.status || 'DONE', data.note
     ];
     const result = await pool.query(query, values);
     return result.rows[0];
@@ -65,13 +71,18 @@ export const updateDailyWorkLog = async (id: string, data: any): Promise<DailyWo
     const allowedFields = [
         'partner_id', 'season_id', 'unit_id', 'schedule_id', 'work_date',
         'shift_id', 'job_type_id', 'quantity', 'unit', 'applied_rate',
-        'total_amount', 'mandays', 'note'
+        'total_amount', 'mandays', 'status', 'note'
     ];
 
+    const uuidFields = ['season_id', 'unit_id', 'schedule_id', 'payroll_id', 'partner_id', 'shift_id', 'job_type_id'];
     for (const key of allowedFields) {
         if (data[key] !== undefined) {
             fields.push(`${key} = $${paramIndex++}`);
-            values.push(data[key]);
+            if (uuidFields.includes(key) && (data[key] === '' || data[key] === null)) {
+                values.push(null);
+            } else {
+                values.push(data[key]);
+            }
         }
     }
 

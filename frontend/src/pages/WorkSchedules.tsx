@@ -3,12 +3,14 @@ import { getWorkSchedules, createWorkSchedule, updateWorkSchedule, deleteWorkSch
 import { getPartners, Partner } from '../api/partner.api';
 import { getWorkShifts, WorkShift } from '../api/work-shift.api';
 import { getJobTypes, JobType } from '../api/job-type.api';
+import { getSeasons, Season } from '../api/season.api';
 
 const WorkSchedules: React.FC = () => {
     const [schedules, setSchedules] = useState<WorkSchedule[]>([]);
     const [workers, setWorkers] = useState<Partner[]>([]);
     const [shifts, setShifts] = useState<WorkShift[]>([]);
     const [jobTypes, setJobTypes] = useState<JobType[]>([]);
+    const [seasons, setSeasons] = useState<Season[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingItem, setEditingItem] = useState<WorkSchedule | null>(null);
@@ -22,7 +24,8 @@ const WorkSchedules: React.FC = () => {
         job_type_id: '',
         work_date: new Date().toISOString().split('T')[0],
         status: 'PLANNED',
-        note: ''
+        note: '',
+        season_id: ''
     });
 
     useEffect(() => {
@@ -39,16 +42,18 @@ const WorkSchedules: React.FC = () => {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const [schedulesData, workersData, shiftsData, jobsData] = await Promise.all([
+            const [schedulesData, workersData, shiftsData, jobsData, seasonsData] = await Promise.all([
                 getWorkSchedules(),
                 getPartners('WORKER'),
                 getWorkShifts(),
-                getJobTypes()
+                getJobTypes(),
+                getSeasons()
             ]);
             setSchedules(schedulesData || []);
             setWorkers(workersData || []);
             setShifts(shiftsData || []);
             setJobTypes(jobsData || []);
+            setSeasons(seasonsData || []);
         } catch (error) {
             console.error('Error fetching work schedules:', error);
             setSchedules([]);
@@ -154,7 +159,7 @@ const WorkSchedules: React.FC = () => {
                         setFormData({
                             partner_id: '', shift_id: '', job_type_id: '',
                             work_date: new Date().toISOString().split('T')[0],
-                            status: 'PLANNED', note: ''
+                            status: 'PLANNED', note: '', season_id: ''
                         });
                         setShowModal(true);
                     }}
@@ -205,7 +210,15 @@ const WorkSchedules: React.FC = () => {
                                                 </div>
                                                 <div>
                                                     <p className="font-extrabold text-slate-900">{item.partner_name}</p>
-                                                    <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">{item.shift_name || 'Chưa chọn ca'}</p>
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">{item.shift_name || 'Chưa chọn ca'}</p>
+                                                        {item.season_name && (
+                                                            <>
+                                                                <span className="text-slate-300">•</span>
+                                                                <span className="text-[10px] font-black text-[#13ec49] uppercase tracking-widest">{item.season_name}</span>
+                                                            </>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
@@ -235,7 +248,8 @@ const WorkSchedules: React.FC = () => {
                                                             job_type_id: item.job_type_id,
                                                             work_date: new Date(item.work_date).toISOString().split('T')[0],
                                                             status: item.status,
-                                                            note: item.note || ''
+                                                            note: item.note || '',
+                                                            season_id: item.season_id || ''
                                                         });
                                                         setShowModal(true);
                                                     }}
@@ -300,6 +314,17 @@ const WorkSchedules: React.FC = () => {
                                     value={formData.job_type_id}
                                     onChange={(val: string) => setFormData({ ...formData, job_type_id: val })}
                                     options={jobTypes.map(j => ({ value: j.id, label: j.job_name }))}
+                                />
+                            </div>
+
+                            <div className="col-span-full">
+                                <CustomSelect
+                                    id="season"
+                                    label="Vụ mùa"
+                                    placeholder="-- Chọn vụ mùa (không bắt buộc) --"
+                                    value={formData.season_id}
+                                    onChange={(val: string) => setFormData({ ...formData, season_id: val })}
+                                    options={seasons.map(s => ({ value: s.id, label: s.season_name, sublabel: s.status }))}
                                 />
                             </div>
 

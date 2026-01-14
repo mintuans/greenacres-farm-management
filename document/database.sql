@@ -97,7 +97,7 @@ CREATE TABLE inventory (
     inventory_name VARCHAR(255) NOT NULL,
     category_id UUID REFERENCES categories(id),
     unit_of_measure VARCHAR(50), -- 'Bao', 'Kg', 'Chai'
-    
+    sku VARCHAR(100) UNIQUE,    -- Cột SKU để quét mã vạch
     stock_quantity DECIMAL(12, 2) DEFAULT 0,    -- Số lượng đang có
     min_stock_level DECIMAL(12, 2) DEFAULT 0,   -- Mức cảnh báo 
     last_import_price DECIMAL(15, 2) DEFAULT 0, -- Giá mua gần nhất
@@ -194,6 +194,7 @@ CREATE TABLE daily_work_logs (
     mandays INT DEFAULT 0, -- 0: Cả ngày, 1: Nửa ngày
     
     note TEXT,
+    status VARCHAR(20) DEFAULT 'DONE', -- 'DONE', 'CANCELLED', 'REJECTED', 'INPROGRESS'
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -210,6 +211,9 @@ CREATE TABLE work_schedules (
     status VARCHAR(20) DEFAULT 'PLANNED', 
     note TEXT,
     
+    -- Liên kết mùa vụ
+    season_id UUID REFERENCES seasons(id),
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 -- 16. Bảng Sự kiện Nông trại (Farm Events)
@@ -255,52 +259,44 @@ CREATE TABLE schedules (
 -- PHẦN 4: QUẢN LÝ KHO LÝ (Gia dụng, Điện tử, Hoa kiểng)
 -- =================================================================================
 
--- 18. Kho Gia dụng
-CREATE TABLE warehouse_household (
+-- 18. Loại Kho (Phân loại kho vật lý)
+CREATE TABLE warehouse_types (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    item_code VARCHAR(20) UNIQUE NOT NULL,
+    warehouse_code VARCHAR(20) UNIQUE NOT NULL, -- VD: 'KHO-GIA-DUNG'
+    warehouse_name VARCHAR(255) NOT NULL,        -- VD: 'Kho Gia dụng'
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 19. Danh mục vật phẩm trong Kho (Gộp chung Gia dụng, Điện tử, Hoa kiểng...)
+CREATE TABLE warehouse_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    warehouse_type_id UUID REFERENCES warehouse_types(id) NOT NULL,
+    item_code VARCHAR(50) UNIQUE NOT NULL,
+    sku VARCHAR(100) UNIQUE, -- Cột SKU để quét mã vạch Check-in/Check-out
     item_name VARCHAR(255) NOT NULL,
-    category VARCHAR(100),
     quantity DECIMAL(12, 2) DEFAULT 0,
     unit VARCHAR(50),
     price DECIMAL(15, 2) DEFAULT 0,
-    location VARCHAR(255),
+    location VARCHAR(255),   -- Vị trí trong kho (Kệ A1, Tầng 2...)
     thumbnail_id UUID REFERENCES media_files(id),
     note TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 19. Kho Điện tử
-CREATE TABLE warehouse_electronics (
+-- 20. Nhật ký Nhập/Xuất Kho (Inventory History / Check-in Check-out)
+CREATE TABLE warehouse_item_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    item_code VARCHAR(20) UNIQUE NOT NULL,
-    item_name VARCHAR(255) NOT NULL,
-    category VARCHAR(100),
-    quantity DECIMAL(12, 2) DEFAULT 0,
-    unit VARCHAR(50),
-    price DECIMAL(15, 2) DEFAULT 0,
-    location VARCHAR(255),
-    thumbnail_id UUID REFERENCES media_files(id),
+    item_id UUID REFERENCES warehouse_items(id) NOT NULL,
+    type VARCHAR(20) NOT NULL CHECK (type IN ('CHECK_IN', 'CHECK_OUT')),
+    quantity DECIMAL(12, 2) NOT NULL,
+    price DECIMAL(15, 2),          -- Giá tại thời điểm nhập/xuất
+    partner_id UUID REFERENCES partners(id), -- Giao dịch với đối tác nào
+    sku_scanned VARCHAR(100),      -- SKU thực tế lúc quét để đối chiếu
     note TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- 20. Kho Hoa kiểng
-CREATE TABLE warehouse_plants (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    item_code VARCHAR(20) UNIQUE NOT NULL,
-    item_name VARCHAR(255) NOT NULL,
-    category VARCHAR(100),
-    quantity DECIMAL(12, 2) DEFAULT 0,
-    unit VARCHAR(50),
-    price DECIMAL(15, 2) DEFAULT 0,
-    location VARCHAR(255),
-    thumbnail_id UUID REFERENCES media_files(id),
-    note TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_by UUID                -- ID người thực hiện
 );
 
 CREATE OR REPLACE FUNCTION get_daily_schedules(target_date DATE)
@@ -360,50 +356,62 @@ $$;
 -- =================================================================================
 
 -- 1. Chuyển từ Lịch làm việc sang Nhật ký công việc (Daily Log)
--- Chạy khi xác nhận nhân viên đã đi làm theo lịch
+-- Chạy khi xác nhận nhân viên đã đi làm theo lịch (Có thể gọi thủ công để chốt mandays)
 CREATE OR REPLACE FUNCTION confirm_schedule_to_log(p_schedule_id UUID, p_mandays INT DEFAULT 0)
 RETURNS UUID AS $$
 DECLARE
     v_log_id UUID;
     v_rate DECIMAL(15, 2);
+    v_status VARCHAR(20);
 BEGIN
-    -- Lấy đơn giá hiện tại từ loại công việc
-    SELECT jt.base_rate INTO v_rate
+    -- Lấy đơn giá và trạng thái hiện tại
+    SELECT 
+        COALESCE(jt.base_rate, 0),
+        CASE 
+            WHEN ws.status = 'PLANNED' THEN 'INPROGRESS'
+            WHEN ws.status = 'CONFIRMED' THEN 'DONE'
+            WHEN ws.status = 'CANCELLED' THEN 'CANCELLED'
+            ELSE 'INPROGRESS'
+        END
+    INTO v_rate, v_status
     FROM work_schedules ws
-    JOIN job_types jt ON ws.job_type_id = jt.id
+    LEFT JOIN job_types jt ON ws.job_type_id = jt.id
     WHERE ws.id = p_schedule_id;
 
-    -- Chèn vào nhật ký làm việc
-    INSERT INTO daily_work_logs (
-        partner_id, 
-        schedule_id, 
-        work_date, 
-        shift_id, 
-        job_type_id, 
-        applied_rate,
-        mandays,
-        quantity,
-        total_amount
-    )
-    SELECT 
-        partner_id, 
-        id, 
-        work_date, 
-        shift_id, 
-        job_type_id, 
-        v_rate,
-        p_mandays,
-        1.0, -- Mặc định quantity là 1
-        CASE 
-            WHEN p_mandays = 1 THEN v_rate * 0.5 -- Nửa ngày
-            ELSE v_rate -- Cả ngày (0)
-        END
-    FROM work_schedules
-    WHERE id = p_schedule_id
-    RETURNING id INTO v_log_id;
+    -- Kiểm tra xem đã có log chưa
+    SELECT id INTO v_log_id FROM daily_work_logs WHERE schedule_id = p_schedule_id;
 
-    -- Cập nhật trạng thái lịch
-    UPDATE work_schedules SET status = 'CONFIRMED' WHERE id = p_schedule_id;
+    IF v_log_id IS NOT NULL THEN
+        -- Cập nhật log hiện có
+        UPDATE daily_work_logs SET
+            applied_rate = v_rate,
+            mandays = p_mandays,
+            total_amount = CASE 
+                WHEN p_mandays = 1 THEN v_rate * 0.5 
+                ELSE v_rate 
+            END,
+            status = 'DONE' -- Khi gọi function confirm thì ép về DONE
+        WHERE id = v_log_id;
+        
+        -- Cập nhật trạng thái lịch
+        UPDATE work_schedules SET status = 'CONFIRMED' WHERE id = p_schedule_id;
+    ELSE
+        -- Chèn mới nếu chưa có (trường hợp hiếm nếu trigger hoạt động tốt)
+        INSERT INTO daily_work_logs (
+            partner_id, schedule_id, work_date, shift_id, job_type_id, 
+            applied_rate, mandays, quantity, total_amount, season_id, status
+        )
+        SELECT 
+            partner_id, id, work_date, shift_id, job_type_id, 
+            v_rate, p_mandays, 1.0,
+            CASE WHEN p_mandays = 1 THEN v_rate * 0.5 ELSE v_rate END,
+            season_id, 'DONE'
+        FROM work_schedules
+        WHERE id = p_schedule_id
+        RETURNING id INTO v_log_id;
+
+        UPDATE work_schedules SET status = 'CONFIRMED' WHERE id = p_schedule_id;
+    END IF;
 
     RETURN v_log_id;
 END;
@@ -483,7 +491,7 @@ BEGIN
     FROM daily_work_logs
     WHERE id = ANY(p_log_ids) AND payroll_id IS NULL;
 
-    IF v_total_amount IS NULL OR v_total_amount === 0 THEN
+    IF v_total_amount IS NULL OR v_total_amount = 0 THEN
         RAISE EXCEPTION 'Không có dữ liệu hợp lệ hoặc các ngày công đã được tính lương.';
     END IF;
 
@@ -517,26 +525,81 @@ END;
 $$ LANGUAGE plpgsql;
 
 
--- 3. Trigger tự động chốt công khi đổi trạng thái lịch sang CONFIRMED
--- Giúp đồng bộ dữ liệu dù bạn sửa ở màn hình nào
-CREATE OR REPLACE FUNCTION trg_auto_log_on_confirm()
+-- 3. Trigger tự động đồng bộ Log khi tạo/sửa/xóa lịch làm việc
+CREATE OR REPLACE FUNCTION trg_sync_schedule_to_log()
 RETURNS TRIGGER AS $$
+DECLARE
+    v_log_status VARCHAR(20);
+    v_rate DECIMAL(15, 2);
 BEGIN
-    -- Nếu trạng thái mới là 'CONFIRMED' và trạng thái cũ khác 'CONFIRMED'
-    IF (NEW.status = 'CONFIRMED' AND (OLD.status IS NULL OR OLD.status <> 'CONFIRMED')) THEN
-        -- Kiểm tra xem đã có log chưa để tránh tạo trùng bản ghi
-        IF NOT EXISTS (SELECT 1 FROM daily_work_logs WHERE schedule_id = NEW.id) THEN
-            PERFORM confirm_schedule_to_log(NEW.id, 0);
+    IF (TG_OP = 'DELETE') THEN
+        -- Khi xóa lịch, chuyển trạng thái log sang REJECTED và gỡ liên kết schedule_id
+        UPDATE daily_work_logs 
+        SET status = 'REJECTED', schedule_id = NULL 
+        WHERE schedule_id = OLD.id;
+        RETURN OLD;
+    END IF;
+
+    -- Ánh xạ trạng thái từ Lịch sang Log
+    v_log_status := CASE 
+        WHEN NEW.status = 'PLANNED' THEN 'INPROGRESS'
+        WHEN NEW.status = 'CONFIRMED' THEN 'DONE'
+        WHEN NEW.status = 'CANCELLED' THEN 'CANCELLED'
+        ELSE 'INPROGRESS'
+    END;
+
+    -- Lấy đơn giá hiện tại
+    SELECT COALESCE(jt.base_rate, 0) INTO v_rate
+    FROM job_types jt
+    WHERE jt.id = NEW.job_type_id;
+
+    IF (TG_OP = 'INSERT') THEN
+        -- Tự động tạo Log ở trạng thái INPROGRESS khi thêm Lịch mới
+        INSERT INTO daily_work_logs (
+            partner_id, schedule_id, work_date, shift_id, job_type_id, 
+            applied_rate, mandays, quantity, total_amount, season_id, status
+        )
+        VALUES (
+            NEW.partner_id, NEW.id, NEW.work_date, NEW.shift_id, NEW.job_type_id,
+            v_rate, 0, 1.0, v_rate, NEW.season_id, v_log_status
+        );
+    ELSIF (TG_OP = 'UPDATE') THEN
+        -- Cập nhật bản ghi Log tương ứng
+        IF EXISTS (SELECT 1 FROM daily_work_logs WHERE schedule_id = NEW.id) THEN
+            UPDATE daily_work_logs SET
+                work_date = NEW.work_date,
+                shift_id = NEW.shift_id,
+                job_type_id = NEW.job_type_id,
+                applied_rate = v_rate,
+                total_amount = CASE 
+                    WHEN mandays = 1 THEN v_rate * 0.5 
+                    ELSE v_rate 
+                END,
+                season_id = NEW.season_id,
+                status = v_log_status
+            WHERE schedule_id = NEW.id;
+        ELSE
+            -- Nếu chưa có log (do dữ liệu cũ) thì tạo mới
+            INSERT INTO daily_work_logs (
+                partner_id, schedule_id, work_date, shift_id, job_type_id, 
+                applied_rate, mandays, quantity, total_amount, season_id, status
+            )
+            VALUES (
+                NEW.partner_id, NEW.id, NEW.work_date, NEW.shift_id, NEW.job_type_id,
+                v_rate, 0, 1.0, v_rate, NEW.season_id, v_log_status
+            );
         END IF;
     END IF;
+
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS work_schedule_auto_log_trigger ON work_schedules;
 CREATE TRIGGER work_schedule_auto_log_trigger
-AFTER UPDATE OR INSERT ON work_schedules
+AFTER INSERT OR UPDATE OR DELETE ON work_schedules
 FOR EACH ROW
-EXECUTE FUNCTION trg_auto_log_on_confirm();
+EXECUTE FUNCTION trg_sync_schedule_to_log();
 
 -- 4. Tự động cập nhật số dư Đối tác (Nhân viên) dựa trên Phiếu lương
 CREATE OR REPLACE FUNCTION trg_update_partner_balance_on_payroll()
@@ -570,6 +633,43 @@ CREATE TRIGGER payroll_balance_sync_trigger
 AFTER INSERT OR UPDATE OR DELETE ON payrolls
 FOR EACH ROW
 EXECUTE FUNCTION trg_update_partner_balance_on_payroll();
+
+-- 5. Hàm lấy danh sách giao dịch theo tháng/năm
+CREATE OR REPLACE FUNCTION get_transactions_by_month(
+    p_month integer,
+    p_year integer,
+    p_season_id uuid default null
+)
+RETURNS TABLE (
+    id uuid,
+    partner_id uuid,
+    season_id uuid,
+    category_id uuid,
+    amount numeric,
+    paid_amount numeric,
+    type varchar,
+    transaction_date timestamp with time zone,
+    note text,
+    is_inventory_affected boolean,
+    partner_name varchar,
+    category_name varchar,
+    season_name varchar
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT t.id, t.partner_id, t.season_id, t.category_id, t.amount, t.paid_amount, 
+           t.type::varchar, t.transaction_date, t.note, t.is_inventory_affected,
+           p.partner_name, c.category_name, s.season_name
+    FROM transactions t
+    LEFT JOIN partners p ON t.partner_id = p.id
+    LEFT JOIN categories c ON t.category_id = c.id
+    LEFT JOIN seasons s ON t.season_id = s.id
+    WHERE EXTRACT(MONTH FROM t.transaction_date) = p_month
+      AND EXTRACT(YEAR FROM t.transaction_date) = p_year
+      AND (p_season_id IS NULL OR t.season_id = p_season_id)
+    ORDER BY t.transaction_date DESC;
+END;
+$$ LANGUAGE plpgsql;
 
 -- =================================================================================
 -- HẾT

@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getTransactions, Transaction, createTransaction } from '../api/transaction.api';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import { getSeasons, Season } from '../api/season.api';
 import { getCategories, Category } from '../api/category.api';
 import { getPartners, Partner } from '../api/partner.api';
@@ -79,10 +81,17 @@ const Transactions: React.FC = () => {
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [filter, setFilter] = useState<'ALL' | 'INCOME' | 'EXPENSE'>('ALL');
+
+  // Month filtering state
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const monthPickerRef = useRef<HTMLDivElement>(null);
 
   const [formData, setFormData] = useState({
     partner_id: '',
@@ -99,12 +108,22 @@ const Transactions: React.FC = () => {
   useEffect(() => {
     fetchData();
     loadMetadata();
+  }, [currentMonth, currentYear]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (monthPickerRef.current && !monthPickerRef.current.contains(event.target as Node)) {
+        setShowMonthPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const data = await getTransactions();
+      const data = await getTransactions(currentMonth, currentYear);
       setTransactions(data || []);
     } catch (error) {
       console.error('Error fetching transactions:', error);
@@ -112,6 +131,29 @@ const Transactions: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const handlePrevMonth = () => {
+    if (currentMonth === 1) {
+      setCurrentMonth(12);
+      setCurrentYear(prev => prev - 1);
+    } else {
+      setCurrentMonth(prev => prev - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (currentMonth === 12) {
+      setCurrentMonth(1);
+      setCurrentYear(prev => prev + 1);
+    } else {
+      setCurrentMonth(prev => prev + 1);
+    }
+  };
+
+  const months = [
+    'Tháng 01', 'Tháng 02', 'Tháng 03', 'Tháng 04', 'Tháng 05', 'Tháng 06',
+    'Tháng 07', 'Tháng 08', 'Tháng 09', 'Tháng 10', 'Tháng 11', 'Tháng 12'
+  ];
 
   const loadMetadata = async () => {
     try {
@@ -166,6 +208,157 @@ const Transactions: React.FC = () => {
 
   const profit = totalIncome - totalExpense;
 
+  const handleExport = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Giao dịch');
+
+    // Define columns
+    worksheet.columns = [
+      { header: 'Ngày giao dịch', key: 'date', width: 20 },
+      { header: 'Nội dung / Chi tiết', key: 'note', width: 40 },
+      { header: 'Vụ mùa / Đối tác', key: 'context', width: 35 },
+      { header: 'Phân loại', key: 'category', width: 20 },
+      { header: 'Loại', key: 'type', width: 12 },
+      { header: 'Số tiền (VNĐ)', key: 'amount', width: 20 },
+      { header: 'Trạng thái', key: 'status', width: 15 },
+    ];
+
+    // Add data
+    filteredTransactions.forEach(t => {
+      const row = worksheet.addRow({
+        date: new Date(t.transaction_date).toLocaleDateString('vi-VN'),
+        note: t.note || 'Không có tiêu đề',
+        context: `${t.season_name ? t.season_name : 'Chi tiêu chung'}${t.partner_name ? ' - ' + t.partner_name : ''}`,
+        category: t.category_name || 'Khác',
+        type: t.type === 'INCOME' ? 'Thu' : 'Chi',
+        amount: Number(t.amount),
+        status: 'Hoàn tất'
+      });
+
+      // Style amount cell based on type
+      const amountCell = row.getCell('amount');
+      const typeCell = row.getCell('type');
+
+      if (t.type === 'INCOME') {
+        amountCell.font = { color: { argb: 'FF008000' }, bold: true }; // Green
+        typeCell.font = { color: { argb: 'FF008000' }, bold: true };
+      } else {
+        amountCell.font = { color: { argb: 'FFFF0000' }, bold: true }; // Red
+        typeCell.font = { color: { argb: 'FFFF0000' }, bold: true };
+      }
+      amountCell.numFmt = '#,##0"₫"';
+    });
+
+    // Style the header
+    const headerRow = worksheet.getRow(1);
+    headerRow.height = 30;
+    headerRow.eachCell((cell) => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF13EC49' }
+      };
+      cell.font = {
+        bold: true,
+        color: { argb: 'FF000000' },
+        size: 12
+      };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    });
+
+    // Style all data cells
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber > 1) {
+        row.height = 25;
+        row.eachCell((cell) => {
+          cell.alignment = { vertical: 'middle' };
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FFEEEEEE' } },
+            left: { style: 'thin', color: { argb: 'FFEEEEEE' } },
+            bottom: { style: 'thin', color: { argb: 'FFEEEEEE' } },
+            right: { style: 'thin', color: { argb: 'FFEEEEEE' } }
+          };
+        });
+      }
+    });
+
+    // Generate and save file
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, `Bao_cao_giao_dich_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(file);
+      const worksheet = workbook.getWorksheet(1);
+      if (!worksheet) return;
+
+      const transactionsToCreate: any[] = [];
+      worksheet.eachRow((row, rowNumber) => {
+        if (rowNumber === 1) return; // Skip header
+
+        const dateStr = row.getCell(1).text; // Ngày giao dịch
+        const note = row.getCell(2).text; // Nội dung
+        const context = row.getCell(3).text; // Vụ mùa / Đối tác
+        const categoryName = row.getCell(4).text; // Phân loại
+        const typeStr = row.getCell(5).text; // Loại
+        const amount = Number(row.getCell(6).value); // Số tiền
+
+        // Parse entities
+        const [seasonNamePart, partnerNamePart] = context.split(' - ');
+
+        const category = categories.find(c => c.category_name === categoryName);
+        const season = seasons.find(s => s.season_name === seasonNamePart);
+        // Partner name might be exactly the part after ' - ' or the whole thing if no ' - '
+        const partner = partners.find(p => p.partner_name === (partnerNamePart || seasonNamePart));
+
+        // Format date from DD/MM/YYYY to YYYY-MM-DD
+        let formattedDate = new Date().toISOString().split('T')[0];
+        if (dateStr) {
+          const parts = dateStr.split('/');
+          if (parts.length === 3) {
+            formattedDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+          }
+        }
+
+        transactionsToCreate.push({
+          transaction_date: formattedDate,
+          note: note,
+          category_id: category?.id || '',
+          season_id: season?.id || '',
+          partner_id: partner?.id || '',
+          type: typeStr === 'Thu' ? 'INCOME' : 'EXPENSE',
+          amount: amount,
+          paid_amount: amount,
+          is_inventory_affected: false
+        });
+      });
+
+      // Execute creations
+      setLoading(true);
+      await Promise.all(transactionsToCreate.map(t => createTransaction(t)));
+      await fetchData();
+      alert(`Đã nhập thành công ${transactionsToCreate.length} giao dịch!`);
+    } catch (error) {
+      console.error('Error importing excel:', error);
+      alert('Có lỗi xảy ra khi nhập file. Vui lòng kiểm tra lại định dạng file.');
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
       {/* Header */}
@@ -174,13 +367,81 @@ const Transactions: React.FC = () => {
           <h1 className="text-4xl font-black tracking-tight text-slate-900">Sổ nhật ký giao dịch</h1>
           <p className="text-slate-500 font-medium">Quản lý thu nhập và chi phí hàng ngày của trang trại.</p>
         </div>
-        <div className="flex items-center bg-white border border-slate-200 rounded-xl p-1 shadow-sm shrink-0">
-          <button className="p-2 hover:bg-slate-50 rounded-lg text-slate-400"><span className="material-symbols-outlined">chevron_left</span></button>
-          <div className="px-4 flex items-center gap-3">
+        <div className="flex items-center bg-white border border-slate-200 rounded-xl p-1 shadow-sm shrink-0 relative" ref={monthPickerRef}>
+          <button
+            onClick={handlePrevMonth}
+            className="p-2 hover:bg-slate-50 rounded-lg text-slate-400 transition-colors"
+          >
+            <span className="material-symbols-outlined">chevron_left</span>
+          </button>
+          <div
+            onClick={() => setShowMonthPicker(!showMonthPicker)}
+            className="px-4 flex items-center gap-3 cursor-pointer hover:bg-slate-50 py-2 rounded-lg transition-all select-none"
+          >
             <span className="material-symbols-outlined text-[#13ec49]">calendar_month</span>
-            <span className="text-sm font-bold text-slate-900">Tháng 01, 2026</span>
+            <span className="text-sm font-bold text-slate-900">
+              {months[currentMonth - 1]}, {currentYear}
+            </span>
           </div>
-          <button className="p-2 hover:bg-slate-50 rounded-lg text-slate-400"><span className="material-symbols-outlined">chevron_right</span></button>
+          <button
+            onClick={handleNextMonth}
+            className="p-2 hover:bg-slate-50 rounded-lg text-slate-400 transition-colors"
+          >
+            <span className="material-symbols-outlined">chevron_right</span>
+          </button>
+
+          {/* Premium Date Picker Popup */}
+          {showMonthPicker && (
+            <div className="absolute top-full mt-4 left-0 md:left-auto md:right-0 z-50 bg-white border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-[32px] p-6 w-[320px] animate-in fade-in slide-in-from-top-4 duration-300">
+              <div className="flex items-center justify-between mb-6">
+                <button
+                  onClick={() => setCurrentYear(prev => prev - 1)}
+                  className="size-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:text-slate-900 transition-all"
+                >
+                  <span className="material-symbols-outlined">keyboard_double_arrow_left</span>
+                </button>
+                <span className="text-lg font-black text-slate-900">{currentYear}</span>
+                <button
+                  onClick={() => setCurrentYear(prev => prev + 1)}
+                  className="size-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:text-slate-900 transition-all"
+                >
+                  <span className="material-symbols-outlined">keyboard_double_arrow_right</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                {months.map((m, idx) => (
+                  <button
+                    key={m}
+                    onClick={() => {
+                      setCurrentMonth(idx + 1);
+                      setShowMonthPicker(false);
+                    }}
+                    className={`py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${currentMonth === idx + 1
+                      ? 'bg-[#13ec49] text-black shadow-lg shadow-[#13ec49]/20'
+                      : 'hover:bg-slate-50 text-slate-500 hover:text-slate-900'
+                      }`}
+                  >
+                    {m.split(' ')[1]}
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-slate-50 flex justify-center">
+                <button
+                  onClick={() => {
+                    const today = new Date();
+                    setCurrentMonth(today.getMonth() + 1);
+                    setCurrentYear(today.getFullYear());
+                    setShowMonthPicker(false);
+                  }}
+                  className="text-[10px] font-black text-[#13ec49] uppercase tracking-widest hover:underline"
+                >
+                  Về tháng hiện tại
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -233,11 +494,27 @@ const Transactions: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-3 w-full md:w-auto">
-            <button className="flex-1 md:flex-none border border-slate-200 px-6 py-2.5 rounded-2xl text-xs font-black hover:bg-slate-50 transition-all uppercase tracking-widest">Xuất báo cáo</button>
-            <button className="flex-1 md:flex-none border border-slate-200 px-6 py-2.5 rounded-2xl text-xs font-black hover:bg-slate-50 transition-all uppercase tracking-widest flex items-center justify-center gap-2">
+            <button
+              onClick={handleExport}
+              className="flex-1 md:flex-none border border-slate-200 px-6 py-2.5 rounded-2xl text-xs font-black hover:bg-slate-50 transition-all uppercase tracking-widest flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[18px]">download</span>
+              Xuất báo cáo
+            </button>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex-1 md:flex-none border border-slate-200 px-6 py-2.5 rounded-2xl text-xs font-black hover:bg-slate-50 transition-all uppercase tracking-widest flex items-center justify-center gap-2"
+            >
               <span className="material-symbols-outlined text-[18px]">upload_file</span>
               Nhập dữ liệu
             </button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImport}
+              className="hidden"
+              accept=".xlsx"
+            />
             <button
               onClick={() => setShowModal(true)}
               className="flex-1 md:flex-none bg-[#13ec49] text-black px-8 py-2.5 rounded-2xl text-xs font-extrabold shadow-xl shadow-[#13ec49]/20 transition-all uppercase tracking-widest hover:scale-105 active:scale-95 flex items-center justify-center gap-2"

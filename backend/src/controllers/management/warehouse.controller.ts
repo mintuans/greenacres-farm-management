@@ -1,19 +1,10 @@
 import { Request, Response } from 'express';
 import * as warehouseService from '../../services/warehouse.service';
 
-const getWarehouseType = (req: Request) => {
-    const path = req.baseUrl;
-    if (path.includes('household')) return 'household';
-    if (path.includes('electronics')) return 'electronics';
-    if (path.includes('plants')) return 'plants';
-    return '';
-};
-
 export const getItems = async (req: Request, res: Response) => {
     try {
-        const type = getWarehouseType(req);
-        const { search } = req.query;
-        const items = await warehouseService.getItems(type, search as string);
+        const { typeId, search } = req.query;
+        const items = await warehouseService.getItems(typeId as string, search as string);
         return res.json({ success: true, data: items });
     } catch (error: any) {
         return res.status(500).json({ success: false, message: error.message });
@@ -22,8 +13,7 @@ export const getItems = async (req: Request, res: Response) => {
 
 export const createItem = async (req: Request, res: Response) => {
     try {
-        const type = getWarehouseType(req);
-        const item = await warehouseService.createItem(type, req.body);
+        const item = await warehouseService.createItem(req.body);
         return res.status(201).json({ success: true, data: item });
     } catch (error: any) {
         return res.status(500).json({ success: false, message: error.message });
@@ -32,9 +22,8 @@ export const createItem = async (req: Request, res: Response) => {
 
 export const updateItem = async (req: Request, res: Response) => {
     try {
-        const type = getWarehouseType(req);
         const { id } = req.params;
-        const item = await warehouseService.updateItem(type, id, req.body);
+        const item = await warehouseService.updateItem(id, req.body);
         if (!item) {
             return res.status(404).json({ success: false, message: 'Item not found' });
         }
@@ -46,9 +35,8 @@ export const updateItem = async (req: Request, res: Response) => {
 
 export const deleteItem = async (req: Request, res: Response) => {
     try {
-        const type = getWarehouseType(req);
         const { id } = req.params;
-        const success = await warehouseService.deleteItem(type, id);
+        const success = await warehouseService.deleteItem(id);
         if (!success) {
             return res.status(404).json({ success: false, message: 'Item not found' });
         }
@@ -60,11 +48,13 @@ export const deleteItem = async (req: Request, res: Response) => {
 
 export const getNextCode = async (req: Request, res: Response) => {
     try {
-        const type = getWarehouseType(req);
-        const code = await warehouseService.getNextCode(type);
+        const { typeId } = req.query;
+        if (!typeId) {
+            return res.status(400).json({ success: false, message: 'typeId is required' });
+        }
+        const code = await warehouseService.getNextCode(typeId as string);
         return res.json({ success: true, data: code });
     } catch (error: any) {
         return res.status(500).json({ success: false, message: error.message });
     }
 };
-

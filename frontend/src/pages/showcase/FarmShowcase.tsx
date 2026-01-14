@@ -6,6 +6,7 @@ import { getComments, createComment, addReaction } from '../../services/comments
 import { incrementVisitors, getVisitorCount } from '../../services/stats.service';
 import ShowcaseHeader from '../../templates/ShowcaseHeader';
 import { useAuth } from '@/src/contexts/AuthContext';
+import { WeatherWidget } from '../../components';
 
 interface CommentItemProps {
     comment: any;
@@ -809,6 +810,8 @@ const FarmShowcase: React.FC = () => {
                                         })}
                                     </div>
                                 </div>
+
+                                <WeatherWidget />
 
                                 {/* Location & Contact */}
                                 <div className="bg-white p-0 rounded-2xl border border-[#dbe6de] shadow-sm overflow-hidden flex flex-col">

@@ -18,8 +18,10 @@ export interface Transaction {
     season_name?: string;
 }
 
-export const getTransactions = async (seasonId?: string): Promise<Transaction[]> => {
+export const getTransactions = async (month?: number, year?: number, seasonId?: string): Promise<Transaction[]> => {
     const params: any = {};
+    if (month) params.month = month;
+    if (year) params.year = year;
     if (seasonId) params.seasonId = seasonId;
     const response = await axios.get(`${API_URL}/management/transactions`, { params });
     return response.data.data;

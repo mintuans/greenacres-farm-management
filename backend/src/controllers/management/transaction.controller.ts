@@ -3,8 +3,12 @@ import * as transactionService from '../../services/transaction.service';
 
 export const getTransactions = async (req: Request, res: Response) => {
     try {
-        const { seasonId } = req.query;
-        const transactions = await transactionService.getTransactions(seasonId as string);
+        const { seasonId, month, year } = req.query;
+        const transactions = await transactionService.getTransactions(
+            month ? parseInt(month as string) : undefined,
+            year ? parseInt(year as string) : undefined,
+            seasonId as string
+        );
         res.json({ success: true, data: transactions });
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });

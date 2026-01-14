@@ -13,6 +13,8 @@ export interface WorkSchedule {
     partner_name?: string;  // For display
     shift_name?: string;    // For display
     job_name?: string;      // For display
+    season_id?: string;
+    season_name?: string;   // For display
 }
 
 export const getWorkSchedules = async (): Promise<WorkSchedule[]> => {

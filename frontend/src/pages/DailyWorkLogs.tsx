@@ -78,7 +78,7 @@ const DailyWorkLogs: React.FC = () => {
     };
 
     const toggleSelectAll = () => {
-        const payableLogs = filteredLogs.filter(l => !l.payroll_id);
+        const payableLogs = filteredLogs.filter(l => !l.payroll_id && l.status === 'DONE');
         if (selectedLogIds.length === payableLogs.length) {
             setSelectedLogIds([]);
         } else {
@@ -199,12 +199,13 @@ const DailyWorkLogs: React.FC = () => {
                                         <input
                                             type="checkbox"
                                             className="size-5 rounded-lg border-slate-200 accent-[#13ec49] cursor-pointer"
-                                            checked={selectedLogIds.length > 0 && selectedLogIds.length === filteredLogs.filter(l => !l.payroll_id).length}
+                                            checked={selectedLogIds.length > 0 && selectedLogIds.length === filteredLogs.filter(l => !l.payroll_id && l.status === 'DONE').length}
                                             onChange={toggleSelectAll}
                                         />
                                     </th>
                                     <th className="px-8 py-5">Nhân sự & Công việc</th>
                                     <th className="px-8 py-5">Ngày & Ca</th>
+                                    <th className="px-8 py-5 text-center">Trạng thái</th>
                                     <th className="px-8 py-5 text-right">Thành tiền</th>
                                     <th className="px-8 py-5 text-center">Lương</th>
                                     <th className="px-8 py-5 text-right">Thao tác</th>
@@ -222,15 +223,17 @@ const DailyWorkLogs: React.FC = () => {
                                     filteredLogs.map((item) => (
                                         <tr key={item.id} className={`group hover:bg-slate-50/80 transition-all ${selectedLogIds.includes(item.id) ? 'bg-[#13ec49]/5' : ''}`}>
                                             <td className="px-8 py-5">
-                                                {!item.payroll_id ? (
+                                                {!item.payroll_id && item.status === 'DONE' ? (
                                                     <input
                                                         type="checkbox"
                                                         className="size-5 rounded-lg border-slate-200 accent-[#13ec49] cursor-pointer"
                                                         checked={selectedLogIds.includes(item.id)}
                                                         onChange={() => toggleSelectLog(item.id)}
                                                     />
+                                                ) : item.payroll_id ? (
+                                                    <span className="material-symbols-outlined text-slate-400 text-sm" title="Đã có phiếu lương">verified</span>
                                                 ) : (
-                                                    <span className="material-symbols-outlined text-slate-200 text-sm">verified</span>
+                                                    <span className="material-symbols-outlined text-slate-200 text-sm" title="Chưa hoàn thành">pending</span>
                                                 )}
                                             </td>
                                             <td className="px-8 py-5">
@@ -240,7 +243,15 @@ const DailyWorkLogs: React.FC = () => {
                                                     </div>
                                                     <div>
                                                         <p className="font-extrabold text-slate-900">{item.partner_name}</p>
-                                                        <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">{item.job_name || 'Khác'}</p>
+                                                        <div className="flex items-center gap-2">
+                                                            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">{item.job_name || 'Khác'}</p>
+                                                            {item.season_name && (
+                                                                <>
+                                                                    <span className="text-slate-300">•</span>
+                                                                    <span className="text-[10px] font-black text-[#13ec49] uppercase tracking-widest">{item.season_name}</span>
+                                                                </>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </td>
@@ -252,6 +263,20 @@ const DailyWorkLogs: React.FC = () => {
                                                         {item.mandays === 0 ? '1.0' : '0.5'}
                                                     </span>
                                                 </div>
+                                            </td>
+                                            <td className="px-8 py-5 text-center">
+                                                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${item.status === 'DONE' ? 'bg-[#13ec49]/10 text-green-600' :
+                                                    item.status === 'INPROGRESS' ? 'bg-blue-50 text-blue-600' :
+                                                        item.status === 'CANCELLED' ? 'bg-red-50 text-red-600' :
+                                                            item.status === 'REJECTED' ? 'bg-orange-50 text-orange-600' :
+                                                                'bg-slate-100 text-slate-500'
+                                                    }`}>
+                                                    {item.status === 'DONE' ? 'Hoàn thành' :
+                                                        item.status === 'INPROGRESS' ? 'Đang chờ' :
+                                                            item.status === 'CANCELLED' ? 'Đã hủy' :
+                                                                item.status === 'REJECTED' ? 'Từ chối' :
+                                                                    item.status || 'Khác'}
+                                                </span>
                                             </td>
                                             <td className="px-8 py-5 text-right">
                                                 <p className="text-lg font-black text-slate-900">

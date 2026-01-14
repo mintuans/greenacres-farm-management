@@ -3,10 +3,10 @@ import * as warehouseController from '../../controllers/management/warehouse.con
 
 const router = Router();
 
-router.get('/', warehouseController.getItems);
+router.get('/items', warehouseController.getItems);
 router.get('/next-code', warehouseController.getNextCode);
-router.post('/', warehouseController.createItem);
-router.put('/:id', warehouseController.updateItem);
-router.delete('/:id', warehouseController.deleteItem);
+router.post('/items', warehouseController.createItem);
+router.put('/items/:id', warehouseController.updateItem);
+router.delete('/items/:id', warehouseController.deleteItem);
 
 export default router;

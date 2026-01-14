@@ -16,9 +16,8 @@ import WorkShifts from '@/src/pages/WorkShifts';
 import JobTypes from '@/src/pages/JobTypes';
 import Workers from '@/src/pages/Workers';
 import ProductionUnits from '@/src/pages/ProductionUnits';
-import HouseholdWarehouse from '@/src/pages/HouseholdWarehouse';
-import ElectronicsWarehouse from '@/src/pages/ElectronicsWarehouse';
-import PlantsWarehouse from '@/src/pages/PlantsWarehouse';
+import WarehouseManagement from '@/src/pages/WarehouseManagement';
+import WarehouseTypes from '@/src/pages/WarehouseTypes';
 import FarmEvents from '@/src/pages/FarmEvents';
 import WorkSchedules from '@/src/pages/WorkSchedules';
 import DailyWorkLogs from '@/src/pages/DailyWorkLogs';
@@ -36,6 +35,11 @@ import ManagementMedia from '@/src/pages/management/ManagementMedia';
 import ManagementBlog from '@/src/pages/management/ManagementBlog';
 import AddBlog from '@/src/pages/management/AddBlog';
 import EditBlog from '@/src/pages/management/EditBlog';
+import Users from '@/src/pages/settings/Users';
+import Roles from '@/src/pages/settings/Roles';
+import Permissions from '@/src/pages/settings/Permissions';
+import RolePermissions from '@/src/pages/settings/RolePermissions';
+import AuditLogs from '@/src/pages/settings/AuditLogs';
 
 // Auth pages
 import Login from '@/src/pages/auth/Login';
@@ -70,9 +74,8 @@ const App: React.FC = () => {
                                     <Route path="/schedule" element={<Schedule />} />
                                     <Route path="/inventory" element={<Inventory />} />
                                     <Route path="/inventory/add" element={<AddInventory />} />
-                                    <Route path="/warehouse/household" element={<HouseholdWarehouse />} />
-                                    <Route path="/warehouse/electronics" element={<ElectronicsWarehouse />} />
-                                    <Route path="/warehouse/plants" element={<PlantsWarehouse />} />
+                                    <Route path="/warehouse/management" element={<WarehouseManagement />} />
+                                    <Route path="/warehouse/types" element={<WarehouseTypes />} />
                                     <Route path="/seasons" element={<Seasons />} />
                                     <Route path="/transactions" element={<Transactions />} />
                                     <Route path="/finance" element={<PersonalFinance />} />
@@ -89,6 +92,11 @@ const App: React.FC = () => {
                                     <Route path="/master-data/farm-events" element={<FarmEvents />} />
                                     <Route path="/master-data/work-schedules" element={<WorkSchedules />} />
                                     <Route path="/master-data/daily-work-logs" element={<DailyWorkLogs />} />
+                                    <Route path="/settings/users" element={<Users />} />
+                                    <Route path="/settings/roles" element={<Roles />} />
+                                    <Route path="/settings/permissions" element={<Permissions />} />
+                                    <Route path="/settings/role-permissions" element={<RolePermissions />} />
+                                    <Route path="/settings/audit-logs" element={<AuditLogs />} />
                                     <Route path="/settings" element={<MasterData />} />
                                     <Route path="*" element={<Navigate to="/dashboard" replace />} />
                                 </Routes>

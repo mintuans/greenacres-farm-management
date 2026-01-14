@@ -7,13 +7,22 @@ const Sidebar: React.FC = () => {
     const [isWarehouseOpen, setIsWarehouseOpen] = useState(false);
     const [isPayrollOpen, setIsPayrollOpen] = useState(false);
 
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
     const navItems = [
         { label: 'Tổng quan', path: '/dashboard', icon: 'dashboard' },
         { label: 'Lịch sự kiện', path: '/schedule', icon: 'calendar_month' },
         { label: 'Vật tư Nông nghiệp', path: '/inventory', icon: 'inventory_2' },
         { label: 'Mùa vụ', path: '/seasons', icon: 'grass' },
         { label: 'Giao dịch', path: '/transactions', icon: 'payments' },
-        // { label: 'Tài chính cá nhân', path: '/finance', icon: 'savings' },
+    ];
+
+    const settingsItems = [
+        { label: 'Tài khoản', path: '/settings/users', icon: 'person' },
+        { label: 'Nhóm quyền', path: '/settings/roles', icon: 'admin_panel_settings' },
+        { label: 'Danh sách quyền', path: '/settings/permissions', icon: 'key' },
+        { label: 'Gán quyền', path: '/settings/role-permissions', icon: 'rule' },
+        { label: 'Nhật ký hệ thống', path: '/settings/audit-logs', icon: 'history' },
     ];
 
     const masterDataItems = [
@@ -35,9 +44,8 @@ const Sidebar: React.FC = () => {
     ];
 
     const warehouseItems = [
-        { label: 'Gia dụng', path: '/warehouse/household', icon: 'home' },
-        { label: 'Điện tử', path: '/warehouse/electronics', icon: 'devices' },
-        { label: 'Hoa kiểng', path: '/warehouse/plants', icon: 'local_florist' },
+        { label: 'Vật phẩm kho', path: '/warehouse/management', icon: 'inventory' },
+        { label: 'Phân loại', path: '/warehouse/types', icon: 'list_alt' },
     ];
 
     return (
@@ -218,26 +226,51 @@ const Sidebar: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Settings */}
-                <NavLink
-                    to="/settings"
-                    className={({ isActive }) =>
-                        `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group ${isActive
-                            ? 'bg-[#13ec49]/10 text-slate-900 font-bold shadow-sm'
-                            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-                        }`
-                    }
-                >
-                    {({ isActive }) => (
-                        <>
-                            <span className={`material-symbols-outlined transition-colors ${isActive ? 'text-[#13ec49]' : 'text-slate-400 group-hover:text-[#13ec49]'
-                                }`}>
+                {/* System Settings Dropdown */}
+                <div>
+                    <button
+                        onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                        className="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl transition-all group text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                    >
+                        <div className="flex items-center gap-3">
+                            <span className="material-symbols-outlined text-slate-400 group-hover:text-[#13ec49] transition-colors">
                                 settings
                             </span>
-                            <span className="text-sm">Cài đặt hệ thống</span>
-                        </>
-                    )}
-                </NavLink>
+                            <span className="text-sm font-medium">Cài đặt hệ thống</span>
+                        </div>
+                        <span className={`material-symbols-outlined text-sm transition-transform ${isSettingsOpen ? 'rotate-180' : ''}`}>
+                            expand_more
+                        </span>
+                    </button>
+
+                    {/* Submenu */}
+                    <div className={`overflow-hidden transition-all duration-300 ${isSettingsOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+                        <div className="pl-6 mt-1 space-y-1">
+                            {settingsItems.map((item) => (
+                                <NavLink
+                                    key={item.path}
+                                    to={item.path}
+                                    className={({ isActive }) =>
+                                        `flex items-center gap-3 px-3 py-2 rounded-lg transition-all group ${isActive
+                                            ? 'bg-[#13ec49]/10 text-slate-900 font-bold'
+                                            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                                        }`
+                                    }
+                                >
+                                    {({ isActive }) => (
+                                        <>
+                                            <span className={`material-symbols-outlined text-[18px] transition-colors ${isActive ? 'text-[#13ec49]' : 'text-slate-400 group-hover:text-[#13ec49]'
+                                                }`}>
+                                                {item.icon}
+                                            </span>
+                                            <span className="text-sm">{item.label}</span>
+                                        </>
+                                    )}
+                                </NavLink>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             </nav>
 
             <div className="p-4 border-t border-slate-100 mt-auto">

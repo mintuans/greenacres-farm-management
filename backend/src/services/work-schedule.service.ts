@@ -11,15 +11,18 @@ export interface WorkSchedule {
     partner_name?: string;
     shift_name?: string;
     job_name?: string;
+    season_id?: string;
+    season_name?: string;
 }
 
 export const getWorkSchedules = async (): Promise<WorkSchedule[]> => {
     const query = `
-        SELECT ws.*, p.partner_name, s.shift_name, j.job_name
+        SELECT ws.*, p.partner_name, s.shift_name, j.job_name, sn.season_name
         FROM work_schedules ws
         LEFT JOIN partners p ON ws.partner_id = p.id
         LEFT JOIN work_shifts s ON ws.shift_id = s.id
         LEFT JOIN job_types j ON ws.job_type_id = j.id
+        LEFT JOIN seasons sn ON ws.season_id = sn.id
         ORDER BY ws.work_date DESC, s.start_time ASC
     `;
     const result = await pool.query(query);
@@ -27,12 +30,15 @@ export const getWorkSchedules = async (): Promise<WorkSchedule[]> => {
 };
 
 export const createWorkSchedule = async (data: any): Promise<WorkSchedule> => {
+    // Chuyển empty string thành null để tránh lỗi UUID trong Postgres
+    const seasonId = data.season_id && data.season_id !== '' ? data.season_id : null;
+
     const query = `
-        INSERT INTO work_schedules (partner_id, shift_id, job_type_id, work_date, status, note)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        INSERT INTO work_schedules (partner_id, shift_id, job_type_id, work_date, status, note, season_id)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING *
     `;
-    const values = [data.partner_id, data.shift_id, data.job_type_id, data.work_date, data.status, data.note];
+    const values = [data.partner_id, data.shift_id, data.job_type_id, data.work_date, data.status, data.note, seasonId];
     const result = await pool.query(query, values);
     return result.rows[0];
 };
@@ -42,11 +48,16 @@ export const updateWorkSchedule = async (id: string, data: any): Promise<WorkSch
     const values: any[] = [];
     let paramIndex = 1;
 
-    const allowedFields = ['partner_id', 'shift_id', 'job_type_id', 'work_date', 'status', 'note'];
+    const allowedFields = ['partner_id', 'shift_id', 'job_type_id', 'work_date', 'status', 'note', 'season_id'];
     for (const key of allowedFields) {
         if (data[key] !== undefined) {
             fields.push(`${key} = $${paramIndex++}`);
-            values.push(data[key]);
+            // Chuyển empty string thành null cho season_id
+            if (key === 'season_id' && (data[key] === '' || data[key] === null)) {
+                values.push(null);
+            } else {
+                values.push(data[key]);
+            }
         }
     }
 

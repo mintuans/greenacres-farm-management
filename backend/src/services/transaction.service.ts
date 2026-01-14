@@ -16,7 +16,7 @@ export interface Transaction {
     season_name?: string;
 }
 
-export const getTransactions = async (seasonId?: string): Promise<Transaction[]> => {
+export const getTransactions = async (month?: number, year?: number, seasonId?: string): Promise<Transaction[]> => {
     let query = `
         SELECT t.*, p.partner_name, c.category_name, s.season_name
         FROM transactions t
@@ -26,10 +26,23 @@ export const getTransactions = async (seasonId?: string): Promise<Transaction[]>
         WHERE 1=1
     `;
     const values: any[] = [];
+    let paramIndex = 1;
+
+    if (month) {
+        query += ` AND EXTRACT(MONTH FROM t.transaction_date) = $${paramIndex++}`;
+        values.push(month);
+    }
+
+    if (year) {
+        query += ` AND EXTRACT(YEAR FROM t.transaction_date) = $${paramIndex++}`;
+        values.push(year);
+    }
+
     if (seasonId) {
-        query += ` AND t.season_id = $1`;
+        query += ` AND t.season_id = $${paramIndex++}`;
         values.push(seasonId);
     }
+
     query += ` ORDER BY t.transaction_date DESC`;
     const result = await pool.query(query, values);
     return result.rows;
