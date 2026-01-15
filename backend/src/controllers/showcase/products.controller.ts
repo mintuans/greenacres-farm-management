@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import pool from '../../config/database';
+import { logActivity } from '../../services/audit-log.service';
 
 /**
  * Lấy danh sách sản phẩm công khai
  */
-export const getProducts = async (req: Request, res: Response) => {
+export const getProducts = async (req: Request, res: Response): Promise<any> => {
     try {
         const { category_id, search, page = 1, limit = 12 } = req.query;
         const offset = (Number(page) - 1) * Number(limit);
@@ -40,7 +41,7 @@ export const getProducts = async (req: Request, res: Response) => {
 
         const result = await pool.query(query, params);
 
-        res.json({
+        return res.json({
             success: true,
             data: result.rows,
             pagination: {
@@ -49,14 +50,14 @@ export const getProducts = async (req: Request, res: Response) => {
             }
         });
     } catch (error: any) {
-        res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message });
     }
 };
 
 /**
  * Lấy chi tiết sản phẩm theo slug
  */
-export const getProductBySlug = async (req: Request, res: Response) => {
+export const getProductBySlug = async (req: Request, res: Response): Promise<any> => {
     try {
         const { slug } = req.params;
 
@@ -90,7 +91,7 @@ export const getProductBySlug = async (req: Request, res: Response) => {
         // Tăng view_count
         await pool.query(`UPDATE products SET view_count = view_count + 1 WHERE id = $1`, [product.id]);
 
-        res.json({
+        return res.json({
             success: true,
             data: {
                 ...product,
@@ -98,14 +99,14 @@ export const getProductBySlug = async (req: Request, res: Response) => {
             }
         });
     } catch (error: any) {
-        res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message });
     }
 };
 
 /**
  * Lấy đánh giá sản phẩm
  */
-export const getProductReviews = async (req: Request, res: Response) => {
+export const getProductReviews = async (req: Request, res: Response): Promise<any> => {
     try {
         const { id } = req.params;
 
@@ -119,16 +120,16 @@ export const getProductReviews = async (req: Request, res: Response) => {
             ORDER BY pr.created_at DESC
         `, [id]);
 
-        res.json({ success: true, data: result.rows });
+        return res.json({ success: true, data: result.rows });
     } catch (error: any) {
-        res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message });
     }
 };
 
 /**
  * Tạo đánh giá mới
  */
-export const createProductReview = async (req: Request, res: Response) => {
+export const createProductReview = async (req: Request, res: Response): Promise<any> => {
     try {
         const { id } = req.params;
         const { rating, title, content, reviewer_name, reviewer_email } = req.body;
@@ -144,12 +145,16 @@ export const createProductReview = async (req: Request, res: Response) => {
             RETURNING *
         `, [id, reviewer_name, reviewer_email, rating, title, content]);
 
-        res.status(201).json({
+        const review = result.rows[0];
+
+        await logActivity(req, 'CREATE_PRODUCT_REVIEW', 'product_reviews', review.id, null, req.body);
+
+        return res.status(201).json({
             success: true,
             message: 'Đánh giá đã được gửi',
-            data: result.rows[0]
+            data: review
         });
     } catch (error: any) {
-        res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message });
     }
 };

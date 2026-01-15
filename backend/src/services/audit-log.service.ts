@@ -45,3 +45,32 @@ export const createAuditLog = async (data: Partial<AuditLog>): Promise<AuditLog>
     const result = await pool.query(query, values);
     return result.rows[0];
 };
+
+/**
+ * Helper để ghi nhật ký hành động từ Express Request
+ */
+export const logActivity = async (
+    req: any,
+    action: string,
+    entityTable?: string,
+    entityId?: string,
+    oldValues?: any,
+    newValues?: any,
+    manualUserId?: string
+) => {
+    try {
+        await createAuditLog({
+            user_id: manualUserId || req.user?.id,
+            action,
+            entity_table: entityTable,
+            entity_id: entityId,
+            old_values: oldValues,
+            new_values: newValues,
+            ip_address: req.ip || req.connection.remoteAddress,
+            user_agent: req.headers['user-agent']
+        });
+    } catch (error) {
+        console.error('Audit log failed:', error);
+        // Không throw lỗi để tránh làm gián đoạn luồng xử lý chính
+    }
+};

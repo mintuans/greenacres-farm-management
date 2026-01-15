@@ -4,7 +4,7 @@ import pool from '../../config/database';
 /**
  * Lấy danh sách ảnh của vườn (images_farm)
  */
-export const getFarmImages = async (req: Request, res: Response) => {
+export const getFarmImages = async (req: Request, res: Response): Promise<any> => {
     try {
         const { limit = 6 } = req.query;
 
@@ -29,13 +29,13 @@ export const getFarmImages = async (req: Request, res: Response) => {
             WHERE deleted_at IS NULL AND category = 'images_farm'
         `);
 
-        res.json({
+        return res.json({
             success: true,
             data: result.rows,
             total: parseInt(countResult.rows[0].count)
         });
     } catch (error: any) {
         console.error('Error in getFarmImages:', error);
-        res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message });
     }
 };

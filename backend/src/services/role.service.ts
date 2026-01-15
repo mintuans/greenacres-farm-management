@@ -14,6 +14,12 @@ export const getRoles = async (): Promise<Role[]> => {
     return result.rows;
 };
 
+export const getRoleById = async (id: string): Promise<Role | null> => {
+    const query = 'SELECT * FROM roles WHERE id = $1';
+    const result = await pool.query(query, [id]);
+    return result.rows[0] || null;
+};
+
 export const createRole = async (data: Partial<Role>): Promise<Role> => {
     const query = `
         INSERT INTO roles (name, description, is_system)

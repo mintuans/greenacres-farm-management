@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import pool from '../../config/database';
+import { logActivity } from '../../services/audit-log.service';
 
 /**
  * Lấy danh sách media files
  */
-export const getAllMedia = async (req: Request, res: Response) => {
+export const getAllMedia = async (req: Request, res: Response): Promise<any> => {
     try {
         const { page = 1, limit = 20, search, category } = req.query;
         const offset = (Number(page) - 1) * Number(limit);
@@ -44,7 +45,7 @@ export const getAllMedia = async (req: Request, res: Response) => {
         // Get total count
         const countResult = await pool.query(`SELECT COUNT(*) FROM media_files WHERE deleted_at IS NULL`);
 
-        res.json({
+        return res.json({
             success: true,
             data: result.rows,
             pagination: {
@@ -55,14 +56,14 @@ export const getAllMedia = async (req: Request, res: Response) => {
         });
     } catch (error: any) {
         console.error('Error in getAllMedia:', error);
-        res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message });
     }
 };
 
 /**
  * Upload media file
  */
-export const uploadMedia = async (req: Request, res: Response) => {
+export const uploadMedia = async (req: Request, res: Response): Promise<any> => {
     try {
         const { image_name, image_data, mime_type, category } = req.body;
 
@@ -80,21 +81,31 @@ export const uploadMedia = async (req: Request, res: Response) => {
             RETURNING id, image_name, file_size, image_type as mime_type, category, uploaded_at as created_at
         `, [image_name, buffer, file_size, mime_type || 'image/jpeg', category || 'gallery']);
 
-        res.status(201).json({
+        const media = result.rows[0];
+
+        // Audit log: log metadata only, skip large image_data
+        await logActivity(req, 'UPLOAD_MEDIA', 'media_files', media.id, null, {
+            image_name,
+            file_size,
+            mime_type,
+            category
+        });
+
+        return res.status(201).json({
             success: true,
             message: 'Upload media thành công',
-            data: result.rows[0]
+            data: media
         });
     } catch (error: any) {
         console.error('Error in uploadMedia:', error);
-        res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message });
     }
 };
 
 /**
  * Lấy media file theo ID (trả về base64)
  */
-export const getMediaById = async (req: Request, res: Response) => {
+export const getMediaById = async (req: Request, res: Response): Promise<any> => {
     try {
         const { id } = req.params;
 
@@ -110,7 +121,7 @@ export const getMediaById = async (req: Request, res: Response) => {
         const media = result.rows[0];
         const base64 = media.image_data.toString('base64');
 
-        res.json({
+        return res.json({
             success: true,
             data: {
                 id: media.id,
@@ -123,16 +134,29 @@ export const getMediaById = async (req: Request, res: Response) => {
         });
     } catch (error: any) {
         console.error('Error in getMediaById:', error);
-        res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message });
     }
 };
 
 /**
  * Xóa media file
  */
-export const deleteMedia = async (req: Request, res: Response) => {
+export const deleteMedia = async (req: Request, res: Response): Promise<any> => {
     try {
         const { id } = req.params;
+
+        // Fetch old values for audit logging (metadata only)
+        const oldMediaResult = await pool.query(`
+            SELECT id, image_name, file_size, image_type as mime_type, category
+            FROM media_files
+            WHERE id = $1 AND deleted_at IS NULL
+        `, [id]);
+
+        if (oldMediaResult.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy ảnh' });
+        }
+
+        const oldMedia = oldMediaResult.rows[0];
 
         // Check if media is being used
         const usageCheck = await pool.query(`
@@ -157,13 +181,15 @@ export const deleteMedia = async (req: Request, res: Response) => {
             return res.status(404).json({ success: false, message: 'Không tìm thấy ảnh' });
         }
 
-        res.json({
+        await logActivity(req, 'DELETE_MEDIA', 'media_files', id, oldMedia, null);
+
+        return res.json({
             success: true,
             message: 'Xóa ảnh thành công'
         });
     } catch (error: any) {
         console.error('Error in deleteMedia:', error);
-        res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message });
     }
 };
 
@@ -171,7 +197,7 @@ export const deleteMedia = async (req: Request, res: Response) => {
  * Phục vụ ảnh trực tiếp (Binary Stream)
  * Dùng cho <img src="/api/management/media/raw/ID" />
  */
-export const getMediaResource = async (req: Request, res: Response) => {
+export const getMediaResource = async (req: Request, res: Response): Promise<any> => {
     try {
         const { id } = req.params;
 
@@ -189,9 +215,9 @@ export const getMediaResource = async (req: Request, res: Response) => {
 
         res.setHeader('Content-Type', media.image_type || 'image/jpeg');
         res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache 1 năm
-        res.send(media.image_data);
+        return res.send(media.image_data);
     } catch (error: any) {
         console.error('Error in getMediaResource:', error);
-        res.status(500).send('Server Error');
+        return res.status(500).send('Server Error');
     }
 };

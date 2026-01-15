@@ -41,6 +41,12 @@ export const getItems = async (typeId?: string, search?: string): Promise<Wareho
     return result.rows;
 };
 
+export const getItemById = async (id: string): Promise<WarehouseItem | null> => {
+    const query = 'SELECT * FROM warehouse_items WHERE id = $1';
+    const result = await pool.query(query, [id]);
+    return result.rows[0] || null;
+};
+
 export const createItem = async (data: any): Promise<WarehouseItem> => {
     const query = `
         INSERT INTO warehouse_items (

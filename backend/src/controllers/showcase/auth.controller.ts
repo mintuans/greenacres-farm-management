@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import pool from '../../config/database';
 import { hashPassword, comparePassword } from '../../helpers/hash.helper';
 import { generateToken } from '../../helpers/jwt.helper';
+import { logActivity } from '../../services/audit-log.service';
 import { z } from 'zod';
 
 const publicRegisterSchema = z.object({
@@ -40,6 +41,9 @@ export const register = async (req: Request, res: Response) => {
         `, [validatedData.email, hashedPassword, validatedData.full_name, validatedData.phone]);
 
         const user = result.rows[0];
+
+        // Log action (manually set user info as it's not in req.user yet)
+        await logActivity(req, 'REGISTER', 'public_users', user.id, null, { email: user.email }, user.id);
 
         // Tạo token
         const token = generateToken({
@@ -87,10 +91,12 @@ export const login = async (req: Request, res: Response) => {
             if (newAttempts >= 5) {
                 // Khóa tài khoản nếu sai quá 5 lần
                 await pool.query('UPDATE public_users SET login_attempts = $1, is_active = false WHERE id = $2', [newAttempts, user.id]);
+                await logActivity(req, 'LOGIN_FAILED_LOCKED', 'public_users', user.id, null, { email: user.email }, user.id);
                 return res.status(403).json({ success: false, message: 'Tài khoản đã bị khóa do nhập sai quá 5 lần' });
             } else {
                 // Tăng số lần nhập sai
                 await pool.query('UPDATE public_users SET login_attempts = $1 WHERE id = $2', [newAttempts, user.id]);
+                await logActivity(req, 'LOGIN_FAILED', 'public_users', user.id, null, { email: user.email, attempt: newAttempts }, user.id);
                 return res.status(401).json({
                     success: false,
                     message: `Mật khẩu không đúng. Bạn còn ${5 - newAttempts} lần thử.`
@@ -105,6 +111,9 @@ export const login = async (req: Request, res: Response) => {
 
         // Đăng nhập thành công: Cập nhật last_login_at và reset login_attempts
         await pool.query('UPDATE public_users SET last_login_at = CURRENT_TIMESTAMP, login_attempts = 0 WHERE id = $1', [user.id]);
+
+        // Log action
+        await logActivity(req, 'LOGIN', 'public_users', user.id, null, { email: user.email }, user.id);
 
         // Tạo token
         const token = generateToken({

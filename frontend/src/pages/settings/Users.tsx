@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { PublicUser, getPublicUsers, createPublicUser, updatePublicUser, deletePublicUser } from '../../api/user.api';
+import { PublicUser, getPublicUsers, createPublicUser, updatePublicUser, deletePublicUser, getUserRoles, assignRoleToUser, removeRoleFromUser } from '../../api/user.api';
+import { Role, getRoles } from '../../api/role.api';
 
 const Users: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -14,6 +15,12 @@ const Users: React.FC = () => {
         is_active: true
     });
 
+    // Role Assignment State
+    const [showRoleModal, setShowRoleModal] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<PublicUser | null>(null);
+    const [userRoles, setUserRoles] = useState<Role[]>([]);
+    const [allRoles, setAllRoles] = useState<Role[]>([]);
+
     useEffect(() => {
         loadUsers();
     }, []);
@@ -23,10 +30,44 @@ const Users: React.FC = () => {
             setLoading(true);
             const data = await getPublicUsers();
             setUsers(data);
+
+            // Pre-load all roles for later use
+            const rolesData = await getRoles();
+            setAllRoles(rolesData);
         } catch (error) {
-            console.error('Error loading users:', error);
+            console.error('Error loading users/roles:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleManageRoles = async (user: PublicUser) => {
+        setSelectedUser(user);
+        try {
+            const currentRoles = await getUserRoles(user.id);
+            setUserRoles(currentRoles);
+            setShowRoleModal(true);
+        } catch (error) {
+            console.error('Error loading user roles:', error);
+            alert('Không thể tải danh sách vai trò của người dùng');
+        }
+    };
+
+    const toggleRole = async (role: Role) => {
+        if (!selectedUser) return;
+
+        const isAssigned = userRoles.some(r => r.id === role.id);
+        try {
+            if (isAssigned) {
+                await removeRoleFromUser(selectedUser.id, role.id);
+                setUserRoles(userRoles.filter(r => r.id !== role.id));
+            } else {
+                await assignRoleToUser(selectedUser.id, role.id);
+                setUserRoles([...userRoles, role]);
+            }
+        } catch (error) {
+            console.error('Error toggling role:', error);
+            alert('Không thể cập nhật vai trò');
         }
     };
 
@@ -160,14 +201,23 @@ const Users: React.FC = () => {
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <button
+                                                        onClick={() => handleManageRoles(user)}
+                                                        className="p-2 rounded-lg hover:bg-green-50 text-slate-400 hover:text-green-600 transition-all"
+                                                        title="Phân vai trò"
+                                                    >
+                                                        <span className="material-symbols-outlined text-[18px]">shield_person</span>
+                                                    </button>
+                                                    <button
                                                         onClick={() => handleEdit(user)}
                                                         className="p-2 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all"
+                                                        title="Sửa"
                                                     >
                                                         <span className="material-symbols-outlined text-[18px]">edit</span>
                                                     </button>
                                                     <button
                                                         onClick={() => handleDelete(user.id)}
                                                         className="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-all"
+                                                        title="Xóa"
                                                     >
                                                         <span className="material-symbols-outlined text-[18px]">delete</span>
                                                     </button>
@@ -254,6 +304,72 @@ const Users: React.FC = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Role Assignment Modal */}
+            {showRoleModal && selectedUser && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
+                        <div className="flex justify-between items-start mb-6">
+                            <div>
+                                <h2 className="text-2xl font-bold text-slate-900">
+                                    Phân vai trò
+                                </h2>
+                                <p className="text-slate-500 text-sm mt-1">
+                                    Người dùng: <span className="font-bold text-slate-700">{selectedUser.full_name}</span>
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setShowRoleModal(false)}
+                                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                            >
+                                <span className="material-symbols-outlined text-slate-400">close</span>
+                            </button>
+                        </div>
+
+                        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+                            {allRoles.length === 0 ? (
+                                <p className="text-center py-4 text-slate-500 italic">Chưa có vai trò nào trong hệ thống</p>
+                            ) : (
+                                allRoles.map(role => {
+                                    const isAssigned = userRoles.some(r => r.id === role.id);
+                                    return (
+                                        <div
+                                            key={role.id}
+                                            onClick={() => toggleRole(role)}
+                                            className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${isAssigned
+                                                    ? 'border-[#13ec49] bg-green-50'
+                                                    : 'border-slate-100 hover:border-slate-200 bg-slate-50'
+                                                }`}
+                                        >
+                                            <div className="flex flex-col">
+                                                <span className={`font-bold ${isAssigned ? 'text-green-800' : 'text-slate-700'}`}>
+                                                    {role.name}
+                                                </span>
+                                                <span className="text-xs text-slate-500 lowercase">{role.description}</span>
+                                            </div>
+                                            <div className={`size-6 rounded-full flex items-center justify-center ${isAssigned ? 'bg-[#13ec49] text-black' : 'bg-slate-200 text-slate-400'
+                                                }`}>
+                                                <span className="material-symbols-outlined text-[16px] font-bold">
+                                                    {isAssigned ? 'check' : 'add'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+
+                        <div className="mt-8">
+                            <button
+                                onClick={() => setShowRoleModal(false)}
+                                className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all active:scale-95"
+                            >
+                                Xong
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

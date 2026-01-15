@@ -508,16 +508,6 @@ const Seasons: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-slate-900 rounded-[32px] p-8 text-white relative overflow-hidden shadow-2xl shadow-slate-900/40">
-                <div className="absolute top-0 right-0 p-8 opacity-10 rotate-12">
-                  <span className="material-symbols-outlined text-[100px]">auto_awesome</span>
-                </div>
-                <h4 className="text-xl font-black mb-2 relative z-10 font-sans">Nâng cao hiệu suất</h4>
-                <p className="text-slate-400 text-sm font-bold leading-relaxed relative z-10">Bắt đầu ghi nhật ký canh tác để xem phân tích chi tiết về hiệu quả kinh tế của từng vùng đất.</p>
-                <button className="mt-6 bg-[#13ec49] text-black w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-105 active:scale-95 transition-all relative z-10">
-                  Xem báo cáo AI
-                </button>
-              </div>
             </div>
           </div>
 

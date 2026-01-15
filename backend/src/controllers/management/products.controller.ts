@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import pool from '../../config/database';
+import { logActivity } from '../../services/audit-log.service';
 
 /**
  * Lấy tất cả sản phẩm (cho quản lý)
@@ -75,9 +76,9 @@ export const getProductById = async (req: Request, res: Response) => {
             return res.status(404).json({ success: false, message: 'Sản phẩm không tồn tại' });
         }
 
-        res.json({ success: true, data: result.rows[0] });
+        return res.json({ success: true, data: result.rows[0] });
     } catch (error: any) {
-        res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message });
     }
 };
 
@@ -127,10 +128,13 @@ export const createProduct = async (req: Request, res: Response) => {
             thumbnail_id || null
         ]);
 
+        const product = result.rows[0];
+        await logActivity(req, 'CREATE_PRODUCT', 'products', product.id, null, req.body);
+
         res.status(201).json({
             success: true,
             message: 'Tạo sản phẩm thành công',
-            data: result.rows[0]
+            data: product
         });
     } catch (error: any) {
         res.status(500).json({ success: false, error: error.message });
@@ -157,6 +161,10 @@ export const updateProduct = async (req: Request, res: Response) => {
             is_featured,
             thumbnail_id
         } = req.body;
+
+        // Lấy old data
+        const oldResult = await pool.query('SELECT * FROM products WHERE id = $1', [id]);
+        const oldProduct = oldResult.rows[0];
 
         const result = await pool.query(`
             UPDATE products SET
@@ -195,13 +203,15 @@ export const updateProduct = async (req: Request, res: Response) => {
             return res.status(404).json({ success: false, message: 'Sản phẩm không tồn tại' });
         }
 
-        res.json({
+        await logActivity(req, 'UPDATE_PRODUCT', 'products', id, oldProduct, req.body);
+
+        return res.json({
             success: true,
             message: 'Cập nhật sản phẩm thành công',
             data: result.rows[0]
         });
     } catch (error: any) {
-        res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message });
     }
 };
 
@@ -211,6 +221,9 @@ export const updateProduct = async (req: Request, res: Response) => {
 export const deleteProduct = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
+
+        const oldResult = await pool.query('SELECT * FROM products WHERE id = $1', [id]);
+        const oldProduct = oldResult.rows[0];
 
         const result = await pool.query(`
             UPDATE products 
@@ -223,11 +236,13 @@ export const deleteProduct = async (req: Request, res: Response) => {
             return res.status(404).json({ success: false, message: 'Sản phẩm không tồn tại' });
         }
 
-        res.json({
+        await logActivity(req, 'DELETE_PRODUCT', 'products', id, oldProduct, null);
+
+        return res.json({
             success: true,
             message: 'Xóa sản phẩm thành công'
         });
     } catch (error: any) {
-        res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message });
     }
 };

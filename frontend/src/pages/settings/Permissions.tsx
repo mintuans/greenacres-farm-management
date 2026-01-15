@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Permission, getPermissions, createPermission, updatePermission, deletePermission } from '../../api/permission.api';
+import { Permission, getPermissions, createPermission, updatePermission, deletePermission, getDatabaseTables } from '../../api/permission.api';
 
 const Permissions: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -7,6 +7,7 @@ const Permissions: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingPermission, setEditingPermission] = useState<Permission | null>(null);
+    const [tables, setTables] = useState<string[]>([]);
     const [formData, setFormData] = useState<Partial<Permission>>({
         module: '',
         action: '',
@@ -16,7 +17,15 @@ const Permissions: React.FC = () => {
 
     useEffect(() => {
         loadPermissions();
+        loadTables();
     }, []);
+
+    useEffect(() => {
+        if (formData.module && formData.action) {
+            const generatedCode = `${formData.module}.${formData.action}`.toLowerCase();
+            setFormData(prev => ({ ...prev, code: generatedCode }));
+        }
+    }, [formData.module, formData.action]);
 
     const loadPermissions = async () => {
         try {
@@ -27,6 +36,15 @@ const Permissions: React.FC = () => {
             console.error('Error loading permissions:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadTables = async () => {
+        try {
+            const data = await getDatabaseTables();
+            setTables(data);
+        } catch (error) {
+            console.error('Error loading tables:', error);
         }
     };
 
@@ -193,25 +211,32 @@ const Permissions: React.FC = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1">Module</label>
-                                    <input
-                                        type="text"
+                                    <select
                                         required
                                         value={formData.module || ''}
                                         onChange={(e) => setFormData({ ...formData, module: e.target.value })}
-                                        className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#13ec49]/30 outline-none"
-                                        placeholder="VD: User, Order"
-                                    />
+                                        className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#13ec49]/30 outline-none bg-white font-medium"
+                                    >
+                                        <option value="">-- Chọn bảng --</option>
+                                        {tables.map(table => (
+                                            <option key={table} value={table}>{table}</option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1">Action</label>
-                                    <input
-                                        type="text"
+                                    <select
                                         required
                                         value={formData.action || ''}
                                         onChange={(e) => setFormData({ ...formData, action: e.target.value })}
-                                        className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#13ec49]/30 outline-none"
-                                        placeholder="VD: create, read"
-                                    />
+                                        className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#13ec49]/30 outline-none bg-white font-medium"
+                                    >
+                                        <option value="">-- Chọn Action --</option>
+                                        <option value="create">Create</option>
+                                        <option value="read">Read</option>
+                                        <option value="update">Update</option>
+                                        <option value="delete">Delete</option>
+                                    </select>
                                 </div>
                             </div>
                             <div>
@@ -219,10 +244,11 @@ const Permissions: React.FC = () => {
                                 <input
                                     type="text"
                                     required
+                                    readOnly
                                     value={formData.code || ''}
                                     onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                                    className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#13ec49]/30 outline-none"
-                                    placeholder="VD: user.create, product.delete"
+                                    className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#13ec49]/30 outline-none bg-slate-50 cursor-not-allowed font-mono text-blue-600"
+                                    placeholder="Tự động tạo từ Module & Action"
                                 />
                             </div>
                             <div>

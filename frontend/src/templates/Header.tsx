@@ -47,10 +47,6 @@ const Header: React.FC = () => {
                         <span className="material-symbols-outlined">notifications</span>
                         <span className="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white"></span>
                     </button>
-
-                    <button className="size-9 bg-[#13ec49] text-black rounded-xl flex items-center justify-center shadow-lg shadow-[#13ec49]/20 hover:scale-105 active:scale-95 transition-all">
-                        <span className="material-symbols-outlined">add</span>
-                    </button>
                 </div>
             </div>
         </header>

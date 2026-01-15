@@ -40,6 +40,12 @@ export const getDailyWorkLogs = async (): Promise<DailyWorkLog[]> => {
     return result.rows;
 };
 
+export const getDailyWorkLogById = async (id: string): Promise<DailyWorkLog | null> => {
+    const query = 'SELECT * FROM daily_work_logs WHERE id = $1';
+    const result = await pool.query(query, [id]);
+    return result.rows[0] || null;
+};
+
 export const createDailyWorkLog = async (data: any): Promise<DailyWorkLog> => {
     const query = `
         INSERT INTO daily_work_logs (

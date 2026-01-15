@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+import api from '../services/api';
 
 export interface Permission {
     id: string;
@@ -12,20 +10,25 @@ export interface Permission {
 }
 
 export const getPermissions = async (): Promise<Permission[]> => {
-    const response = await axios.get(`${API_URL}/management/permissions`);
+    const response = await api.get('/management/permissions');
     return response.data.data;
 };
 
 export const createPermission = async (data: Partial<Permission>): Promise<Permission> => {
-    const response = await axios.post(`${API_URL}/management/permissions`, data);
+    const response = await api.post('/management/permissions', data);
     return response.data.data;
 };
 
 export const updatePermission = async (id: string, data: Partial<Permission>): Promise<Permission> => {
-    const response = await axios.put(`${API_URL}/management/permissions/${id}`, data);
+    const response = await api.put(`/management/permissions/${id}`, data);
     return response.data.data;
 };
 
 export const deletePermission = async (id: string): Promise<void> => {
-    await axios.delete(`${API_URL}/management/permissions/${id}`);
+    await api.delete(`/management/permissions/${id}`);
+};
+
+export const getDatabaseTables = async (): Promise<string[]> => {
+    const response = await api.get('/management/permissions/tables');
+    return response.data.data;
 };

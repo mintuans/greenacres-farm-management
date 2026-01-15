@@ -1,18 +1,22 @@
 import { Request, Response } from 'express';
 import * as categoryService from '../../services/category.service';
+import { logActivity } from '../../services/audit-log.service';
 
 // Tạo danh mục mới
-export const createCategory = async (req: Request, res: Response) => {
+export const createCategory = async (req: Request, res: Response): Promise<any> => {
     try {
         const category = await categoryService.createCategory(req.body);
-        res.status(201).json({
+
+        await logActivity(req, 'CREATE_CATEGORY', 'product_categories', category.id, null, req.body);
+
+        return res.status(201).json({
             success: true,
             data: category,
             message: 'Category created successfully'
         });
     } catch (error: any) {
         console.error('Create category error:', error);
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: error.message || 'Failed to create category'
         });
@@ -20,20 +24,20 @@ export const createCategory = async (req: Request, res: Response) => {
 };
 
 // Lấy danh sách danh mục
-export const getCategories = async (req: Request, res: Response) => {
+export const getCategories = async (req: Request, res: Response): Promise<any> => {
     try {
         const { scope, parentId } = req.query;
         const categories = await categoryService.getCategories(
             scope as string,
             parentId === 'null' ? null : parentId as string
         );
-        res.json({
+        return res.json({
             success: true,
             data: categories
         });
     } catch (error: any) {
         console.error('Get categories error:', error);
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: error.message || 'Failed to get categories'
         });
@@ -41,17 +45,17 @@ export const getCategories = async (req: Request, res: Response) => {
 };
 
 // Lấy cây danh mục
-export const getCategoryTree = async (req: Request, res: Response) => {
+export const getCategoryTree = async (req: Request, res: Response): Promise<any> => {
     try {
         const { scope } = req.query;
         const tree = await categoryService.getCategoryTree(scope as string);
-        res.json({
+        return res.json({
             success: true,
             data: tree
         });
     } catch (error: any) {
         console.error('Get category tree error:', error);
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: error.message || 'Failed to get category tree'
         });
@@ -59,26 +63,25 @@ export const getCategoryTree = async (req: Request, res: Response) => {
 };
 
 // Lấy danh mục theo ID
-export const getCategoryById = async (req: Request, res: Response) => {
+export const getCategoryById = async (req: Request, res: Response): Promise<any> => {
     try {
         const { id } = req.params;
         const category = await categoryService.getCategoryById(id);
 
         if (!category) {
-            res.status(404).json({
+            return res.status(404).json({
                 success: false,
                 message: 'Category not found'
             });
-            return;
         }
 
-        res.json({
+        return res.json({
             success: true,
             data: category
         });
     } catch (error: any) {
         console.error('Get category error:', error);
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: error.message || 'Failed to get category'
         });
@@ -86,27 +89,29 @@ export const getCategoryById = async (req: Request, res: Response) => {
 };
 
 // Cập nhật danh mục
-export const updateCategory = async (req: Request, res: Response) => {
+export const updateCategory = async (req: Request, res: Response): Promise<any> => {
     try {
         const { id } = req.params;
+        const oldCategory = await categoryService.getCategoryById(id);
         const category = await categoryService.updateCategory(id, req.body);
 
         if (!category) {
-            res.status(404).json({
+            return res.status(404).json({
                 success: false,
                 message: 'Category not found'
             });
-            return;
         }
 
-        res.json({
+        await logActivity(req, 'UPDATE_CATEGORY', 'product_categories', id, oldCategory, req.body);
+
+        return res.json({
             success: true,
             data: category,
             message: 'Category updated successfully'
         });
     } catch (error: any) {
         console.error('Update category error:', error);
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: error.message || 'Failed to update category'
         });
@@ -114,20 +119,22 @@ export const updateCategory = async (req: Request, res: Response) => {
 };
 
 // Xóa danh mục
-export const deleteCategory = async (req: Request, res: Response) => {
+export const deleteCategory = async (req: Request, res: Response): Promise<any> => {
     try {
         const { id } = req.params;
+        const oldCategory = await categoryService.getCategoryById(id);
         const deleted = await categoryService.deleteCategory(id);
 
         if (!deleted) {
-            res.status(404).json({
+            return res.status(404).json({
                 success: false,
                 message: 'Category not found'
             });
-            return;
         }
 
-        res.json({
+        await logActivity(req, 'DELETE_CATEGORY', 'product_categories', id, oldCategory, null);
+
+        return res.json({
             success: true,
             message: 'Category deleted successfully'
         });
@@ -141,7 +148,7 @@ export const deleteCategory = async (req: Request, res: Response) => {
             });
         }
 
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: error.message || 'Failed to delete category'
         });
@@ -149,16 +156,16 @@ export const deleteCategory = async (req: Request, res: Response) => {
 };
 
 // Lấy thống kê
-export const getCategoryStats = async (_req: Request, res: Response) => {
+export const getCategoryStats = async (_req: Request, res: Response): Promise<any> => {
     try {
         const stats = await categoryService.getCategoryStats();
-        res.json({
+        return res.json({
             success: true,
             data: stats
         });
     } catch (error: any) {
         console.error('Get stats error:', error);
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: error.message || 'Failed to get stats'
         });

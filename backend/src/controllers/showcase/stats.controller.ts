@@ -4,7 +4,7 @@ import pool from '../../config/database';
 /**
  * Lấy thống kê lượt truy cập
  */
-export const getStats = async (_req: Request, res: Response) => {
+export const getStats = async (_req: Request, res: Response): Promise<any> => {
     try {
         // Kiểm tra xem bảng đã tồn tại chưa, nếu chưa thì tạo (Lazy Init)
         await pool.query(`
@@ -22,16 +22,16 @@ export const getStats = async (_req: Request, res: Response) => {
         }
 
         const result = await pool.query('SELECT total_views FROM site_stats LIMIT 1');
-        res.json({ success: true, count: parseInt(result.rows[0].total_views) });
+        return res.json({ success: true, count: parseInt(result.rows[0].total_views) });
     } catch (error: any) {
-        res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message });
     }
 };
 
 /**
  * Tăng số lượt truy cập
  */
-export const incrementStats = async (_req: Request, res: Response) => {
+export const incrementStats = async (_req: Request, res: Response): Promise<any> => {
     try {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS site_stats (
@@ -55,8 +55,8 @@ export const incrementStats = async (_req: Request, res: Response) => {
         }
 
         const result = await pool.query('SELECT total_views FROM site_stats LIMIT 1');
-        res.json({ success: true, count: parseInt(result.rows[0].total_views) });
+        return res.json({ success: true, count: parseInt(result.rows[0].total_views) });
     } catch (error: any) {
-        res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message });
     }
 };

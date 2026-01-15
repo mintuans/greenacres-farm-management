@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import pool from '../../config/database';
+import { logActivity } from '../../services/audit-log.service';
 
 /**
  * Lấy bình luận
  */
-export const getComments = async (req: Request, res: Response) => {
+export const getComments = async (req: Request, res: Response): Promise<any> => {
     try {
         const { commentable_type, commentable_id } = req.query;
 
@@ -34,16 +35,16 @@ export const getComments = async (req: Request, res: Response) => {
             ORDER BY ct.path, ct.created_at
         `, [commentable_type, commentable_id]);
 
-        res.json({ success: true, data: result.rows });
+        return res.json({ success: true, data: result.rows });
     } catch (error: any) {
-        res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message });
     }
 };
 
 /**
  * Tạo bình luận mới
  */
-export const createComment = async (req: Request, res: Response) => {
+export const createComment = async (req: Request, res: Response): Promise<any> => {
     try {
         const { commentable_type, commentable_id, content, rating, parent_id, commenter_name, commenter_email } = req.body;
 
@@ -58,20 +59,24 @@ export const createComment = async (req: Request, res: Response) => {
             RETURNING *
         `, [commentable_type, commentable_id, commenter_name, commenter_email, content, rating || 5, parent_id]);
 
-        res.status(201).json({
+        const comment = result.rows[0];
+
+        await logActivity(req, 'CREATE_COMMENT', 'comments', comment.id, null, req.body);
+
+        return res.status(201).json({
             success: true,
             message: 'Bình luận đã được đăng',
-            data: result.rows[0]
+            data: comment
         });
     } catch (error: any) {
-        res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message });
     }
 };
 
 /**
  * Thả cảm xúc cho bình luận
  */
-export const addReaction = async (req: Request, res: Response) => {
+export const addReaction = async (req: Request, res: Response): Promise<any> => {
     try {
         const { id } = req.params;
         const { reaction_type, session_id } = req.body;
@@ -88,8 +93,10 @@ export const addReaction = async (req: Request, res: Response) => {
             DO UPDATE SET reaction_type = $3
         `, [id, session_id, reaction_type]);
 
-        res.json({ success: true, message: 'Đã thả cảm xúc' });
+        await logActivity(req, 'ADD_COMMENT_REACTION', 'comment_reactions', id, null, req.body);
+
+        return res.json({ success: true, message: 'Đã thả cảm xúc' });
     } catch (error: any) {
-        res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message });
     }
 };

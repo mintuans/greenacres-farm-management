@@ -273,7 +273,7 @@ const Sidebar: React.FC = () => {
                 </div>
             </nav>
 
-            <div className="p-4 border-t border-slate-100 mt-auto">
+            {/* <div className="p-4 border-t border-slate-100 mt-auto">
                 <div className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer">
                     <div className="size-10 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200">
                         <img src="https://picsum.photos/seed/farmer/100/100" alt="John Doe" className="w-full h-full object-cover" />
@@ -283,7 +283,7 @@ const Sidebar: React.FC = () => {
                         <p className="text-xs text-slate-500 truncate">Chủ vườn mận</p>
                     </div>
                 </div>
-            </div>
+            </div> */}
         </aside>
     );
 };

@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+import api from '../services/api';
 
 export interface AuditLog {
     id: string;
@@ -17,6 +15,6 @@ export interface AuditLog {
 }
 
 export const getAuditLogs = async (): Promise<AuditLog[]> => {
-    const response = await axios.get(`${API_URL}/management/audit-logs`);
+    const response = await api.get('/management/audit-logs');
     return response.data.data;
 };

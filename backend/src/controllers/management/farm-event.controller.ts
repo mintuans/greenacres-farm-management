@@ -1,48 +1,58 @@
 import { Request, Response } from 'express';
 import * as farmEventService from '../../services/farm-event.service';
+import { logActivity } from '../../services/audit-log.service';
 
-export const getFarmEvents = async (_req: Request, res: Response) => {
+export const getFarmEvents = async (_req: Request, res: Response): Promise<any> => {
     try {
         const events = await farmEventService.getFarmEvents();
-        res.json({ success: true, data: events });
+        return res.json({ success: true, data: events });
     } catch (error: any) {
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
-export const createFarmEvent = async (req: Request, res: Response) => {
+export const createFarmEvent = async (req: Request, res: Response): Promise<any> => {
     try {
         const event = await farmEventService.createFarmEvent(req.body);
-        res.status(201).json({ success: true, data: event });
+
+        await logActivity(req, 'CREATE_FARM_EVENT', 'farm_events', event.id, null, req.body);
+
+        return res.status(201).json({ success: true, data: event });
     } catch (error: any) {
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
-export const updateFarmEvent = async (req: Request, res: Response) => {
+export const updateFarmEvent = async (req: Request, res: Response): Promise<any> => {
     try {
         const { id } = req.params;
+        const oldEvent = await farmEventService.getFarmEventById(id);
         const event = await farmEventService.updateFarmEvent(id, req.body);
         if (!event) {
-            res.status(404).json({ success: false, message: 'Not found' });
-            return;
+            return res.status(404).json({ success: false, message: 'Not found' });
         }
-        res.json({ success: true, data: event });
+
+        await logActivity(req, 'UPDATE_FARM_EVENT', 'farm_events', id, oldEvent, req.body);
+
+        return res.json({ success: true, data: event });
     } catch (error: any) {
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
-export const deleteFarmEvent = async (req: Request, res: Response) => {
+export const deleteFarmEvent = async (req: Request, res: Response): Promise<any> => {
     try {
         const { id } = req.params;
+        const oldEvent = await farmEventService.getFarmEventById(id);
         const result = await farmEventService.deleteFarmEvent(id);
         if (!result) {
-            res.status(404).json({ success: false, message: 'Not found' });
-            return;
+            return res.status(404).json({ success: false, message: 'Not found' });
         }
-        res.json({ success: true, message: 'Deleted successfully' });
+
+        await logActivity(req, 'DELETE_FARM_EVENT', 'farm_events', id, oldEvent, null);
+
+        return res.json({ success: true, message: 'Deleted successfully' });
     } catch (error: any) {
-        res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };

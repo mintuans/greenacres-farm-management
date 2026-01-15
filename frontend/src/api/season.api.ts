@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+import api from '../services/api';
 
 export interface Season {
     id: string;
@@ -36,40 +34,40 @@ export const getSeasons = async (status?: string, unitId?: string): Promise<Seas
     const params: any = {};
     if (status) params.status = status;
     if (unitId) params.unitId = unitId;
-    const response = await axios.get(`${API_URL}/management/seasons`, { params });
+    const response = await api.get('/management/seasons', { params });
     return response.data.data;
 };
 
 export const getSeasonById = async (id: string): Promise<Season> => {
-    const response = await axios.get(`${API_URL}/management/seasons/${id}`);
+    const response = await api.get(`/management/seasons/${id}`);
     return response.data.data;
 };
 
 export const createSeason = async (data: CreateSeasonInput): Promise<Season> => {
-    const response = await axios.post(`${API_URL}/management/seasons`, data);
+    const response = await api.post('/management/seasons', data);
     return response.data.data;
 };
 
 export const updateSeason = async (id: string, data: UpdateSeasonInput): Promise<Season> => {
-    const response = await axios.put(`${API_URL}/management/seasons/${id}`, data);
+    const response = await api.put(`/management/seasons/${id}`, data);
     return response.data.data;
 };
 
 export const deleteSeason = async (id: string): Promise<void> => {
-    await axios.delete(`${API_URL}/management/seasons/${id}`);
+    await api.delete(`/management/seasons/${id}`);
 };
 
 export const closeSeason = async (id: string): Promise<Season> => {
-    const response = await axios.post(`${API_URL}/management/seasons/${id}/close`);
+    const response = await api.post(`/management/seasons/${id}/close`);
     return response.data.data;
 };
 
 export const getSeasonStats = async (): Promise<any> => {
-    const response = await axios.get(`${API_URL}/management/seasons/stats`);
+    const response = await api.get('/management/seasons/stats');
     return response.data.data;
 };
 
 export const getNextSeasonCode = async (): Promise<string> => {
-    const response = await axios.get(`${API_URL}/management/seasons/next-code`);
+    const response = await api.get('/management/seasons/next-code');
     return response.data.data;
 };

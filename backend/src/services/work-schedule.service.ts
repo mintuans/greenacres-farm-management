@@ -29,6 +29,12 @@ export const getWorkSchedules = async (): Promise<WorkSchedule[]> => {
     return result.rows;
 };
 
+export const getWorkScheduleById = async (id: string): Promise<WorkSchedule | null> => {
+    const query = 'SELECT * FROM work_schedules WHERE id = $1';
+    const result = await pool.query(query, [id]);
+    return result.rows[0] || null;
+};
+
 export const createWorkSchedule = async (data: any): Promise<WorkSchedule> => {
     // Chuyển empty string thành null để tránh lỗi UUID trong Postgres
     const seasonId = data.season_id && data.season_id !== '' ? data.season_id : null;

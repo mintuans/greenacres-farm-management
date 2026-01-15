@@ -26,6 +26,12 @@ export const getFarmEvents = async (): Promise<FarmEvent[]> => {
     return result.rows;
 };
 
+export const getFarmEventById = async (id: string): Promise<FarmEvent | null> => {
+    const query = 'SELECT * FROM farm_events WHERE id = $1';
+    const result = await pool.query(query, [id]);
+    return result.rows[0] || null;
+};
+
 export const createFarmEvent = async (data: any): Promise<FarmEvent> => {
     const query = `
         INSERT INTO farm_events (title, event_type, start_time, end_time, is_all_day, description, season_id, unit_id)

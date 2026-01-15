@@ -35,6 +35,13 @@ export const getInventory = async (categoryId?: string): Promise<InventoryItem[]
     return result.rows;
 };
 
+// Lấy chi tiết vật tư
+export const getInventoryItemById = async (id: string): Promise<InventoryItem | null> => {
+    const query = 'SELECT * FROM inventory WHERE id = $1';
+    const result = await pool.query(query, [id]);
+    return result.rows[0] || null;
+};
+
 // Tạo vật tư mới
 export const createInventoryItem = async (data: any): Promise<InventoryItem> => {
     const query = `

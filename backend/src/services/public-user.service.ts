@@ -98,3 +98,24 @@ export const deletePublicUser = async (id: string): Promise<boolean> => {
     const result = await pool.query(query, [id]);
     return (result.rowCount ?? 0) > 0;
 };
+
+// User-Role assignment
+export const getUserRoles = async (userId: string) => {
+    const query = `
+        SELECT r.* FROM roles r
+        JOIN user_roles ur ON r.id = ur.role_id
+        WHERE ur.user_id = $1
+    `;
+    const result = await pool.query(query, [userId]);
+    return result.rows;
+};
+
+export const assignRoleToUser = async (userId: string, roleId: string) => {
+    const query = 'INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2) ON CONFLICT DO NOTHING';
+    await pool.query(query, [userId, roleId]);
+};
+
+export const removeRoleFromUser = async (userId: string, roleId: string) => {
+    const query = 'DELETE FROM user_roles WHERE user_id = $1 AND role_id = $2';
+    await pool.query(query, [userId, roleId]);
+};

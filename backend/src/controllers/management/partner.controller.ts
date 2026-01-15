@@ -1,18 +1,22 @@
 import { Request, Response } from 'express';
 import * as partnerService from '../../services/partner.service';
+import { logActivity } from '../../services/audit-log.service';
 
 // Tạo đối tác mới
-export const createPartner = async (req: Request, res: Response) => {
+export const createPartner = async (req: Request, res: Response): Promise<any> => {
     try {
         const partner = await partnerService.createPartner(req.body);
-        res.status(201).json({
+
+        await logActivity(req, 'CREATE_PARTNER', 'partners', partner.id, null, req.body);
+
+        return res.status(201).json({
             success: true,
             data: partner,
             message: 'Partner created successfully'
         });
     } catch (error: any) {
         console.error('Create partner error:', error);
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: error.message || 'Failed to create partner'
         });
@@ -20,17 +24,17 @@ export const createPartner = async (req: Request, res: Response) => {
 };
 
 // Lấy danh sách đối tác
-export const getPartners = async (req: Request, res: Response) => {
+export const getPartners = async (req: Request, res: Response): Promise<any> => {
     try {
         const { type } = req.query;
         const partners = await partnerService.getPartners(type as string);
-        res.json({
+        return res.json({
             success: true,
             data: partners
         });
     } catch (error: any) {
         console.error('Get partners error:', error);
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: error.message || 'Failed to get partners'
         });
@@ -38,26 +42,25 @@ export const getPartners = async (req: Request, res: Response) => {
 };
 
 // Lấy đối tác theo ID
-export const getPartnerById = async (req: Request, res: Response) => {
+export const getPartnerById = async (req: Request, res: Response): Promise<any> => {
     try {
         const { id } = req.params;
         const partner = await partnerService.getPartnerById(id);
 
         if (!partner) {
-            res.status(404).json({
+            return res.status(404).json({
                 success: false,
                 message: 'Partner not found'
             });
-            return;
         }
 
-        res.json({
+        return res.json({
             success: true,
             data: partner
         });
     } catch (error: any) {
         console.error('Get partner error:', error);
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: error.message || 'Failed to get partner'
         });
@@ -65,27 +68,29 @@ export const getPartnerById = async (req: Request, res: Response) => {
 };
 
 // Cập nhật đối tác
-export const updatePartner = async (req: Request, res: Response) => {
+export const updatePartner = async (req: Request, res: Response): Promise<any> => {
     try {
         const { id } = req.params;
+        const oldPartner = await partnerService.getPartnerById(id);
         const partner = await partnerService.updatePartner(id, req.body);
 
         if (!partner) {
-            res.status(404).json({
+            return res.status(404).json({
                 success: false,
                 message: 'Partner not found'
             });
-            return;
         }
 
-        res.json({
+        await logActivity(req, 'UPDATE_PARTNER', 'partners', id, oldPartner, req.body);
+
+        return res.json({
             success: true,
             data: partner,
             message: 'Partner updated successfully'
         });
     } catch (error: any) {
         console.error('Update partner error:', error);
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: error.message || 'Failed to update partner'
         });
@@ -93,26 +98,28 @@ export const updatePartner = async (req: Request, res: Response) => {
 };
 
 // Xóa đối tác
-export const deletePartner = async (req: Request, res: Response) => {
+export const deletePartner = async (req: Request, res: Response): Promise<any> => {
     try {
         const { id } = req.params;
+        const oldPartner = await partnerService.getPartnerById(id);
         const deleted = await partnerService.deletePartner(id);
 
         if (!deleted) {
-            res.status(404).json({
+            return res.status(404).json({
                 success: false,
                 message: 'Partner not found'
             });
-            return;
         }
 
-        res.json({
+        await logActivity(req, 'DELETE_PARTNER', 'partners', id, oldPartner, null);
+
+        return res.json({
             success: true,
             message: 'Partner deleted successfully'
         });
     } catch (error: any) {
         console.error('Delete partner error:', error);
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: error.message || 'Failed to delete partner'
         });
@@ -120,18 +127,18 @@ export const deletePartner = async (req: Request, res: Response) => {
 };
 
 // Lấy số dư
-export const getPartnerBalance = async (req: Request, res: Response) => {
+export const getPartnerBalance = async (req: Request, res: Response): Promise<any> => {
     try {
         const { id } = req.params;
         const balance = await partnerService.getPartnerBalance(id);
 
-        res.json({
+        return res.json({
             success: true,
             data: { balance }
         });
     } catch (error: any) {
         console.error('Get balance error:', error);
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: error.message || 'Failed to get balance'
         });

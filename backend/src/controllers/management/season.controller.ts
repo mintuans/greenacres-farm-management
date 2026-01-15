@@ -1,10 +1,15 @@
 import { Request, Response } from 'express';
 import * as seasonService from '../../services/season.service';
+import { logActivity } from '../../services/audit-log.service';
 
 // Tạo mùa vụ mới
 export const createSeason = async (req: Request, res: Response) => {
     try {
         const season = await seasonService.createSeason(req.body);
+
+        // Log action
+        await logActivity(req, 'CREATE_SEASON', 'seasons', season.id, null, req.body);
+
         res.status(201).json({
             success: true,
             data: season,
@@ -68,6 +73,9 @@ export const getSeasonById = async (req: Request, res: Response) => {
 export const updateSeason = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
+
+        // Lấy dữ liệu cũ để log
+        const oldSeason = await seasonService.getSeasonById(id);
         const season = await seasonService.updateSeason(id, req.body);
 
         if (!season) {
@@ -77,6 +85,9 @@ export const updateSeason = async (req: Request, res: Response) => {
             });
             return;
         }
+
+        // Log action
+        await logActivity(req, 'UPDATE_SEASON', 'seasons', id, oldSeason, req.body);
 
         res.json({
             success: true,
@@ -96,6 +107,9 @@ export const updateSeason = async (req: Request, res: Response) => {
 export const deleteSeason = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
+
+        // Lấy dữ liệu cũ để log
+        const oldSeason = await seasonService.getSeasonById(id);
         const deleted = await seasonService.deleteSeason(id);
 
         if (!deleted) {
@@ -105,6 +119,9 @@ export const deleteSeason = async (req: Request, res: Response) => {
             });
             return;
         }
+
+        // Log action
+        await logActivity(req, 'DELETE_SEASON', 'seasons', id, oldSeason, null);
 
         res.json({
             success: true,
@@ -123,6 +140,7 @@ export const deleteSeason = async (req: Request, res: Response) => {
 export const closeSeason = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
+        const oldSeason = await seasonService.getSeasonById(id);
         const season = await seasonService.closeSeason(id);
 
         if (!season) {
@@ -132,6 +150,9 @@ export const closeSeason = async (req: Request, res: Response) => {
             });
             return;
         }
+
+        // Log action
+        await logActivity(req, 'CLOSE_SEASON', 'seasons', id, oldSeason, { status: 'CLOSED' });
 
         res.json({
             success: true,

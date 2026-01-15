@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+import api from '../services/api';
 
 export interface PublicUser {
     id: string;
@@ -15,20 +13,33 @@ export interface PublicUser {
 }
 
 export const getPublicUsers = async (): Promise<PublicUser[]> => {
-    const response = await axios.get(`${API_URL}/management/users`);
+    const response = await api.get('/management/users');
     return response.data.data;
 };
 
 export const createPublicUser = async (data: Partial<PublicUser>): Promise<PublicUser> => {
-    const response = await axios.post(`${API_URL}/management/users`, data);
+    const response = await api.post('/management/users', data);
     return response.data.data;
 };
 
 export const updatePublicUser = async (id: string, data: Partial<PublicUser>): Promise<PublicUser> => {
-    const response = await axios.put(`${API_URL}/management/users/${id}`, data);
+    const response = await api.put(`/management/users/${id}`, data);
     return response.data.data;
 };
 
 export const deletePublicUser = async (id: string): Promise<void> => {
-    await axios.delete(`${API_URL}/management/users/${id}`);
+    await api.delete(`/management/users/${id}`);
+};
+
+export const getUserRoles = async (userId: string): Promise<any[]> => {
+    const response = await api.get(`/management/users/${userId}/roles`);
+    return response.data.data;
+};
+
+export const assignRoleToUser = async (userId: string, roleId: string): Promise<void> => {
+    await api.post(`/management/users/${userId}/roles`, { roleId });
+};
+
+export const removeRoleFromUser = async (userId: string, roleId: string): Promise<void> => {
+    await api.delete(`/management/users/${userId}/roles/${roleId}`);
 };

@@ -48,6 +48,12 @@ export const getTransactions = async (month?: number, year?: number, seasonId?: 
     return result.rows;
 };
 
+export const getTransactionById = async (id: string): Promise<Transaction | null> => {
+    const query = 'SELECT * FROM transactions WHERE id = $1';
+    const result = await pool.query(query, [id]);
+    return result.rows[0] || null;
+};
+
 export const createTransaction = async (data: any): Promise<Transaction> => {
     const query = `
         INSERT INTO transactions (

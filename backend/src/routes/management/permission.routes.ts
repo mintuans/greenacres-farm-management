@@ -3,6 +3,7 @@ import * as permissionController from '../../controllers/management/permission.c
 
 const router = Router();
 
+router.get('/tables', permissionController.getDatabaseTables);
 router.get('/', permissionController.getPermissions);
 router.post('/', permissionController.createPermission);
 router.put('/:id', permissionController.updatePermission);

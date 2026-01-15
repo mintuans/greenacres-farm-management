@@ -6,10 +6,22 @@ import {
     CalendarDay,
     formatDate
 } from '@/src/utils/calendar.utils';
-import { ScheduleEvent, EventType } from '@/src/@types/schedule.types';
+import { EventType } from '@/src/@types/schedule.types';
 import { getPartners, Partner } from '../api/partner.api';
 import { getWorkShifts, WorkShift } from '../api/work-shift.api';
 import { getJobTypes, JobType } from '../api/job-type.api';
+import { getSchedulesByMonth, ScheduleEvent as APIScheduleEvent } from '../api/schedule.api';
+
+// Interface để map dữ liệu từ API sang format hiện tại
+interface ScheduleEvent {
+    id: string;
+    title: string;
+    type: EventType;
+    date: Date;
+    startTime?: string;
+    endTime?: string;
+    description?: string;
+}
 
 const Schedule: React.FC = () => {
     // State cho tháng/năm hiện tại
@@ -26,6 +38,7 @@ const Schedule: React.FC = () => {
     const [shiftTemplates, setShiftTemplates] = useState<WorkShift[]>([]);
     const [jobTypes, setJobTypes] = useState<JobType[]>([]);
     const [loadingData, setLoadingData] = useState(false);
+    const [loadingSchedules, setLoadingSchedules] = useState(false);
 
     const [formShift, setFormShift] = useState({
         worker_id: '',
@@ -38,24 +51,38 @@ const Schedule: React.FC = () => {
     const currentYear = currentDate.getFullYear();
     const currentMonth = currentDate.getMonth();
 
-    // Sample events data
-    const [events, setEvents] = useState<ScheduleEvent[]>([
-        {
-            id: '1',
-            title: 'Bắt đầu mùa trồng',
-            type: 'task',
-            date: new Date(2026, 0, 8),
-            description: 'Chuẩn bị đất và gieo hạt',
-        },
-        {
-            id: '2',
-            title: 'Ca sáng - Đội A',
-            type: 'staff',
-            date: new Date(2026, 0, 8),
-            startTime: '06:00',
-            endTime: '12:00',
-        },
-    ]);
+    // Real events data from API
+    const [events, setEvents] = useState<ScheduleEvent[]>([]);
+
+    // Fetch schedules from API
+    useEffect(() => {
+        const fetchSchedules = async () => {
+            try {
+                setLoadingSchedules(true);
+                const apiEvents = await getSchedulesByMonth(currentYear, currentMonth + 1);
+
+                // Map API data to component format
+                const mappedEvents: ScheduleEvent[] = apiEvents.map(event => ({
+                    id: event.event_id,
+                    title: event.title,
+                    type: event.event_type === 'WORK_SHIFT' ? 'staff' :
+                        event.description?.includes('Thu hoạch') ? 'harvest' :
+                            event.description?.includes('Vấn đề') ? 'issue' : 'task',
+                    date: new Date(event.event_date),
+                    startTime: event.start_time,
+                    endTime: event.end_time,
+                    description: event.description
+                }));
+
+                setEvents(mappedEvents);
+            } catch (error) {
+                console.error('Error fetching schedules:', error);
+            } finally {
+                setLoadingSchedules(false);
+            }
+        };
+        fetchSchedules();
+    }, [currentYear, currentMonth]);
 
     useEffect(() => {
         const fetchFormData = async () => {
@@ -156,7 +183,11 @@ const Schedule: React.FC = () => {
         }
     };
 
-    const monthYearDisplay = `${getMonthName(currentMonth)} ${currentYear}`;
+    // State cho Month/Year Picker
+    const [isYearPickerOpen, setIsYearPickerOpen] = useState(false);
+    const [tempYear, setTempYear] = useState(currentYear);
+
+    const monthYearDisplay = `${String(currentMonth + 1).padStart(2, '0')}/${currentYear}`;
 
     return (
         <div className="p-6 md:p-8 space-y-8 max-w-[1440px] mx-auto bg-slate-50/20 min-h-screen">
@@ -168,6 +199,7 @@ const Schedule: React.FC = () => {
                     </h1>
                     <p className="text-slate-500 mt-1 font-medium">Quản lý ca làm việc và sự kiện trang trại hàng tháng</p>
                 </div>
+                {/* 
                 <button
                     onClick={() => setShowAddShiftModal(true)}
                     className="flex items-center gap-2 bg-[#13ec49] hover:bg-[#10d63f] text-black font-black h-12 px-8 rounded-2xl shadow-xl shadow-[#13ec49]/30 transition-all active:scale-95 group"
@@ -175,30 +207,13 @@ const Schedule: React.FC = () => {
                     <span className="material-symbols-outlined font-black text-[22px] group-hover:rotate-90 transition-transform">add</span>
                     <span>Thêm ca làm việc</span>
                 </button>
+                */}
             </div>
 
             {/* Calendar Card */}
             <div className="bg-white border border-slate-200 rounded-[32px] shadow-2xl shadow-slate-200/50 overflow-hidden flex flex-col">
                 {/* Filters and Controls */}
                 <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between p-6 border-b border-slate-100 gap-6">
-                    <div className="flex flex-wrap gap-2 items-center">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mr-2">
-                            Bộ lọc:
-                        </span>
-                        {(['all', 'field', 'machine'] as const).map((filter) => (
-                            <button
-                                key={filter}
-                                onClick={() => setSelectedFilter(filter)}
-                                className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${selectedFilter === filter
-                                    ? 'bg-[#13ec49]/15 text-black border-2 border-[#13ec49]/30'
-                                    : 'bg-slate-50 text-slate-500 border-2 border-transparent hover:bg-slate-100'
-                                    }`}
-                            >
-                                {filter === 'all' ? 'Tất cả vai trò' : filter === 'field' ? 'Công nhân đồng ruộng' : 'Người vận hành máy'}
-                            </button>
-                        ))}
-                    </div>
-
                     {/* Legend */}
                     <div className="flex flex-wrap items-center gap-5 text-[11px] font-black uppercase tracking-wider">
                         <div className="flex items-center gap-2 text-blue-600/80">
@@ -223,20 +238,75 @@ const Schedule: React.FC = () => {
                     <div className="flex items-center gap-6 w-full xl:w-auto justify-between xl:justify-end">
                         <button
                             onClick={goToToday}
-                            className="text-[10px] font-black uppercase tracking-widest text-[#13ec49] hover:text-[#10d63f] transition-colors"
+                            className="text-[10px] font-black uppercase tracking-widest text-[#13ec49] hover:text-[#10d63f] transition-colors whitespace-nowrap"
                         >
                             Hôm nay
                         </button>
-                        <div className="flex items-center bg-slate-50 rounded-2xl p-1.5 border border-slate-100">
+                        <div className="flex items-center bg-slate-50 rounded-2xl p-1.5 border border-slate-100 relative">
                             <button
                                 className="size-9 flex items-center justify-center rounded-xl hover:bg-white hover:shadow-lg transition-all text-slate-900"
                                 onClick={goToPreviousMonth}
                             >
                                 <span className="material-symbols-outlined text-lg">chevron_left</span>
                             </button>
-                            <span className="px-6 text-sm font-black text-slate-900 min-w-[150px] text-center">
-                                {monthYearDisplay}
-                            </span>
+
+                            <div className="relative">
+                                <button
+                                    onClick={() => {
+                                        setTempYear(currentYear);
+                                        setIsYearPickerOpen(!isYearPickerOpen);
+                                    }}
+                                    className="px-6 text-sm font-black text-slate-900 min-w-[120px] text-center hover:text-[#13ec49] transition-colors"
+                                >
+                                    {monthYearDisplay}
+                                </button>
+
+                                {isYearPickerOpen && (
+                                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-64 bg-white border border-slate-100 rounded-[24px] shadow-2xl z-[120] p-4 animate-in fade-in zoom-in-95 duration-200">
+                                        <div className="flex items-center justify-between mb-4 px-2">
+                                            <button
+                                                onClick={() => setTempYear(prev => prev - 1)}
+                                                className="size-8 flex items-center justify-center rounded-lg hover:bg-slate-50 text-slate-400"
+                                            >
+                                                <span className="material-symbols-outlined text-sm">chevron_left</span>
+                                            </button>
+                                            <span className="font-black text-slate-900 tracking-tighter text-lg">{tempYear}</span>
+                                            <button
+                                                onClick={() => setTempYear(prev => prev + 1)}
+                                                className="size-8 flex items-center justify-center rounded-lg hover:bg-slate-50 text-slate-400"
+                                            >
+                                                <span className="material-symbols-outlined text-sm">chevron_right</span>
+                                            </button>
+                                        </div>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {Array.from({ length: 12 }).map((_, i) => (
+                                                <button
+                                                    key={i}
+                                                    onClick={() => {
+                                                        setCurrentDate(new Date(tempYear, i, 1));
+                                                        setIsYearPickerOpen(false);
+                                                    }}
+                                                    className={`py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${currentMonth === i && currentYear === tempYear
+                                                        ? 'bg-[#13ec49] text-black'
+                                                        : 'hover:bg-slate-50 text-slate-500'
+                                                        }`}
+                                                >
+                                                    T{i + 1}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <div className="mt-4 pt-4 border-t border-slate-50">
+                                            <button
+                                                onClick={() => setIsYearPickerOpen(false)}
+                                                className="w-full py-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-300 hover:text-slate-900 transition-colors"
+                                            >
+                                                Đóng
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
                             <button
                                 className="size-9 flex items-center justify-center rounded-xl hover:bg-white hover:shadow-lg transition-all text-slate-900"
                                 onClick={goToNextMonth}
@@ -250,11 +320,11 @@ const Schedule: React.FC = () => {
                 {/* Calendar Grid */}
                 <div className="w-full overflow-x-auto">
                     {/* Day Headers */}
-                    <div className="min-w-[800px] grid grid-cols-7 border-b border-slate-100 bg-slate-50/30">
+                    <div className="min-w-[800px] grid grid-cols-7 border-b-2 border-slate-200 bg-slate-50/30">
                         {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'].map((day, idx) => (
                             <div
                                 key={idx}
-                                className="p-4 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest border-r border-slate-100 last:border-r-0"
+                                className="p-4 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest border-r-2 border-slate-200 last:border-r-0"
                             >
                                 {day}
                             </div>
@@ -273,7 +343,7 @@ const Schedule: React.FC = () => {
                                         setSelectedDay(day);
                                         setShowDayModal(true);
                                     }}
-                                    className={`min-h-[140px] p-3 border-b border-r border-slate-100 group transition-all relative flex flex-col justify-between cursor-pointer ${!day.isCurrentMonth
+                                    className={`min-h-[140px] p-3 border-b-2 border-r-2 border-slate-200 group transition-all relative flex flex-col justify-between cursor-pointer ${!day.isCurrentMonth
                                         ? 'bg-slate-50/40 opacity-40'
                                         : day.isToday
                                             ? 'bg-[#13ec49]/5 hover:bg-[#13ec49]/10'
@@ -381,6 +451,7 @@ const Schedule: React.FC = () => {
                             >
                                 Đóng
                             </button>
+                            {/* 
                             <button
                                 onClick={() => {
                                     setFormShift({ ...formShift, date: selectedDay.date.toISOString().split('T')[0] });
@@ -392,6 +463,7 @@ const Schedule: React.FC = () => {
                                 <span className="material-symbols-outlined font-black">add</span>
                                 <span>Thêm mới</span>
                             </button>
+                            */}
                         </div>
                     </div>
                 </div>

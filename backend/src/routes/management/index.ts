@@ -21,6 +21,8 @@ import publicUserRoutes from './public-user.routes';
 import roleRoutes from './role.routes';
 import permissionRoutes from './permission.routes';
 import auditLogRoutes from './audit-log.routes';
+import scheduleRoutes from './schedule.routes';
+import dashboardRoutes from './dashboard.routes';
 
 
 const router = Router();
@@ -59,6 +61,8 @@ router.use('/users', publicUserRoutes);
 router.use('/roles', roleRoutes);
 router.use('/permissions', permissionRoutes);
 router.use('/audit-logs', auditLogRoutes);
+router.use('/schedules', scheduleRoutes);
+router.use('/dashboard', dashboardRoutes);
 
 
 export default router;
