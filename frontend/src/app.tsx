@@ -21,10 +21,12 @@ import WarehouseTypes from '@/src/pages/WarehouseTypes';
 import FarmEvents from '@/src/pages/FarmEvents';
 import WorkSchedules from '@/src/pages/WorkSchedules';
 import DailyWorkLogs from '@/src/pages/DailyWorkLogs';
+import PayrollManagement from '@/src/pages/PayrollManagement';
 
 // Showcase pages
 import FarmShowcase from '@/src/pages/showcase/FarmShowcase';
 import ShowcaseProducts from '@/src/pages/showcase/ShowcaseProducts';
+import ShowcaseEvents from '@/src/pages/showcase/ShowcaseEvents';
 import ShowcaseBlog from '@/src/pages/showcase/ShowcaseBlog';
 import BlogDetail from '@/src/pages/showcase/BlogDetail';
 import UserProfile from '@/src/pages/UserProfile';
@@ -40,6 +42,7 @@ import Roles from '@/src/pages/settings/Roles';
 import Permissions from '@/src/pages/settings/Permissions';
 import RolePermissions from '@/src/pages/settings/RolePermissions';
 import AuditLogs from '@/src/pages/settings/AuditLogs';
+import DatabaseBackup from '@/src/pages/settings/DatabaseBackup';
 
 // Auth pages
 import Login from '@/src/pages/auth/Login';
@@ -58,6 +61,7 @@ const App: React.FC = () => {
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/showcase" element={<FarmShowcase />} />
                 <Route path="/showcase/products" element={<ShowcaseProducts />} />
+                <Route path="/showcase/events" element={<ShowcaseEvents />} />
                 <Route path="/showcase/blog" element={<ShowcaseBlog />} />
                 <Route path="/showcase/blog/:slug" element={<BlogDetail />} />
                 <Route path="/profile" element={<UserProfile />} />
@@ -92,11 +96,13 @@ const App: React.FC = () => {
                                     <Route path="/master-data/farm-events" element={<FarmEvents />} />
                                     <Route path="/master-data/work-schedules" element={<WorkSchedules />} />
                                     <Route path="/master-data/daily-work-logs" element={<DailyWorkLogs />} />
+                                    <Route path="/master-data/payroll" element={<PayrollManagement />} />
                                     <Route path="/settings/users" element={<Users />} />
                                     <Route path="/settings/roles" element={<Roles />} />
                                     <Route path="/settings/permissions" element={<Permissions />} />
                                     <Route path="/settings/role-permissions" element={<RolePermissions />} />
                                     <Route path="/settings/audit-logs" element={<AuditLogs />} />
+                                    <Route path="/settings/database-backup" element={<DatabaseBackup />} />
                                     <Route path="/settings" element={<MasterData />} />
                                     <Route path="*" element={<Navigate to="/dashboard" replace />} />
                                 </Routes>

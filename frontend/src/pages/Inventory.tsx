@@ -31,6 +31,7 @@ const Inventory: React.FC = () => {
     stock_quantity: 0,
     min_stock_level: 0,
     last_import_price: 0,
+    import_date: new Date().toISOString().split('T')[0], // Ngày nhập mặc định là hôm nay
     thumbnail_id: '',
     note: ''
   });
@@ -193,7 +194,7 @@ const Inventory: React.FC = () => {
                 inventory_code: generateRandomSKU(), // Tự động tạo mã SKU khi nhấn thêm
                 inventory_name: '', category_id: '',
                 unit_of_measure: '', stock_quantity: 0, min_stock_level: 0,
-                last_import_price: 0, thumbnail_id: '', note: ''
+                last_import_price: 0, import_date: new Date().toISOString().split('T')[0], thumbnail_id: '', note: ''
               });
               setShowModal(true);
             }}
@@ -250,6 +251,7 @@ const Inventory: React.FC = () => {
                 <th className="px-6 py-4">Danh mục</th>
                 <th className="px-6 py-4">Số lượng</th>
                 <th className="px-6 py-4">Giá nhập</th>
+                <th className="px-6 py-4">Ngày nhập</th>
                 <th className="px-6 py-4">Trạng thái</th>
                 <th className="px-6 py-4 text-right">Thao tác</th>
               </tr>
@@ -302,6 +304,11 @@ const Inventory: React.FC = () => {
                       <p className="font-bold text-slate-900">{formatVND(item.last_import_price)}</p>
                     </td>
                     <td className="px-6 py-4">
+                      <p className="text-sm text-slate-600">
+                        {item.import_date ? new Date(item.import_date).toLocaleDateString('vi-VN') : '-'}
+                      </p>
+                    </td>
+                    <td className="px-6 py-4">
                       <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest ${status.color}`}>
                         {status.label}
                       </span>
@@ -319,6 +326,7 @@ const Inventory: React.FC = () => {
                               stock_quantity: item.stock_quantity,
                               min_stock_level: item.min_stock_level,
                               last_import_price: item.last_import_price || 0,
+                              import_date: item.import_date ? new Date(item.import_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
                               thumbnail_id: item.thumbnail_id || '',
                               note: item.note || ''
                             });
@@ -477,6 +485,16 @@ const Inventory: React.FC = () => {
                   value={formData.min_stock_level}
                   onChange={e => setFormData({ ...formData, min_stock_level: Number(e.target.value) })}
                   className="w-full bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#13ec49]/30 outline-none font-bold text-orange-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Ngày nhập</label>
+                <input
+                  type="date"
+                  value={formData.import_date}
+                  onChange={e => setFormData({ ...formData, import_date: e.target.value })}
+                  className="w-full bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#13ec49]/30 outline-none font-bold"
                 />
               </div>
 

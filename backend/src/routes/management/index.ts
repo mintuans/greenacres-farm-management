@@ -16,13 +16,13 @@ import warehouseRoutes from './warehouse.routes';
 import dailyWorkLogRoutes from './daily-work-log.routes';
 import warehouseTypeRoutes from './warehouse-type.routes';
 import inventoryUsageRoutes from '../inventory-usage.routes';
-import payrollRoutes from '../payroll.routes';
 import publicUserRoutes from './public-user.routes';
 import roleRoutes from './role.routes';
 import permissionRoutes from './permission.routes';
 import auditLogRoutes from './audit-log.routes';
 import scheduleRoutes from './schedule.routes';
 import dashboardRoutes from './dashboard.routes';
+import databaseBackupRoutes from '../database-backup.routes';
 
 
 const router = Router();
@@ -54,7 +54,6 @@ router.use('/transactions', transactionRoutes);
 router.use('/daily-work-logs', dailyWorkLogRoutes);
 router.use('/warehouse-types', warehouseTypeRoutes);
 router.use('/inventory-usage', inventoryUsageRoutes);
-router.use('/payrolls', payrollRoutes);
 
 // System settings
 router.use('/users', publicUserRoutes);
@@ -63,6 +62,7 @@ router.use('/permissions', permissionRoutes);
 router.use('/audit-logs', auditLogRoutes);
 router.use('/schedules', scheduleRoutes);
 router.use('/dashboard', dashboardRoutes);
+router.use('/database', databaseBackupRoutes);
 
 
 export default router;

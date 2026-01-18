@@ -54,6 +54,12 @@ const ShowcaseHeader: React.FC<ShowcaseHeaderProps> = ({
                         Sản phẩm
                     </Link>
                     <Link
+                        to="/showcase/events"
+                        className={`text-sm leading-normal transition-colors ${isActive('/showcase/events') ? 'text-[#13ec49] font-bold' : 'text-[#111813] font-medium hover:text-[#13ec49]'}`}
+                    >
+                        Sự kiện
+                    </Link>
+                    <Link
                         to="/showcase/blog"
                         className={`text-sm leading-normal transition-colors ${isActive('/showcase/blog') ? 'text-[#13ec49] font-bold' : 'text-[#111813] font-medium hover:text-[#13ec49]'}`}
                     >

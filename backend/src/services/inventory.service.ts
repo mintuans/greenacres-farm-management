@@ -10,6 +10,7 @@ export interface InventoryItem {
     stock_quantity: number;
     min_stock_level: number;
     last_import_price: number;
+    import_date?: string; // Ngày nhập
     thumbnail_id?: string; // Sử dụng ID ảnh từ media_files
     note?: string;
     created_at?: string;
@@ -48,8 +49,8 @@ export const createInventoryItem = async (data: any): Promise<InventoryItem> => 
         INSERT INTO inventory (
             inventory_code, inventory_name, category_id, 
             unit_of_measure, stock_quantity, min_stock_level, 
-            last_import_price, thumbnail_id, note
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            last_import_price, import_date, thumbnail_id, note
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         RETURNING *
     `;
     const values = [
@@ -60,6 +61,7 @@ export const createInventoryItem = async (data: any): Promise<InventoryItem> => 
         data.stock_quantity || 0,
         data.min_stock_level || 0,
         data.last_import_price || 0,
+        data.import_date || new Date().toISOString(),
         data.thumbnail_id || null,
         data.note
     ];
@@ -71,7 +73,7 @@ export const createInventoryItem = async (data: any): Promise<InventoryItem> => 
 export const updateInventoryItem = async (id: string, data: any): Promise<InventoryItem | null> => {
     const fields = [
         'inventory_name', 'category_id', 'unit_of_measure',
-        'stock_quantity', 'min_stock_level', 'last_import_price', 'thumbnail_id', 'note'
+        'stock_quantity', 'min_stock_level', 'last_import_price', 'import_date', 'thumbnail_id', 'note'
     ];
     const values: any[] = [];
     const setClauses = fields

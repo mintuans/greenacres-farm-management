@@ -23,6 +23,7 @@ const Sidebar: React.FC = () => {
         { label: 'Danh sách quyền', path: '/settings/permissions', icon: 'key' },
         { label: 'Gán quyền', path: '/settings/role-permissions', icon: 'rule' },
         { label: 'Nhật ký hệ thống', path: '/settings/audit-logs', icon: 'history' },
+        { label: 'Backup & Restore', path: '/settings/database-backup', icon: 'backup' },
     ];
 
     const masterDataItems = [
@@ -38,6 +39,7 @@ const Sidebar: React.FC = () => {
     const payrollItems = [
         { label: 'Lịch làm việc', path: '/master-data/work-schedules', icon: 'event_note' },
         { label: 'Nhật ký làm việc', path: '/master-data/daily-work-logs', icon: 'assignment' },
+        { label: 'Phiếu lương', path: '/master-data/payroll', icon: 'payments' },
         { label: 'Ca làm việc', path: '/master-data/shifts', icon: 'schedule' },
         { label: 'Công việc', path: '/master-data/jobs', icon: 'work' },
         { label: 'Nhân viên', path: '/master-data/workers', icon: 'group' },

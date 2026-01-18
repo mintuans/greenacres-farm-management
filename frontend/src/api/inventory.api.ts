@@ -12,6 +12,7 @@ export interface InventoryItem {
     stock_quantity: number;
     min_stock_level: number;
     last_import_price: number;
+    import_date?: string; // Ngày nhập
     thumbnail_id?: string;
     note?: string;
 }

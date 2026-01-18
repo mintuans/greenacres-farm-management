@@ -41,6 +41,7 @@ app.get('/api', (_req: Request, res: Response) => {
 import showcaseRoutes from './routes/showcase';
 import managementRoutes from './routes/management';
 import oauthRoutes from './routes/auth/oauth.routes';
+import payrollRoutes from './routes/payroll.routes';
 import passport from './config/passport';
 
 // Initialize Passport
@@ -49,6 +50,7 @@ app.use(passport.initialize());
 app.use('/api/showcase', showcaseRoutes);
 app.use('/api/management', managementRoutes);
 app.use('/api/auth', oauthRoutes);
+app.use('/api/payroll', payrollRoutes); // Payroll routes directly at /api/payroll
 
 
 // 404 handler
@@ -82,6 +84,15 @@ app.listen(PORT, async () => {
         console.log(`📅 Database time: ${result.rows[0].now}`);
     } catch (error: any) {
         console.error('❌ Database connection failed!');
+        console.error('Error:', error.message);
+    }
+
+    // Initialize backup scheduler
+    try {
+        const { BackupSchedulerService } = await import('./services/backup-scheduler.service');
+        BackupSchedulerService.initialize();
+    } catch (error: any) {
+        console.error('❌ Backup scheduler initialization failed!');
         console.error('Error:', error.message);
     }
 });
