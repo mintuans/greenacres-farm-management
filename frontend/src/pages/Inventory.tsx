@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getInventory, getInventoryStats, createItem, updateItem, deleteItem, InventoryItem } from '../api/inventory.api';
+import { getInventory, getInventoryStats, createItem, updateItem, deleteItem, InventoryItem } from '../api/inventory-solid.api';
 import { getCategoryTree, Category } from '../api/category.api';
 import { getMediaFiles, MediaFile } from '../services/media.service';
 import { getMediaUrl } from '../services/products.service';

@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getTransactions, Transaction, createTransaction } from '../api/transaction.api';
+import { getTransactions, Transaction, createTransaction } from '../api/transaction-solid.api';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import { getSeasons, Season } from '../api/season.api';
+import { getSeasons, Season } from '../api/season-solid.api';
 import { getCategories, Category } from '../api/category.api';
-import { getPartners, Partner } from '../api/partner.api';
+import { getPartners, Partner } from '../api/partner-solid.api';
 
 // --- CustomSelect Component (Premium Style) ---
 interface CustomSelectProps {

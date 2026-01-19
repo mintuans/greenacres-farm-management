@@ -7,7 +7,7 @@ import {
     formatDate
 } from '@/src/utils/calendar.utils';
 import { EventType } from '@/src/@types/schedule.types';
-import { getPartners, Partner } from '../api/partner.api';
+import { getPartners, Partner } from '../api/partner-solid.api';
 import { getWorkShifts, WorkShift } from '../api/work-shift.api';
 import { getJobTypes, JobType } from '../api/job-type.api';
 import { getSchedulesByMonth, ScheduleEvent as APIScheduleEvent } from '../api/schedule.api';

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getFarmEvents, createFarmEvent, updateFarmEvent, deleteFarmEvent, FarmEvent } from '../api/farm-event.api';
-import { getSeasons, Season } from '../api/season.api';
+import { getSeasons, Season } from '../api/season-solid.api';
 import { getProductionUnits, ProductionUnit } from '../api/production-unit.api';
 
 const FarmEvents: React.FC = () => {
