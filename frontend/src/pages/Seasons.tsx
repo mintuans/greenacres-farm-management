@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { getSeasons, Season, getSeasonStats, createSeason, getNextSeasonCode, updateSeason } from '../api/season-solid.api';
+import { getSeasons, Season, getSeasonStats, createSeason, getNextSeasonCode, updateSeason } from '../api/season.api';
 import { getProductionUnits, ProductionUnit } from '../api/production-unit.api';
-import { getTransactions, Transaction } from '../api/transaction-solid.api';
+import { getTransactions, Transaction } from '../api/transaction.api';
 import { getMedicineUsageStats, logUsage, InventoryUsage } from '../api/inventory-usage.api';
-import { getInventory, InventoryItem } from '../api/inventory-solid.api';
-import { getPayrollsBySeason, Payroll } from '../api/payroll-solid.api';
+import { getInventory, InventoryItem } from '../api/inventory.api';
+import { getPayrollsBySeason, Payroll } from '../api/payroll.api';
 
 interface CleanSelectProps {
   label?: string;

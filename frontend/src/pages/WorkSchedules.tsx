@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getWorkSchedules, createWorkSchedule, updateWorkSchedule, deleteWorkSchedule, WorkSchedule } from '../api/work-schedule-solid.api';
-import { getPartners, Partner } from '../api/partner-solid.api';
+import { getWorkSchedules, createWorkSchedule, updateWorkSchedule, deleteWorkSchedule, WorkSchedule } from '../api/work-schedule.api';
+import { getPartners, Partner } from '../api/partner.api';
 import { getWorkShifts, WorkShift } from '../api/work-shift.api';
 import { getJobTypes, JobType } from '../api/job-type.api';
-import { getSeasons, Season } from '../api/season-solid.api';
+import { getSeasons, Season } from '../api/season.api';
 
 const WorkSchedules: React.FC = () => {
     const [schedules, setSchedules] = useState<WorkSchedule[]>([]);

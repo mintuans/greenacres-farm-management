@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Partner, getPartners, createPartner, updatePartner, deletePartner, CreatePartnerInput } from '../api/partner-solid.api';
+import { Partner, getPartners, createPartner, updatePartner, deletePartner, CreatePartnerInput } from '../api/partner.api';
 
 const Workers: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');

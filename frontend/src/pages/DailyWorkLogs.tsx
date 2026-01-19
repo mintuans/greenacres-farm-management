@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { getDailyWorkLogs, calculatePayrollFromLog, calculatePayrollBulk, DailyWorkLog, deleteDailyWorkLog, confirmScheduleToLog } from '../api/daily-work-log.api';
-import { getWorkSchedules, WorkSchedule } from '../api/work-schedule-solid.api';
+import { getWorkSchedules, WorkSchedule } from '../api/work-schedule.api';
 
 
 const DailyWorkLogs: React.FC = () => {

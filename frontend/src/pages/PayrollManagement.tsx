@@ -6,7 +6,7 @@ import {
     getPayrollStats,
     Payroll,
     PayrollStats
-} from '../api/payroll-solid.api';
+} from '../api/payroll.api';
 
 const PayrollManagement: React.FC = () => {
     const [payrolls, setPayrolls] = useState<Payroll[]>([]);
