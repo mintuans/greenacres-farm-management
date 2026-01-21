@@ -14,44 +14,16 @@ const UserProfile: React.FC = () => {
 
     return (
         <div className="bg-[#f6f8f6] min-h-screen flex flex-col font-['Plus_Jakarta_Sans',_sans-serif]">
-            {/* Top Navigation Bar */}
-            <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 bg-white px-10 py-3 sticky top-0 z-50">
-                <div className="flex items-center gap-8">
-                    <div onClick={() => navigate('/showcase')} className="flex items-center gap-4 text-slate-900 cursor-pointer hover:opacity-80 transition-opacity">
-                        <div className="size-6 text-[#13ec49]">
-                            <span className="material-symbols-outlined text-3xl">agriculture</span>
-                        </div>
-                        <h2 className="text-slate-900 text-lg font-bold leading-tight tracking-[-0.015em]">FarmTrack</h2>
-                    </div>
-                    <label className="flex flex-col min-w-40 !h-10 max-w-64 hidden md:flex">
-                        <div className="flex w-full flex-1 items-stretch rounded-xl h-full">
-                            <div className="text-slate-500 flex border-none bg-slate-100 items-center justify-center pl-4 rounded-l-xl border-r-0">
-                                <span className="material-symbols-outlined text-xl">search</span>
-                            </div>
-                            <input className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-slate-900 focus:outline-0 focus:ring-0 border-none bg-slate-100 focus:border-none h-full placeholder:text-slate-500 px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" placeholder="Search" />
-                        </div>
-                    </label>
-                </div>
-                <div className="flex flex-1 justify-end gap-8">
-                    <div className="flex items-center gap-9 hidden lg:flex">
-                        <Link to="/dashboard" className="text-slate-700 text-sm font-medium leading-normal hover:text-[#13ec49] transition-colors">Dashboard</Link>
-                        <a className="text-slate-700 text-sm font-medium leading-normal hover:text-[#13ec49] transition-colors" href="#">Expenses</a>
-                        <a className="text-slate-700 text-sm font-medium leading-normal hover:text-[#13ec49] transition-colors" href="#">Income</a>
-                        <a className="text-slate-700 text-sm font-medium leading-normal hover:text-[#13ec49] transition-colors" href="#">Inventory</a>
-                    </div>
-                    <div className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-[#13ec49] ring-offset-2 overflow-hidden border-2 border-white shadow-sm">
-                        <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
-                    </div>
-                </div>
-            </header>
+            {/* Header removed as requested */}
+
 
             <div className="flex flex-1 justify-center py-8 px-4 md:px-10 lg:px-40">
                 <div className="layout-content-container flex flex-col max-w-[1024px] flex-1 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     {/* Breadcrumbs */}
                     <div className="flex flex-wrap gap-2 items-center">
-                        <Link to="/settings" className="text-slate-500 text-sm font-medium leading-normal hover:underline">Settings</Link>
+                        <Link to="/dashboard" className="text-slate-500 text-sm font-medium leading-normal hover:underline">Tổng quan</Link>
                         <span className="text-slate-400 text-sm font-medium leading-normal">/</span>
-                        <span className="text-slate-900 text-sm font-medium leading-normal">User Profile</span>
+                        <span className="text-slate-900 text-sm font-medium leading-normal">Hồ sơ cá nhân</span>
                     </div>
 
                     {/* Profile Header Card */}

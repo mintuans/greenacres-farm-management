@@ -1,12 +1,18 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/src/contexts/AuthContext';
 
 const Header: React.FC = () => {
     const { user } = useAuth();
+    const navigate = useNavigate();
 
     // Default values for Guest
     const displayName = user?.name || 'Du khách';
     const avatarUrl = user?.avatar || `https://ui-avatars.com/api/?name=Du+Khach&background=13ec49&color=fff`;
+
+    const handleProfileClick = () => {
+        navigate('/profile');
+    };
 
     return (
         <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0 sticky top-0 z-20">
@@ -25,12 +31,15 @@ const Header: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-6">
-                <div className="hidden lg:flex items-center gap-2">
+                <div
+                    className="hidden lg:flex items-center gap-3 cursor-pointer group"
+                    onClick={handleProfileClick}
+                >
                     <div className="flex flex-col items-end">
-                        <span className="text-sm font-semibold text-slate-700 leading-none">{displayName}</span>
-                        <span className="text-[10px] text-slate-400 font-medium">{user?.role ? (user.role.charAt(0).toUpperCase() + user.role.slice(1)) : 'Khách'}</span>
+                        <span className="text-sm font-semibold text-slate-700 leading-none group-hover:text-[#13ec49] transition-colors">{displayName}</span>
+                        <span className="text-[10px] text-slate-400 font-medium">{user?.role ? (user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase()) : 'Khách'}</span>
                     </div>
-                    <div className="size-10 rounded-full border-2 border-[#13ec49] p-0.5 shadow-sm overflow-hidden cursor-pointer hover:scale-105 transition-all">
+                    <div className="size-10 rounded-full border-2 border-[#13ec49] p-0.5 shadow-sm overflow-hidden group-hover:scale-110 transition-all">
                         <img
                             src={avatarUrl}
                             alt={displayName}
@@ -54,3 +63,4 @@ const Header: React.FC = () => {
 };
 
 export default Header;
+

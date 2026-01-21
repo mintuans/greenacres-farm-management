@@ -115,48 +115,65 @@ const Seasons: React.FC = () => {
     expected_revenue: 0
   });
 
-  const activeSeason = seasons.find(s => s.status === 'ACTIVE') || seasons[0];
+  const [activeSeasonId, setActiveSeasonId] = useState<string | null>(null);
+
+  const currentSeason = seasons.find(s => s.id === activeSeasonId) || seasons.find(s => s.status === 'ACTIVE') || seasons[0];
 
   useEffect(() => {
-    fetchData();
+    const initData = async () => {
+      setLoading(true);
+      try {
+        const seasonsData = await getSeasons();
+        setSeasons(seasonsData || []);
+
+        // Luôn ưu tiên chọn vụ đang ACTIVE đầu tiên nếu chưa chọn gì
+        if (!activeSeasonId && seasonsData && seasonsData.length > 0) {
+          const active = seasonsData.find((s: any) => s.status === 'ACTIVE') || seasonsData[0];
+          setActiveSeasonId(active.id);
+        }
+      } catch (error) {
+        console.error('Error in initial load:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    initData();
     loadUnits();
     loadInventory();
-  }, [activeSeason?.id]);
+  }, []);
 
-  const loadInventory = async () => {
+  useEffect(() => {
+    if (currentSeason?.id) {
+      fetchSeasonDetails(currentSeason.id);
+    }
+  }, [currentSeason?.id]);
+
+  const fetchSeasonDetails = async (id: string) => {
     try {
-      const data = await getInventory();
-      setInventory(data || []);
+      const [statsData, transactionsData, usageStats, payrollsData] = await Promise.all([
+        getSeasonStats(),
+        getTransactions(undefined, undefined, id),
+        getMedicineUsageStats(id),
+        getPayrollsBySeason(id)
+      ]);
+      setStats(statsData);
+      setTransactions(transactionsData || []);
+      setMedicineStats(usageStats || []);
+      setPayrolls(payrollsData || []);
     } catch (error) {
-      console.error('Error loading inventory:', error);
+      console.error('Error fetching season details:', error);
     }
   };
 
   const fetchData = async () => {
     try {
-      setLoading(true);
-      const [seasonsData, statsData, transactionsData] = await Promise.all([
-        getSeasons(),
-        getSeasonStats(),
-        getTransactions()
-      ]);
+      const seasonsData = await getSeasons();
       setSeasons(seasonsData || []);
-      setStats(statsData);
-      setTransactions(transactionsData || []);
-
-      const currentSeason = seasonsData.find((s: any) => s.status === 'ACTIVE') || seasonsData[0];
-      if (currentSeason) {
-        const [usageStats, payrollsData] = await Promise.all([
-          getMedicineUsageStats(currentSeason.id),
-          getPayrollsBySeason(currentSeason.id)
-        ]);
-        setMedicineStats(usageStats || []);
-        setPayrolls(payrollsData || []);
+      if (currentSeason?.id) {
+        fetchSeasonDetails(currentSeason.id);
       }
     } catch (error) {
-      console.error('Error fetching seasons data:', error);
-    } finally {
-      setLoading(false);
+      console.error('Error refreshing data:', error);
     }
   };
 
@@ -166,6 +183,15 @@ const Seasons: React.FC = () => {
       setUnits(unitsData || []);
     } catch (error) {
       console.error('Error loading units:', error);
+    }
+  };
+
+  const loadInventory = async () => {
+    try {
+      const data = await getInventory();
+      setInventory(data || []);
+    } catch (error) {
+      console.error('Error loading inventory:', error);
     }
   };
 
@@ -214,11 +240,11 @@ const Seasons: React.FC = () => {
 
   const handleUsageSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!activeSeason) return;
+    if (!currentSeason) return;
     try {
       await logUsage({
         ...usageData,
-        season_id: activeSeason.id
+        season_id: currentSeason.id
       });
       setShowUsageModal(false);
       fetchData();
@@ -246,17 +272,34 @@ const Seasons: React.FC = () => {
           <h1 className="text-5xl font-black text-slate-900 tracking-tighter">Quản lý mùa vụ</h1>
           <p className="text-slate-500 text-lg max-w-xl">Theo dõi chu kỳ cây trồng, giám sát sức khỏe tài chính và truy cập báo cáo năng suất.</p>
         </div>
-        <button
-          onClick={async () => {
-            const nextCode = await getNextSeasonCode();
-            setFormData(prev => ({ ...prev, season_code: nextCode }));
-            setShowModal(true);
-          }}
-          className="bg-[#13ec49] text-black px-8 py-4 rounded-2xl text-base font-black shadow-xl shadow-[#13ec49]/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
-        >
-          <span className="material-symbols-outlined text-[24px]">add_circle</span>
-          Bắt đầu vụ mới
-        </button>
+
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+          <div className="w-full sm:w-72">
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Chọn vụ mùa hiển thị</label>
+            <CleanSelect
+              value={currentSeason?.id || ''}
+              onChange={(val) => setActiveSeasonId(val)}
+              options={seasons.map(s => ({
+                value: s.id,
+                label: s.season_name,
+                sublabel: s.status === 'ACTIVE' ? 'Đang hoạt động' : 'Đã kết thúc'
+              }))}
+              placeholder="Chọn vụ mùa..."
+            />
+          </div>
+
+          <button
+            onClick={async () => {
+              const nextCode = await getNextSeasonCode();
+              setFormData(prev => ({ ...prev, season_code: nextCode }));
+              setShowModal(true);
+            }}
+            className="w-full sm:w-auto bg-[#13ec49] text-black px-8 py-4 rounded-2xl text-base font-black shadow-xl shadow-[#13ec49]/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-3 h-[60px]"
+          >
+            <span className="material-symbols-outlined text-[24px]">add_circle</span>
+            Bắt đầu vụ mới
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -266,7 +309,7 @@ const Seasons: React.FC = () => {
       ) : (
         <>
           {/* Active Season Highlight */}
-          {activeSeason && (
+          {currentSeason && (
             <div className="bg-white rounded-[32px] border border-slate-200 shadow-2xl shadow-slate-200/50 overflow-hidden group transition-all hover:shadow-3xl">
               <div className="p-8 border-b border-slate-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-gradient-to-r from-white to-slate-50/50">
                 <div className="flex items-center gap-6">
@@ -274,22 +317,22 @@ const Seasons: React.FC = () => {
                     <span className="material-symbols-outlined text-5xl">grass</span>
                   </div>
                   <div>
-                    <h2 className="text-3xl font-black text-slate-900 tracking-tight">{activeSeason.season_name}</h2>
+                    <h2 className="text-3xl font-black text-slate-900 tracking-tight">{currentSeason.season_name}</h2>
                     <div className="flex items-center gap-3 mt-2">
-                      <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${activeSeason.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'
+                      <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${currentSeason.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'
                         }`}>
-                        <span className={`size-2 rounded-full ${activeSeason.status === 'ACTIVE' ? 'bg-green-600 animate-pulse' : 'bg-slate-400'}`}></span>
-                        {activeSeason.status === 'ACTIVE' ? 'Đang diễn ra' : 'Đã kết thúc'}
+                        <span className={`size-2 rounded-full ${currentSeason.status === 'ACTIVE' ? 'bg-green-600 animate-pulse' : 'bg-slate-400'}`}></span>
+                        {currentSeason.status === 'ACTIVE' ? 'Đang diễn ra' : 'Đã kết thúc'}
                       </span>
                       <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">
-                        • Từ {new Date(activeSeason.start_date).toLocaleDateString('vi-VN')}
+                        • Từ {new Date(currentSeason.start_date).toLocaleDateString('vi-VN')}
                       </span>
                     </div>
                   </div>
                 </div>
                 <div className="flex gap-4 w-full md:w-auto">
                   <button
-                    onClick={() => handleEditClick(activeSeason)}
+                    onClick={() => handleEditClick(currentSeason)}
                     className="flex-1 md:flex-none bg-slate-900 text-white px-10 py-4 rounded-2xl font-black text-sm hover:bg-black transition-all shadow-xl shadow-slate-900/20 active:scale-95"
                   >
                     Chỉnh sửa vụ mùa
@@ -311,7 +354,7 @@ const Seasons: React.FC = () => {
                     <span className="material-symbols-outlined text-green-500 bg-green-50 p-2 rounded-xl text-[20px]">payments</span>
                   </div>
                   <h3 className="text-3xl font-black text-slate-900">
-                    {(activeSeason.expected_revenue || 0).toLocaleString('vi-VN')}đ
+                    {(currentSeason.expected_revenue || 0).toLocaleString('vi-VN')}đ
                   </h3>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3">Mục tiêu tài chính vụ này</p>
                 </div>
@@ -320,9 +363,10 @@ const Seasons: React.FC = () => {
                     <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Đơn vị canh tác</p>
                     <span className="material-symbols-outlined text-blue-500 bg-blue-50 p-2 rounded-xl text-[20px]">agriculture</span>
                   </div>
-                  <h3 className="text-3xl font-black text-slate-900">{activeSeason.unit_name || 'N/A'}</h3>
+                  <h3 className="text-3xl font-black text-slate-900">{currentSeason.unit_name || 'N/A'}</h3>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3">Khu vực sản xuất chính</p>
                 </div>
+
                 <div className="p-8 bg-[#13ec49]/5 relative overflow-hidden">
                   <div className="absolute -top-4 -right-4 opacity-5">
                     <span className="material-symbols-outlined text-[120px]">analytics</span>
