@@ -1,6 +1,5 @@
-import axios from 'axios';
+import api from '../services/api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export interface InventoryUsage {
     id?: string;
@@ -16,16 +15,16 @@ export interface InventoryUsage {
 }
 
 export const logUsage = async (data: InventoryUsage): Promise<any> => {
-    const response = await axios.post(`${API_URL}/management/inventory-usage/log`, data);
+    const response = await api.post('/management/inventory-usage/log', data);
     return response.data.data;
 };
 
 export const getUsageBySeason = async (seasonId: string): Promise<InventoryUsage[]> => {
-    const response = await axios.get(`${API_URL}/management/inventory-usage/season/${seasonId}`);
+    const response = await api.get(`/management/inventory-usage/season/${seasonId}`);
     return response.data.data;
 };
 
 export const getMedicineUsageStats = async (seasonId: string): Promise<any[]> => {
-    const response = await axios.get(`${API_URL}/management/inventory-usage/season/${seasonId}/medicine-stats`);
+    const response = await api.get(`/management/inventory-usage/season/${seasonId}/medicine-stats`);
     return response.data.data;
 };

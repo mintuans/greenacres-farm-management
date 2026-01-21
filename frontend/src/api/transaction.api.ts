@@ -1,6 +1,5 @@
-import axios from 'axios';
+import api from '../services/api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export interface Transaction {
     id: string;
@@ -23,15 +22,15 @@ export const getTransactions = async (month?: number, year?: number, seasonId?: 
     if (month) params.month = month;
     if (year) params.year = year;
     if (seasonId) params.seasonId = seasonId;
-    const response = await axios.get(`${API_URL}/management/transactions`, { params });
+    const response = await api.get('/management/transactions', { params });
     return response.data.data;
 };
 
 export const createTransaction = async (data: any): Promise<Transaction> => {
-    const response = await axios.post(`${API_URL}/management/transactions`, data);
+    const response = await api.post('/management/transactions', data);
     return response.data.data;
 };
 
 export const deleteTransaction = async (id: string): Promise<void> => {
-    await axios.delete(`${API_URL}/management/transactions/${id}`);
+    await api.delete(`/management/transactions/${id}`);
 };

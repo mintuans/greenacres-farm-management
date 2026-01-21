@@ -1,7 +1,5 @@
+import api from '../services/api';
 
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export interface Payroll {
     id: string;
@@ -29,37 +27,37 @@ export interface PayrollStats {
 
 // Lấy tất cả payrolls
 export const getAllPayrolls = async (): Promise<Payroll[]> => {
-    const response = await axios.get(`${API_URL}/payroll`);
+    const response = await api.get('/payroll');
     return response.data.data;
 };
 
 // Lấy payroll theo ID
 export const getPayrollById = async (id: string): Promise<Payroll> => {
-    const response = await axios.get(`${API_URL}/payroll/${id}`);
+    const response = await api.get(`/payroll/${id}`);
     return response.data.data;
 };
 
 // Lấy payrolls theo season
 export const getPayrollsBySeason = async (seasonId: string): Promise<Payroll[]> => {
-    const response = await axios.get(`${API_URL}/payroll/season/${seasonId}`);
+    const response = await api.get(`/payroll/season/${seasonId}`);
     return response.data.data;
 };
 
 // Lấy payrolls theo partner
 export const getPayrollsByPartner = async (partnerId: string): Promise<Payroll[]> => {
-    const response = await axios.get(`${API_URL}/payroll/partner/${partnerId}`);
+    const response = await api.get(`/payroll/partner/${partnerId}`);
     return response.data.data;
 };
 
 // Tạo payroll mới
 export const createPayroll = async (data: Partial<Payroll>): Promise<Payroll> => {
-    const response = await axios.post(`${API_URL}/payroll`, data);
+    const response = await api.post('/payroll', data);
     return response.data.data;
 };
 
 // Cập nhật payroll
 export const updatePayroll = async (id: string, data: Partial<Payroll>): Promise<Payroll> => {
-    const response = await axios.put(`${API_URL}/payroll/${id}`, data);
+    const response = await api.put(`/payroll/${id}`, data);
     return response.data.data;
 };
 
@@ -69,7 +67,7 @@ export const updatePayrollStatus = async (
     status: 'DRAFT' | 'APPROVED' | 'PAID' | 'CANCELLED',
     paymentDate?: string
 ): Promise<Payroll> => {
-    const response = await axios.put(`${API_URL}/payroll/${id}/status`, {
+    const response = await api.put(`/payroll/${id}/status`, {
         status,
         payment_date: paymentDate || new Date().toISOString()
     });
@@ -78,11 +76,11 @@ export const updatePayrollStatus = async (
 
 // Xóa payroll
 export const deletePayroll = async (id: string): Promise<void> => {
-    await axios.delete(`${API_URL}/payroll/${id}`);
+    await api.delete(`/payroll/${id}`);
 };
 
 // Lấy thống kê payroll
 export const getPayrollStats = async (): Promise<PayrollStats> => {
-    const response = await axios.get(`${API_URL}/payroll/stats`);
+    const response = await api.get('/payroll/stats');
     return response.data.data;
 };

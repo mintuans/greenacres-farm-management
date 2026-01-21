@@ -1,7 +1,6 @@
 
-import axios from 'axios';
+import api from '../services/api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export interface DailyWorkLog {
     id: string;
@@ -29,40 +28,41 @@ export interface DailyWorkLog {
 }
 
 export const getDailyWorkLogs = async () => {
-    const response = await axios.get(`${API_URL}/management/daily-work-logs`);
+    const response = await api.get('/management/daily-work-logs');
     return response.data.data;
 };
 
 export const createDailyWorkLog = async (data: any) => {
-    const response = await axios.post(`${API_URL}/management/daily-work-logs`, data);
+    const response = await api.post('/management/daily-work-logs', data);
     return response.data.data;
 };
 
 export const updateDailyWorkLog = async (id: string, data: any) => {
-    const response = await axios.put(`${API_URL}/management/daily-work-logs/${id}`, data);
+    const response = await api.put(`/management/daily-work-logs/${id}`, data);
     return response.data.data;
 };
 
 export const deleteDailyWorkLog = async (id: string) => {
-    const response = await axios.delete(`${API_URL}/management/daily-work-logs/${id}`);
+    const response = await api.delete(`/management/daily-work-logs/${id}`);
     return response.data.data;
 };
 
 // Gọi store confirm_schedule_to_log
 export const confirmScheduleToLog = async (scheduleId: string, mandays: number = 0) => {
-    const response = await axios.post(`${API_URL}/management/daily-work-logs/confirm-schedule`, { scheduleId, mandays });
+    const response = await api.post('/management/daily-work-logs/confirm-schedule', { scheduleId, mandays });
     return response.data.data;
 };
 
 // Gọi store calculate_payroll_from_log
 export const calculatePayrollFromLog = async (logId: string) => {
-    const response = await axios.post(`${API_URL}/management/daily-work-logs/calculate-payroll`, { logId });
+    const response = await api.post('/management/daily-work-logs/calculate-payroll', { logId });
     return response.data.data;
 };
 
 // Gọi store calculate_payroll_bulk
 export const calculatePayrollBulk = async (logIds: string[]) => {
-    const response = await axios.post(`${API_URL}/management/daily-work-logs/calculate-payroll-bulk`, { logIds });
+    const response = await api.post('/management/daily-work-logs/calculate-payroll-bulk', { logIds });
+
     return response.data.data;
 };
 

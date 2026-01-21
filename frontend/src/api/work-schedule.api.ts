@@ -1,6 +1,5 @@
-import axios from 'axios';
+import api from '../services/api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export interface WorkSchedule {
     id: string;
@@ -18,20 +17,20 @@ export interface WorkSchedule {
 }
 
 export const getWorkSchedules = async (): Promise<WorkSchedule[]> => {
-    const response = await axios.get(`${API_URL}/management/work-schedules`);
+    const response = await api.get('/management/work-schedules');
     return response.data.data;
 };
 
 export const createWorkSchedule = async (data: any): Promise<WorkSchedule> => {
-    const response = await axios.post(`${API_URL}/management/work-schedules`, data);
+    const response = await api.post('/management/work-schedules', data);
     return response.data.data;
 };
 
 export const updateWorkSchedule = async (id: string, data: any): Promise<WorkSchedule> => {
-    const response = await axios.put(`${API_URL}/management/work-schedules/${id}`, data);
+    const response = await api.put(`/management/work-schedules/${id}`, data);
     return response.data.data;
 };
 
 export const deleteWorkSchedule = async (id: string): Promise<void> => {
-    await axios.delete(`${API_URL}/management/work-schedules/${id}`);
+    await api.delete(`/management/work-schedules/${id}`);
 };

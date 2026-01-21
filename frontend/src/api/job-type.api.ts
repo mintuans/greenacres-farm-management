@@ -1,6 +1,5 @@
-import axios from 'axios';
+import api from '../services/api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export interface JobType {
     id: string;
@@ -24,30 +23,30 @@ export interface UpdateJobTypeInput {
 }
 
 export const getJobTypes = async (): Promise<JobType[]> => {
-    const response = await axios.get(`${API_URL}/management/job-types`);
+    const response = await api.get('/management/job-types');
     return response.data.data;
 };
 
 export const getJobTypeById = async (id: string): Promise<JobType> => {
-    const response = await axios.get(`${API_URL}/management/job-types/${id}`);
+    const response = await api.get(`/management/job-types/${id}`);
     return response.data.data;
 };
 
 export const createJobType = async (data: CreateJobTypeInput): Promise<JobType> => {
-    const response = await axios.post(`${API_URL}/management/job-types`, data);
+    const response = await api.post('/management/job-types', data);
     return response.data.data;
 };
 
 export const updateJobType = async (id: string, data: UpdateJobTypeInput): Promise<JobType> => {
-    const response = await axios.put(`${API_URL}/management/job-types/${id}`, data);
+    const response = await api.put(`/management/job-types/${id}`, data);
     return response.data.data;
 };
 
 export const deleteJobType = async (id: string): Promise<void> => {
-    await axios.delete(`${API_URL}/management/job-types/${id}`);
+    await api.delete(`/management/job-types/${id}`);
 };
 
 export const getJobTypeStats = async (): Promise<any> => {
-    const response = await axios.get(`${API_URL}/management/job-types/stats`);
+    const response = await api.get('/management/job-types/stats');
     return response.data.data;
 };

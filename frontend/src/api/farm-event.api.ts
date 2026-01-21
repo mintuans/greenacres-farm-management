@@ -1,6 +1,5 @@
-import axios from 'axios';
+import api from '../services/api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export interface FarmEvent {
     id: string;
@@ -17,20 +16,20 @@ export interface FarmEvent {
 }
 
 export const getFarmEvents = async (): Promise<FarmEvent[]> => {
-    const response = await axios.get(`${API_URL}/management/farm-events`);
+    const response = await api.get('/management/farm-events');
     return response.data.data;
 };
 
 export const createFarmEvent = async (data: any): Promise<FarmEvent> => {
-    const response = await axios.post(`${API_URL}/management/farm-events`, data);
+    const response = await api.post('/management/farm-events', data);
     return response.data.data;
 };
 
 export const updateFarmEvent = async (id: string, data: any): Promise<FarmEvent> => {
-    const response = await axios.put(`${API_URL}/management/farm-events/${id}`, data);
+    const response = await api.put(`/management/farm-events/${id}`, data);
     return response.data.data;
 };
 
 export const deleteFarmEvent = async (id: string): Promise<void> => {
-    await axios.delete(`${API_URL}/management/farm-events/${id}`);
+    await api.delete(`/management/farm-events/${id}`);
 };

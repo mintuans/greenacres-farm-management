@@ -1,6 +1,5 @@
-import axios from 'axios';
+import api from '../services/api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export interface InventoryItem {
     id: string;
@@ -19,25 +18,26 @@ export interface InventoryItem {
 
 export const getInventory = async (categoryId?: string): Promise<InventoryItem[]> => {
     const params = categoryId ? { category_id: categoryId } : {};
-    const response = await axios.get(`${API_URL}/management/inventory`, { params });
+    const response = await api.get('/management/inventory', { params });
     return response.data.data;
 };
 
 export const getInventoryStats = async (): Promise<any> => {
-    const response = await axios.get(`${API_URL}/management/inventory/stats`);
+    const response = await api.get('/management/inventory/stats');
     return response.data.data;
 };
 
 export const createItem = async (data: any): Promise<InventoryItem> => {
-    const response = await axios.post(`${API_URL}/management/inventory`, data);
+    const response = await api.post('/management/inventory', data);
     return response.data.data;
 };
 
 export const updateItem = async (id: string, data: any): Promise<InventoryItem> => {
-    const response = await axios.put(`${API_URL}/management/inventory/${id}`, data);
+    const response = await api.put(`/management/inventory/${id}`, data);
     return response.data.data;
 };
 
 export const deleteItem = async (id: string): Promise<void> => {
-    await axios.delete(`${API_URL}/management/inventory/${id}`);
+    await api.delete(`/management/inventory/${id}`);
 };
+
