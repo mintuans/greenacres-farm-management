@@ -42,6 +42,20 @@ export const register = async (req: Request, res: Response) => {
 
         const user = result.rows[0];
 
+        // Tự động gán quyền USER cho người dùng mới
+        const userRoleResult = await pool.query(`
+            SELECT id FROM roles WHERE name = 'USER' LIMIT 1
+        `);
+
+        if (userRoleResult.rows.length > 0) {
+            const userRoleId = userRoleResult.rows[0].id;
+            await pool.query(`
+                INSERT INTO user_roles (user_id, role_id, assigned_at)
+                VALUES ($1, $2, NOW())
+                ON CONFLICT (user_id, role_id) DO NOTHING
+            `, [user.id, userRoleId]);
+        }
+
         // Log action (manually set user info as it's not in req.user yet)
         await logActivity(req, 'REGISTER', 'public_users', user.id, null, { email: user.email }, user.id);
 
@@ -115,11 +129,22 @@ export const login = async (req: Request, res: Response) => {
         // Log action
         await logActivity(req, 'LOGIN', 'public_users', user.id, null, { email: user.email }, user.id);
 
-        // Tạo token
+        // Lấy role của user từ DB
+        const roleResult = await pool.query(`
+            SELECT r.name 
+            FROM roles r
+            JOIN user_roles ur ON r.id = ur.role_id
+            WHERE ur.user_id = $1
+            LIMIT 1
+        `, [user.id]);
+
+        const userRole = roleResult.rows[0]?.name || 'user';
+
+        // Tạo token với role thực tế
         const token = generateToken({
             id: user.id,
             email: user.email,
-            role: 'user'
+            role: userRole
         });
 
         return res.json({
@@ -129,7 +154,7 @@ export const login = async (req: Request, res: Response) => {
                     id: user.id,
                     email: user.email,
                     full_name: user.full_name,
-                    role: 'user'
+                    role: userRole
                 },
                 token
             }
@@ -141,3 +166,4 @@ export const login = async (req: Request, res: Response) => {
         return res.status(500).json({ success: false, error: error.message });
     }
 };
+

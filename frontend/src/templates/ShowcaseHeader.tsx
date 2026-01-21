@@ -65,7 +65,17 @@ const ShowcaseHeader: React.FC<ShowcaseHeaderProps> = ({
                     >
                         Tin tức
                     </Link>
+                    {user?.role === 'SUPER_ADMIN' && (
+                        <Link
+                            to="/dashboard"
+                            className="text-sm leading-normal font-bold text-orange-600 hover:text-orange-700 transition-colors flex items-center gap-1"
+                        >
+                            <span className="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+                            Trang quản trị
+                        </Link>
+                    )}
                 </div>
+
             </div>
             <div className="flex flex-1 justify-end gap-4 md:gap-8 items-center">
                 <label className="hidden md:flex flex-col min-w-40 !h-10 max-w-64">

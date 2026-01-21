@@ -130,3 +130,45 @@ export const authorize = (...roles: string[]) => {
         return next();
     };
 };
+
+/**
+ * Middleware kiểm tra quyền SUPER_ADMIN
+ * Chỉ cho phép người dùng có role SUPER_ADMIN truy cập
+ */
+export const checkSuperAdmin = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    if (!req.user) {
+        return res.status(401).json({
+            success: false,
+            message: 'Vui lòng đăng nhập',
+        });
+    }
+
+    try {
+        // Kiểm tra xem user có role SUPER_ADMIN không
+        const query = `
+            SELECT COUNT(*) 
+            FROM user_roles ur
+            JOIN roles r ON ur.role_id = r.id
+            WHERE ur.user_id = $1 AND r.name = 'SUPER_ADMIN'
+        `;
+
+        const result = await pool.query(query, [req.user.id]);
+        const isSuperAdmin = parseInt(result.rows[0].count) > 0;
+
+        if (isSuperAdmin) {
+            return next();
+        }
+
+        return res.status(403).json({
+            success: false,
+            message: 'Chỉ SUPER_ADMIN mới có quyền truy cập trang quản lý',
+        });
+    } catch (error) {
+        console.error('Super admin check error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Lỗi kiểm tra quyền hạn',
+        });
+    }
+};
+

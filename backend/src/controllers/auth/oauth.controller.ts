@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import pool from '../../config/database';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
@@ -22,7 +23,7 @@ const generateToken = (user: any) => {
 /**
  * Google OAuth callback handler
  */
-export const googleCallback = (req: Request, res: Response) => {
+export const googleCallback = async (req: Request, res: Response) => {
     try {
         const user = req.user as any;
 
@@ -30,11 +31,24 @@ export const googleCallback = (req: Request, res: Response) => {
             return res.redirect(`${FRONTEND_URL}/login?error=authentication_failed`);
         }
 
+        // Lấy role thực tế từ database
+        const roleResult = await pool.query(`
+            SELECT r.name 
+            FROM roles r
+            JOIN user_roles ur ON r.id = ur.role_id
+            WHERE ur.user_id = $1
+            LIMIT 1
+        `, [user.id]);
+
+        const userRole = roleResult.rows[0]?.name || 'user';
+        user.role = userRole; // Gán lại role đúng cho user object
+
         // Generate JWT token
         const token = generateToken(user);
 
         // Redirect to frontend with token
         res.redirect(`${FRONTEND_URL}/auth/callback?token=${token}&provider=google`);
+
     } catch (error: any) {
         console.error('Google callback error:', error);
         res.redirect(`${FRONTEND_URL}/login?error=server_error`);
@@ -44,13 +58,25 @@ export const googleCallback = (req: Request, res: Response) => {
 /**
  * Facebook OAuth callback handler
  */
-export const facebookCallback = (req: Request, res: Response) => {
+export const facebookCallback = async (req: Request, res: Response) => {
     try {
         const user = req.user as any;
 
         if (!user) {
             return res.redirect(`${FRONTEND_URL}/login?error=authentication_failed`);
         }
+
+        // Lấy role thực tế từ database
+        const roleResult = await pool.query(`
+            SELECT r.name 
+            FROM roles r
+            JOIN user_roles ur ON r.id = ur.role_id
+            WHERE ur.user_id = $1
+            LIMIT 1
+        `, [user.id]);
+
+        const userRole = roleResult.rows[0]?.name || 'user';
+        user.role = userRole;
 
         // Generate JWT token
         const token = generateToken(user);

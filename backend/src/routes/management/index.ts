@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { authenticate, checkSuperAdmin } from '../../middlewares/auth.middleware';
 import productsRoutes from './products.routes';
 import mediaRoutes from './media.routes';
 import blogRoutes from './blog.routes';
@@ -26,6 +27,11 @@ import databaseBackupRoutes from '../database-backup.routes';
 
 
 const router = Router();
+
+// Áp dụng bảo vệ cho toàn bộ các route quản lý
+// Chỉ cho phép SUPER_ADMIN truy cập
+router.use(authenticate);
+router.use(checkSuperAdmin);
 
 router.use('/warehouse-items', warehouseRoutes);
 

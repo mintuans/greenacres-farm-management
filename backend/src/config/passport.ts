@@ -23,9 +23,9 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                         return done(new Error('No email found from Google'), undefined);
                     }
 
-                    // Check if user exists
+                    // Check if user exists in public_users
                     let userResult = await pool.query(
-                        'SELECT * FROM users WHERE email = $1 AND deleted_at IS NULL',
+                        'SELECT * FROM public_users WHERE email = $1 AND deleted_at IS NULL',
                         [email]
                     );
 
@@ -35,18 +35,32 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                         // User exists, update google_id and avatar if needed
                         user = userResult.rows[0];
                         await pool.query(
-                            'UPDATE users SET google_id = $1, avatar = $2, updated_at = NOW() WHERE id = $3',
+                            'UPDATE public_users SET google_id = $1, avatar = $2 WHERE id = $3',
                             [googleId, avatar, user.id]
                         );
                     } else {
                         // Create new user
                         const insertResult = await pool.query(
-                            `INSERT INTO users (email, full_name, avatar, google_id, role, created_at, updated_at)
-                             VALUES ($1, $2, $3, $4, 'user', NOW(), NOW())
+                            `INSERT INTO public_users (email, full_name, avatar, google_id, is_verified, created_at)
+                             VALUES ($1, $2, $3, $4, true, NOW())
                              RETURNING *`,
                             [email, name, avatar, googleId]
                         );
                         user = insertResult.rows[0];
+
+                        // Tự động gán quyền USER cho người dùng mới
+                        const userRoleResult = await pool.query(`
+                            SELECT id FROM roles WHERE name = 'USER' LIMIT 1
+                        `);
+
+                        if (userRoleResult.rows.length > 0) {
+                            const userRoleId = userRoleResult.rows[0].id;
+                            await pool.query(`
+                                INSERT INTO user_roles (user_id, role_id, assigned_at)
+                                VALUES ($1, $2, NOW())
+                                ON CONFLICT (user_id, role_id) DO NOTHING
+                            `, [user.id, userRoleId]);
+                        }
                     }
 
                     return done(null, user);
@@ -82,9 +96,9 @@ if (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) {
                         return done(new Error('No email found from Facebook'), undefined);
                     }
 
-                    // Check if user exists
+                    // Check if user exists in public_users
                     let userResult = await pool.query(
-                        'SELECT * FROM users WHERE email = $1 AND deleted_at IS NULL',
+                        'SELECT * FROM public_users WHERE email = $1 AND deleted_at IS NULL',
                         [email]
                     );
 
@@ -94,18 +108,32 @@ if (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) {
                         // User exists, update facebook_id and avatar if needed
                         user = userResult.rows[0];
                         await pool.query(
-                            'UPDATE users SET facebook_id = $1, avatar = $2, updated_at = NOW() WHERE id = $3',
+                            'UPDATE public_users SET facebook_id = $1, avatar = $2 WHERE id = $3',
                             [facebookId, avatar, user.id]
                         );
                     } else {
                         // Create new user
                         const insertResult = await pool.query(
-                            `INSERT INTO users (email, full_name, avatar, facebook_id, role, created_at, updated_at)
-                             VALUES ($1, $2, $3, $4, 'user', NOW(), NOW())
+                            `INSERT INTO public_users (email, full_name, avatar, facebook_id, is_verified, created_at)
+                             VALUES ($1, $2, $3, $4, true, NOW())
                              RETURNING *`,
                             [email, name, avatar, facebookId]
                         );
                         user = insertResult.rows[0];
+
+                        // Tự động gán quyền USER cho người dùng mới
+                        const userRoleResult = await pool.query(`
+                            SELECT id FROM roles WHERE name = 'USER' LIMIT 1
+                        `);
+
+                        if (userRoleResult.rows.length > 0) {
+                            const userRoleId = userRoleResult.rows[0].id;
+                            await pool.query(`
+                                INSERT INTO user_roles (user_id, role_id, assigned_at)
+                                VALUES ($1, $2, NOW())
+                                ON CONFLICT (user_id, role_id) DO NOTHING
+                            `, [user.id, userRoleId]);
+                        }
                     }
 
                     return done(null, user);

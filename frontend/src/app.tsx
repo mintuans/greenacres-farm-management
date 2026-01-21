@@ -49,9 +49,13 @@ import Login from '@/src/pages/auth/Login';
 import Register from '@/src/pages/auth/Register';
 import LoginRequired from '@/src/pages/auth/LoginRequired';
 import AuthCallback from '@/src/pages/auth/AuthCallback';
+import { useAuth } from '@/src/contexts/AuthContext';
 
 const App: React.FC = () => {
+    const { user, isAuthenticated } = useAuth();
+
     return (
+
         <HashRouter>
             <Routes>
                 {/* Public Routes - No Sidebar/Header */}
@@ -68,48 +72,53 @@ const App: React.FC = () => {
 
                 {/* Admin Routes - With Sidebar/Header */}
                 <Route path="/*" element={
-                    <div className="flex h-screen w-full overflow-hidden">
-                        <Sidebar />
-                        <div className="flex-1 flex flex-col h-full overflow-hidden relative">
-                            <Header />
-                            <main className="flex-1 overflow-y-auto bg-[#f6f8f6] scroll-smooth">
-                                <Routes>
-                                    <Route path="/dashboard" element={<Dashboard />} />
-                                    <Route path="/schedule" element={<Schedule />} />
-                                    <Route path="/inventory" element={<Inventory />} />
-                                    <Route path="/inventory/add" element={<AddInventory />} />
-                                    <Route path="/warehouse/management" element={<WarehouseManagement />} />
-                                    <Route path="/warehouse/types" element={<WarehouseTypes />} />
-                                    <Route path="/seasons" element={<Seasons />} />
-                                    <Route path="/transactions" element={<Transactions />} />
-                                    <Route path="/finance" element={<PersonalFinance />} />
-                                    <Route path="/master-data/categories" element={<Categories />} />
-                                    <Route path="/master-data/shifts" element={<WorkShifts />} />
-                                    <Route path="/master-data/jobs" element={<JobTypes />} />
-                                    <Route path="/master-data/workers" element={<Workers />} />
-                                    <Route path="/master-data/units" element={<ProductionUnits />} />
-                                    <Route path="/master-data/showcase-products" element={<ManagementProducts />} />
-                                    <Route path="/master-data/media" element={<ManagementMedia />} />
-                                    <Route path="/master-data/showcase-blog" element={<ManagementBlog />} />
-                                    <Route path="/master-data/showcase-blog/add" element={<AddBlog />} />
-                                    <Route path="/master-data/showcase-blog/edit/:id" element={<EditBlog />} />
-                                    <Route path="/master-data/farm-events" element={<FarmEvents />} />
-                                    <Route path="/master-data/work-schedules" element={<WorkSchedules />} />
-                                    <Route path="/master-data/daily-work-logs" element={<DailyWorkLogs />} />
-                                    <Route path="/master-data/payroll" element={<PayrollManagement />} />
-                                    <Route path="/settings/users" element={<Users />} />
-                                    <Route path="/settings/roles" element={<Roles />} />
-                                    <Route path="/settings/permissions" element={<Permissions />} />
-                                    <Route path="/settings/role-permissions" element={<RolePermissions />} />
-                                    <Route path="/settings/audit-logs" element={<AuditLogs />} />
-                                    <Route path="/settings/database-backup" element={<DatabaseBackup />} />
-                                    <Route path="/settings" element={<MasterData />} />
-                                    <Route path="*" element={<Navigate to="/dashboard" replace />} />
-                                </Routes>
-                            </main>
+                    isAuthenticated && user?.role === 'SUPER_ADMIN' ? (
+                        <div className="flex h-screen w-full overflow-hidden">
+                            <Sidebar />
+                            <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+                                <Header />
+                                <main className="flex-1 overflow-y-auto bg-[#f6f8f6] scroll-smooth">
+                                    <Routes>
+                                        <Route path="/dashboard" element={<Dashboard />} />
+                                        <Route path="/schedule" element={<Schedule />} />
+                                        <Route path="/inventory" element={<Inventory />} />
+                                        <Route path="/inventory/add" element={<AddInventory />} />
+                                        <Route path="/warehouse/management" element={<WarehouseManagement />} />
+                                        <Route path="/warehouse/types" element={<WarehouseTypes />} />
+                                        <Route path="/seasons" element={<Seasons />} />
+                                        <Route path="/transactions" element={<Transactions />} />
+                                        <Route path="/finance" element={<PersonalFinance />} />
+                                        <Route path="/master-data/categories" element={<Categories />} />
+                                        <Route path="/master-data/shifts" element={<WorkShifts />} />
+                                        <Route path="/master-data/jobs" element={<JobTypes />} />
+                                        <Route path="/master-data/workers" element={<Workers />} />
+                                        <Route path="/master-data/units" element={<ProductionUnits />} />
+                                        <Route path="/master-data/showcase-products" element={<ManagementProducts />} />
+                                        <Route path="/master-data/media" element={<ManagementMedia />} />
+                                        <Route path="/master-data/showcase-blog" element={<ManagementBlog />} />
+                                        <Route path="/master-data/showcase-blog/add" element={<AddBlog />} />
+                                        <Route path="/master-data/showcase-blog/edit/:id" element={<EditBlog />} />
+                                        <Route path="/master-data/farm-events" element={<FarmEvents />} />
+                                        <Route path="/master-data/work-schedules" element={<WorkSchedules />} />
+                                        <Route path="/master-data/daily-work-logs" element={<DailyWorkLogs />} />
+                                        <Route path="/master-data/payroll" element={<PayrollManagement />} />
+                                        <Route path="/settings/users" element={<Users />} />
+                                        <Route path="/settings/roles" element={<Roles />} />
+                                        <Route path="/settings/permissions" element={<Permissions />} />
+                                        <Route path="/settings/role-permissions" element={<RolePermissions />} />
+                                        <Route path="/settings/audit-logs" element={<AuditLogs />} />
+                                        <Route path="/settings/database-backup" element={<DatabaseBackup />} />
+                                        <Route path="/settings" element={<MasterData />} />
+                                        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                                    </Routes>
+                                </main>
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        <Navigate to="/showcase" replace />
+                    )
                 } />
+
             </Routes>
         </HashRouter>
     );

@@ -295,6 +295,14 @@ const FarmShowcase: React.FC = () => {
     };
 
     const handleSubmitReply = async (parentId: number) => {
+        // Kiểm tra đăng nhập
+        if (!user) {
+            if (confirm('Bạn cần đăng nhập để phản hồi. Chuyển đến trang đăng nhập?')) {
+                navigate('/login');
+            }
+            return;
+        }
+
         if (!replyContent.trim()) return;
         setIsSubmitting(true);
         try {
@@ -304,29 +312,39 @@ const FarmShowcase: React.FC = () => {
                 content: replyContent,
                 parent_id: parentId,
                 rating: 5, // Default rating for replies
-                commenter_name: user?.name || 'Vườn mận - Admin',
-                commenter_email: user?.email || 'admin@farm.com'
+                commenter_name: user?.name,
+                commenter_email: user?.email
             });
             setReplyContent('');
             setReplyingTo(null);
             fetchComments();
         } catch (error) {
             console.error('Error posting reply:', error);
+            alert('Có lỗi khi gửi phản hồi. Vui lòng thử lại!');
         } finally {
             setIsSubmitting(false);
         }
     };
 
     const handleReaction = async (commentId: number, type: string) => {
+        // Kiểm tra đăng nhập
+        if (!user) {
+            if (confirm('Bạn cần đăng nhập để bày tỏ cảm xúc. Chuyển đến trang đăng nhập?')) {
+                navigate('/login');
+            }
+            return;
+        }
+
         try {
             const sessionId = localStorage.getItem('guest_session_id') || Math.random().toString(36).substring(7);
             localStorage.setItem('guest_session_id', sessionId);
-            await addReaction(commentId, type, sessionId);
+            await addReaction(commentId, type, user.id); // Trình duyệt gửi user.id thay vì sessionId nếu đã đăng nhập
             fetchComments();
         } catch (error) {
             console.error('Error adding reaction:', error);
         }
     };
+
 
     const handleShare = async () => {
         const shareData = {
