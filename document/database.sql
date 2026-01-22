@@ -78,7 +78,12 @@ CREATE TABLE transactions (
     type VARCHAR(20) NOT NULL CHECK (type IN ('INCOME', 'EXPENSE')),
     transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     note TEXT,
-    is_inventory_affected BOOLEAN DEFAULT FALSE -- Đánh dấu nếu giao dịch này nhập hàng vào kho
+    is_inventory_affected BOOLEAN DEFAULT FALSE, -- Đánh dấu nếu giao dịch này nhập hàng vào kho
+    
+    -- Chi tiết bổ sung cho mận/hàng hóa
+    quantity DECIMAL(15, 2),
+    unit VARCHAR(50),
+    unit_price DECIMAL(15, 2)
 );
 
 -- 8. Bảng Chi tiết Thanh toán Nợ (Trả dần)
@@ -653,15 +658,20 @@ RETURNS TABLE (
     transaction_date timestamp with time zone,
     note text,
     is_inventory_affected boolean,
+    quantity numeric,
+    unit varchar,
+    unit_price numeric,
     partner_name varchar,
     category_name varchar,
+    category_code varchar,
     season_name varchar
 ) AS $$
 BEGIN
     RETURN QUERY
     SELECT t.id, t.partner_id, t.season_id, t.category_id, t.amount, t.paid_amount, 
            t.type::varchar, t.transaction_date, t.note, t.is_inventory_affected,
-           p.partner_name, c.category_name, s.season_name
+           t.quantity, t.unit, t.unit_price,
+           p.partner_name, c.category_name, c.category_code, s.season_name
     FROM transactions t
     LEFT JOIN partners p ON t.partner_id = p.id
     LEFT JOIN categories c ON t.category_id = c.id

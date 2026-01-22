@@ -12,8 +12,12 @@ export interface Transaction {
     transaction_date: string;
     note?: string;
     is_inventory_affected: boolean;
+    quantity?: number;
+    unit?: string;
+    unit_price?: number;
     partner_name?: string;
     category_name?: string;
+    category_code?: string;
     season_name?: string;
 }
 

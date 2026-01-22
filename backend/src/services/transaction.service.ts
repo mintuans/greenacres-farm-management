@@ -11,14 +11,18 @@ export interface Transaction {
     transaction_date: Date;
     note?: string;
     is_inventory_affected: boolean;
+    quantity?: number;
+    unit?: string;
+    unit_price?: number;
     partner_name?: string;
     category_name?: string;
+    category_code?: string;
     season_name?: string;
 }
 
 export const getTransactions = async (month?: number, year?: number, seasonId?: string): Promise<Transaction[]> => {
     let query = `
-        SELECT t.*, p.partner_name, c.category_name, s.season_name
+        SELECT t.*, p.partner_name, c.category_name, c.category_code, s.season_name
         FROM transactions t
         LEFT JOIN partners p ON t.partner_id = p.id
         LEFT JOIN categories c ON t.category_id = c.id
@@ -58,9 +62,10 @@ export const createTransaction = async (data: any): Promise<Transaction> => {
     const query = `
         INSERT INTO transactions (
             partner_id, season_id, category_id, amount, paid_amount, 
-            type, transaction_date, note, is_inventory_affected
+            type, transaction_date, note, is_inventory_affected,
+            quantity, unit, unit_price
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
         RETURNING *
     `;
     const values = [
@@ -72,7 +77,10 @@ export const createTransaction = async (data: any): Promise<Transaction> => {
         data.type,
         data.transaction_date || new Date(),
         data.note || null,
-        data.is_inventory_affected || false
+        data.is_inventory_affected || false,
+        data.quantity || null,
+        data.unit || null,
+        data.unit_price || null
     ];
     const result = await pool.query(query, values);
     return result.rows[0];
