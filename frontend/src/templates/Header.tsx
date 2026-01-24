@@ -31,6 +31,17 @@ const Header: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-6">
+                <button
+                    onClick={() => navigate('/showcase')}
+                    className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg hover:border-[#13ec49] hover:text-[#13ec49] transition-all text-xs font-semibold"
+                >
+                    <span className="material-symbols-outlined text-[18px]">visibility</span>
+                    Trang Showcase
+                </button>
+                <button className="relative p-2 text-slate-400 hover:text-[#13ec49] transition-colors">
+                    <span className="material-symbols-outlined">notifications</span>
+                    <span className="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white"></span>
+                </button>
                 <div
                     className="hidden lg:flex items-center gap-3 cursor-pointer group"
                     onClick={handleProfileClick}
@@ -52,10 +63,7 @@ const Header: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <button className="relative p-2 text-slate-400 hover:text-[#13ec49] transition-colors">
-                        <span className="material-symbols-outlined">notifications</span>
-                        <span className="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white"></span>
-                    </button>
+
                 </div>
             </div>
         </header>

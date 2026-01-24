@@ -27,7 +27,7 @@ const ShowcaseHeader: React.FC<ShowcaseHeaderProps> = ({
         if (isAuthenticated) {
             navigate('/profile');
         } else {
-            navigate('/login-required');
+            navigate('/login');
         }
     };
 
@@ -38,7 +38,7 @@ const ShowcaseHeader: React.FC<ShowcaseHeaderProps> = ({
                     <div className="size-8 rounded bg-[#13ec49]/20 flex items-center justify-center text-[#13ec49]">
                         <span className="material-symbols-outlined">agriculture</span>
                     </div>
-                    <h2 className="text-lg font-bold leading-tight tracking-[-0.015em]">GreenAcres</h2>
+                    <h2 className="text-lg font-bold leading-tight tracking-[-0.015em]">Vườn mận LMT</h2>
                 </Link>
                 <div className="hidden md:flex items-center gap-9">
                     <Link

@@ -225,7 +225,7 @@ const WorkSchedules: React.FC = () => {
                                         <td className="px-8 py-5">
                                             <div className="flex items-center gap-2">
                                                 <span className="material-symbols-outlined text-slate-400 text-[20px]">work</span>
-                                                <span className="font-bold text-slate-700">{item.job_name || 'Khác'}</span>
+                                                <span className="font-bold text-slate-700 whitespace-nowrap">{item.job_name || 'Khác'}</span>
                                             </div>
                                             {item.note && <p className="text-xs text-slate-400 mt-1 italic">"{item.note}"</p>}
                                         </td>
@@ -233,7 +233,7 @@ const WorkSchedules: React.FC = () => {
                                             {new Date(item.work_date).toLocaleDateString('vi-VN')}
                                         </td>
                                         <td className="px-8 py-5">
-                                            <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 ${getStatusStyle(item.status)}`}>
+                                            <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 whitespace-nowrap ${getStatusStyle(item.status)}`}>
                                                 {getStatusLabel(item.status)}
                                             </span>
                                         </td>

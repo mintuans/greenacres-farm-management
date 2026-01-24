@@ -28,6 +28,24 @@ export const createTransaction = async (req: Request, res: Response): Promise<an
     }
 };
 
+export const updateTransaction = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { id } = req.params;
+        const oldTransaction = await transactionService.getTransactionById(id);
+        const transaction = await transactionService.updateTransaction(id, req.body);
+
+        if (!transaction) {
+            return res.status(404).json({ success: false, message: 'Not found' });
+        }
+
+        await logActivity(req, 'UPDATE_TRANSACTION', 'transactions', id, oldTransaction, req.body);
+
+        return res.json({ success: true, data: transaction });
+    } catch (error: any) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 export const deleteTransaction = async (req: Request, res: Response): Promise<any> => {
     try {
         const { id } = req.params;

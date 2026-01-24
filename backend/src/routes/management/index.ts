@@ -23,6 +23,7 @@ import permissionRoutes from './permission.routes';
 import auditLogRoutes from './audit-log.routes';
 import scheduleRoutes from './schedule.routes';
 import dashboardRoutes from './dashboard.routes';
+import showcaseEventRoutes from './showcase-event.routes';
 import databaseBackupRoutes from '../database-backup.routes';
 
 
@@ -68,6 +69,7 @@ router.use('/permissions', permissionRoutes);
 router.use('/audit-logs', auditLogRoutes);
 router.use('/schedules', scheduleRoutes);
 router.use('/dashboard', dashboardRoutes);
+router.use('/showcase-events', showcaseEventRoutes);
 router.use('/database', databaseBackupRoutes);
 
 

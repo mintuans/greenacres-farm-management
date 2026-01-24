@@ -35,6 +35,11 @@ export const createTransaction = async (data: any): Promise<Transaction> => {
     return response.data.data;
 };
 
+export const updateTransaction = async (id: string, data: any): Promise<Transaction> => {
+    const response = await api.put(`/management/transactions/${id}`, data);
+    return response.data.data;
+};
+
 export const deleteTransaction = async (id: string): Promise<void> => {
     await api.delete(`/management/transactions/${id}`);
 };

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Partner, getPartners, createPartner, updatePartner, deletePartner, CreatePartnerInput } from '../api/partner.api';
+import React, { useState, useEffect, useRef } from 'react';
+import { Partner, getPartners, createPartner, updatePartner, deletePartner, CreatePartnerInput, getNextPartnerCode } from '../api/partner.api';
 
 const Workers: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -15,8 +15,18 @@ const Workers: React.FC = () => {
         address: ''
     });
 
+    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
         loadWorkers();
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setOpenDropdown(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     const loadWorkers = async () => {
@@ -67,25 +77,90 @@ const Workers: React.FC = () => {
         try {
             await deletePartner(id);
             loadWorkers();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error deleting worker:', error);
-            alert('Không thể xóa nhân viên');
+            const errorMessage = error.response?.data?.message || 'Không thể xóa nhân viên';
+            alert(errorMessage);
         }
     };
 
-    const resetForm = () => {
-        setFormData({
-            partner_code: '',
-            partner_name: '',
-            type: 'WORKER',
-            phone: '',
-            address: ''
-        });
+    const handleTypeChange = async (type: 'SUPPLIER' | 'BUYER' | 'WORKER' | 'FAMILY') => {
+        setFormData(prev => ({ ...prev, type }));
+        if (!editingWorker) {
+            try {
+                const nextCode = await getNextPartnerCode(type);
+                setFormData(prev => ({ ...prev, partner_code: nextCode }));
+            } catch (error) {
+                console.error('Error generating code:', error);
+            }
+        }
+    };
+
+    const resetForm = async () => {
         setEditingWorker(null);
+        try {
+            const nextCode = await getNextPartnerCode('WORKER');
+            setFormData({
+                partner_code: nextCode,
+                partner_name: '',
+                type: 'WORKER',
+                phone: '',
+                address: ''
+            });
+        } catch (error) {
+            setFormData({
+                partner_code: '',
+                partner_name: '',
+                type: 'WORKER',
+                phone: '',
+                address: ''
+            });
+        }
     };
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+    };
+
+    // Custom Select Component
+    const CustomSelect = ({ label, options, value, onChange, placeholder, id }: any) => {
+        const isOpen = openDropdown === id;
+        const selectedOption = options.find((o: any) => o.value === value);
+
+        return (
+            <div className="relative" ref={isOpen ? dropdownRef : null}>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{label}</label>
+                <div
+                    onClick={() => setOpenDropdown(isOpen ? null : id)}
+                    className={`w-full bg-slate-50 rounded-2xl px-5 py-3.5 font-bold flex justify-between items-center cursor-pointer transition-all border-2 ${isOpen ? 'border-[#13ec49] bg-white ring-4 ring-[#13ec49]/10' : 'border-transparent'}`}
+                >
+                    <span className={selectedOption ? 'text-slate-900' : 'text-slate-400'}>
+                        {selectedOption ? selectedOption.label : placeholder}
+                    </span>
+                    <span className={`material-symbols-outlined transition-transform duration-300 ${isOpen ? 'rotate-180 text-[#13ec49]' : 'text-slate-400'}`}>
+                        expand_more
+                    </span>
+                </div>
+
+                {isOpen && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-100 z-[100] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 max-h-[240px] overflow-y-auto">
+                        {options.map((opt: any) => (
+                            <div
+                                key={opt.value}
+                                onClick={() => {
+                                    onChange(opt.value);
+                                    setOpenDropdown(null);
+                                }}
+                                className={`px-5 py-3.5 hover:bg-slate-50 cursor-pointer transition-all flex items-center justify-between group ${value === opt.value ? 'bg-[#13ec49]/5 text-[#13ec49]' : 'text-slate-600'}`}
+                            >
+                                <span className="font-bold">{opt.label}</span>
+                                {value === opt.value && <span className="material-symbols-outlined text-sm">check_circle</span>}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
     };
 
     const filteredWorkers = (workers || []).filter(worker =>
@@ -174,10 +249,12 @@ const Workers: React.FC = () => {
                                             <td className="px-6 py-4">
                                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${worker.type === 'SUPPLIER' ? 'bg-blue-100 text-blue-800' :
                                                     worker.type === 'BUYER' ? 'bg-green-100 text-green-800' :
-                                                        'bg-purple-100 text-purple-800'
+                                                        worker.type === 'FAMILY' ? 'bg-orange-100 text-orange-800' :
+                                                            'bg-purple-100 text-purple-800'
                                                     }`}>
                                                     {worker.type === 'SUPPLIER' ? 'Nhà cung cấp' :
-                                                        worker.type === 'BUYER' ? 'Người mua' : 'Nhân viên'}
+                                                        worker.type === 'BUYER' ? 'Người mua' :
+                                                            worker.type === 'FAMILY' ? 'Gia đình' : 'Nhân viên'}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 text-slate-600">{worker.phone || '-'}</td>
@@ -249,17 +326,19 @@ const Workers: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Loại *</label>
-                                <select
-                                    required
+                                <CustomSelect
+                                    id="partner_type"
+                                    label="Loại *"
                                     value={formData.type}
-                                    onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                                    className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#13ec49]/30 outline-none"
-                                >
-                                    <option value="WORKER">Nhân viên</option>
-                                    <option value="SUPPLIER">Nhà cung cấp</option>
-                                    <option value="BUYER">Người mua</option>
-                                </select>
+                                    onChange={(val: any) => handleTypeChange(val)}
+                                    options={[
+                                        { value: 'WORKER', label: 'Nhân viên' },
+                                        { value: 'SUPPLIER', label: 'Nhà cung cấp' },
+                                        { value: 'BUYER', label: 'Người mua' },
+                                        { value: 'FAMILY', label: 'Gia đình' }
+                                    ]}
+                                    placeholder="-- Chọn loại --"
+                                />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Điện thoại</label>

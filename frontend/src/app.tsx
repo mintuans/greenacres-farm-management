@@ -37,6 +37,9 @@ import ManagementMedia from '@/src/pages/management/ManagementMedia';
 import ManagementBlog from '@/src/pages/management/ManagementBlog';
 import AddBlog from '@/src/pages/management/AddBlog';
 import EditBlog from '@/src/pages/management/EditBlog';
+import ManagementShowcaseEvents from '@/src/pages/management/ManagementShowcaseEvents';
+import EditShowcaseEvent from '@/src/pages/management/EditShowcaseEvent';
+import ManagementGuests from '@/src/pages/management/ManagementGuests';
 import Users from '@/src/pages/settings/Users';
 import Roles from '@/src/pages/settings/Roles';
 import Permissions from '@/src/pages/settings/Permissions';
@@ -98,6 +101,10 @@ const App: React.FC = () => {
                                         <Route path="/master-data/showcase-blog" element={<ManagementBlog />} />
                                         <Route path="/master-data/showcase-blog/add" element={<AddBlog />} />
                                         <Route path="/master-data/showcase-blog/edit/:id" element={<EditBlog />} />
+                                        <Route path="/master-data/showcase-events" element={<ManagementShowcaseEvents />} />
+                                        <Route path="/master-data/showcase-events/add" element={<EditShowcaseEvent />} />
+                                        <Route path="/master-data/showcase-events/edit/:id" element={<EditShowcaseEvent />} />
+                                        <Route path="/master-data/showcase-guests" element={<ManagementGuests />} />
                                         <Route path="/master-data/farm-events" element={<FarmEvents />} />
                                         <Route path="/master-data/work-schedules" element={<WorkSchedules />} />
                                         <Route path="/master-data/daily-work-logs" element={<DailyWorkLogs />} />

@@ -41,15 +41,17 @@ const Sidebar: React.FC = () => {
         { label: 'Sản phẩm ', path: '/master-data/showcase-products', icon: 'shopping_bag' },
         { label: 'Quản lý Ảnh', path: '/master-data/media', icon: 'image' },
         { label: 'Tin tức ', path: '/master-data/showcase-blog', icon: 'article' },
+        { label: 'Quản lý Sự kiện', path: '/master-data/showcase-events', icon: 'event_available' },
+        { label: 'Quản lý Khách mời', path: '/master-data/showcase-guests', icon: 'groups' },
     ];
 
     const payrollItems = [
+        { label: 'Nhân viên', path: '/master-data/workers', icon: 'group' },
+        { label: 'Ca làm việc', path: '/master-data/shifts', icon: 'schedule' },
+        { label: 'Công việc', path: '/master-data/jobs', icon: 'work' },
         { label: 'Lịch làm việc', path: '/master-data/work-schedules', icon: 'event_note' },
         { label: 'Nhật ký làm việc', path: '/master-data/daily-work-logs', icon: 'assignment' },
         { label: 'Phiếu lương', path: '/master-data/payroll', icon: 'payments' },
-        { label: 'Ca làm việc', path: '/master-data/shifts', icon: 'schedule' },
-        { label: 'Công việc', path: '/master-data/jobs', icon: 'work' },
-        { label: 'Nhân viên', path: '/master-data/workers', icon: 'group' },
     ];
 
     const warehouseItems = [

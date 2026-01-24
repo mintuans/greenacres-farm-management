@@ -6,6 +6,7 @@ const router = Router();
 // CRUD routes
 router.post('/', partnerController.createPartner);
 router.get('/', partnerController.getPartners);
+router.get('/get-next-code', partnerController.getNextCode);
 router.get('/:id', partnerController.getPartnerById);
 router.put('/:id', partnerController.updatePartner);
 router.delete('/:id', partnerController.deletePartner);

@@ -119,6 +119,15 @@ export const deletePartner = async (req: Request, res: Response): Promise<any> =
         });
     } catch (error: any) {
         console.error('Delete partner error:', error);
+
+        // Handle foreign key constraint error (23503 is Postgres code for FK violation)
+        if (error.code === '23503') {
+            return res.status(400).json({
+                success: false,
+                message: 'Không thể xóa nhân sự này vì đã có dữ liệu liên quan (giao dịch, phiếu lương hoặc nhật ký công). Hãy kiểm tra lại.'
+            });
+        }
+
         return res.status(500).json({
             success: false,
             message: error.message || 'Failed to delete partner'
@@ -141,6 +150,27 @@ export const getPartnerBalance = async (req: Request, res: Response): Promise<an
         return res.status(500).json({
             success: false,
             message: error.message || 'Failed to get balance'
+        });
+    }
+};
+
+// Lấy mã tiếp theo
+export const getNextCode = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { type } = req.query;
+        if (!type) {
+            return res.status(400).json({ success: false, message: 'Type is required' });
+        }
+        const nextCode = await partnerService.getNextPartnerCode(type as string);
+        return res.json({
+            success: true,
+            data: nextCode
+        });
+    } catch (error: any) {
+        console.error('Get next code error:', error);
+        return res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to get next code'
         });
     }
 };

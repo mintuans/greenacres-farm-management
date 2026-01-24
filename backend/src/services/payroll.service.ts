@@ -142,12 +142,12 @@ export const deletePayroll = async (id: string): Promise<boolean> => {
 export const getPayrollStats = async (): Promise<any> => {
     const query = `
         SELECT 
-            COUNT(*) as total_payrolls,
-            COUNT(CASE WHEN status = 'DRAFT' THEN 1 END) as draft_count,
-            COUNT(CASE WHEN status = 'APPROVED' THEN 1 END) as approved_count,
-            COUNT(CASE WHEN status = 'PAID' THEN 1 END) as paid_count,
-            COALESCE(SUM(CASE WHEN status = 'PAID' THEN final_amount ELSE 0 END), 0) as total_paid_amount,
-            COALESCE(SUM(CASE WHEN status IN ('DRAFT', 'APPROVED') THEN final_amount ELSE 0 END), 0) as pending_amount
+            COUNT(*)::INTEGER as total_payrolls,
+            COUNT(CASE WHEN status = 'DRAFT' THEN 1 END)::INTEGER as draft_count,
+            COUNT(CASE WHEN status = 'APPROVED' THEN 1 END)::INTEGER as approved_count,
+            COUNT(CASE WHEN status = 'PAID' THEN 1 END)::INTEGER as paid_count,
+            COALESCE(SUM(CASE WHEN status = 'PAID' THEN final_amount ELSE 0 END), 0)::NUMERIC as total_paid_amount,
+            COALESCE(SUM(CASE WHEN status IN ('DRAFT', 'APPROVED') THEN final_amount ELSE 0 END), 0)::NUMERIC as pending_amount
         FROM payrolls
     `;
     const result = await pool.query(query);

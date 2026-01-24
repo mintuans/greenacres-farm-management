@@ -153,17 +153,18 @@ const ManagementMedia: React.FC = () => {
                         >
                             <span className="material-symbols-outlined text-[20px]">label</span>
                             <span className="capitalize">{cat}</span>
-                            <button
+                            <div
+                                role="button"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setCategories(categories.filter(c => c !== cat));
                                     if (selectedCategory === cat) setSelectedCategory(null);
                                 }}
-                                className="ml-1 p-0.5 rounded hover:bg-black/10 transition-all duration-200"
+                                className="ml-1 p-0.5 rounded hover:bg-black/10 transition-all duration-200 cursor-pointer"
                                 title="Xóa thể loại"
                             >
                                 <span className="material-symbols-outlined text-sm">close</span>
-                            </button>
+                            </div>
                         </button>
                     ))}
 

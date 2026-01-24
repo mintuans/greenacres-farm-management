@@ -5,7 +5,7 @@ export interface Partner {
     id: string;
     partner_code: string;
     partner_name: string;
-    type: 'SUPPLIER' | 'BUYER' | 'WORKER';
+    type: 'SUPPLIER' | 'BUYER' | 'WORKER' | 'FAMILY';
     phone?: string;
     address?: string;
     current_balance: number;
@@ -15,14 +15,14 @@ export interface Partner {
 export interface CreatePartnerInput {
     partner_code: string;
     partner_name: string;
-    type: 'SUPPLIER' | 'BUYER' | 'WORKER';
+    type: 'SUPPLIER' | 'BUYER' | 'WORKER' | 'FAMILY';
     phone?: string;
     address?: string;
 }
 
 export interface UpdatePartnerInput {
     partner_name?: string;
-    type?: 'SUPPLIER' | 'BUYER' | 'WORKER';
+    type?: 'SUPPLIER' | 'BUYER' | 'WORKER' | 'FAMILY';
     phone?: string;
     address?: string;
 }
@@ -61,4 +61,10 @@ export const deletePartner = async (id: string): Promise<void> => {
 export const getPartnerBalance = async (id: string): Promise<number> => {
     const response = await api.get(`/management/partners/${id}/balance`);
     return response.data.data.balance;
+};
+
+// Lấy mã tiếp theo
+export const getNextPartnerCode = async (type: string): Promise<string> => {
+    const response = await api.get('/management/partners/get-next-code', { params: { type } });
+    return response.data.data;
 };

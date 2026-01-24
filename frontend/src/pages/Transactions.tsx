@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getTransactions, Transaction, createTransaction } from '../api/transaction.api';
+import { getTransactions, Transaction, createTransaction, updateTransaction } from '../api/transaction.api';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { getSeasons, Season } from '../api/season.api';
@@ -178,7 +178,11 @@ const Transactions: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createTransaction(formData);
+      if (isEditing && selectedTransaction) {
+        await updateTransaction(selectedTransaction.id, formData);
+      } else {
+        await createTransaction(formData);
+      }
       setShowModal(false);
       fetchData();
       // Reset form
@@ -196,14 +200,38 @@ const Transactions: React.FC = () => {
         unit: '',
         unit_price: 0
       });
+      setIsEditing(false);
     } catch (error) {
-      console.error('Error creating transaction:', error);
+      console.error('Error saving transaction:', error);
     }
   };
+
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleViewDetail = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
     setShowDetailModal(true);
+  };
+
+  const handleEdit = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+    setFormData({
+      partner_id: transaction.partner_id || '',
+      season_id: transaction.season_id || '',
+      category_id: transaction.category_id || '',
+      amount: Number(transaction.amount),
+      paid_amount: Number(transaction.paid_amount),
+      type: transaction.type,
+      transaction_date: new Date(transaction.transaction_date).toISOString().split('T')[0],
+      note: transaction.note || '',
+      is_inventory_affected: transaction.is_inventory_affected || false,
+      quantity: transaction.quantity ? Number(transaction.quantity) : 0,
+      unit: transaction.unit || '',
+      unit_price: transaction.unit_price ? Number(transaction.unit_price) : 0
+    });
+    setIsEditing(true);
+    setShowModal(true);
+    setShowDetailModal(false);
   };
 
   const filteredTransactions = transactions.filter(t => {
@@ -491,8 +519,8 @@ const Transactions: React.FC = () => {
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-[32px] p-6 md:p-8 max-w-lg w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div className="flex justify-between items-center mb-6">
-              <div><h2 className="text-2xl font-black text-slate-900 tracking-tight">Ghi chép giao dịch</h2><p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-0.5">Cập nhập dòng tiền mới nhất</p></div>
-              <button onClick={() => setShowModal(false)} className="size-10 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"><span className="material-symbols-outlined text-[20px]">close</span></button>
+              <div><h2 className="text-2xl font-black text-slate-900 tracking-tight">{isEditing ? 'Cập nhật giao dịch' : 'Ghi chép giao dịch'}</h2><p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-0.5">{isEditing ? `Đang chỉnh sửa ID: ${selectedTransaction?.id.slice(0, 8).toUpperCase()}` : 'Cập nhập dòng tiền mới nhất'}</p></div>
+              <button onClick={() => { setShowModal(false); setIsEditing(false); }} className="size-10 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"><span className="material-symbols-outlined text-[20px]">close</span></button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 mb-2">
@@ -532,45 +560,36 @@ const Transactions: React.FC = () => {
               <div className="bg-slate-50 p-4 rounded-[24px] border border-slate-100"><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Ngày thực hiện</p><h3 className="text-lg font-black text-slate-900">{new Date(selectedTransaction.transaction_date).toLocaleDateString('vi-VN')}</h3></div>
 
               {/* Special display for Seed/Plant category (GCT) */}
-              {selectedTransaction.category_code === 'GCT' && selectedTransaction.quantity && selectedTransaction.unit_price && (
+              {(selectedTransaction.category_code === 'GCT' || (selectedTransaction.quantity && selectedTransaction.unit_price)) && (
                 <div className="col-span-full">
-                  <div className="bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 p-4 rounded-[24px] border-2 border-emerald-200 shadow-md">
+                  <div className={`bg-gradient-to-br ${selectedTransaction.category_code === 'GCT' ? 'from-emerald-50 via-green-50 to-teal-50 border-emerald-200' : 'from-blue-50 via-indigo-50 to-slate-50 border-blue-200'} p-4 rounded-[24px] border-2 shadow-md`}>
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="size-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                        <span className="material-symbols-outlined text-white text-[22px]">eco</span>
+                      <div className={`size-10 ${selectedTransaction.category_code === 'GCT' ? 'bg-emerald-500 shadow-emerald-500/30' : 'bg-blue-500 shadow-blue-500/30'} rounded-xl flex items-center justify-center shadow-lg`}>
+                        <span className="material-symbols-outlined text-white text-[22px]">{selectedTransaction.category_code === 'GCT' ? 'eco' : 'inventory_2'}</span>
                       </div>
                       <div>
-                        <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none">Giống cây trồng</p>
-                        <h4 className="text-base font-black text-emerald-900 mt-0.5">Chi tiết hàng hóa</h4>
+                        <p className={`text-[9px] font-black ${selectedTransaction.category_code === 'GCT' ? 'text-emerald-600' : 'text-blue-600'} uppercase tracking-widest leading-none`}>{selectedTransaction.category_name || 'Chi tiết hàng hóa'}</p>
+                        <h4 className={`text-base font-black ${selectedTransaction.category_code === 'GCT' ? 'text-emerald-900' : 'text-blue-900'} mt-0.5`}>Thông tin số lượng & giá</h4>
                       </div>
                     </div>
                     <div className="grid grid-cols-3 gap-3">
-                      <div className="bg-white/80 backdrop-blur p-3 rounded-xl border border-emerald-100 text-center">
-                        <p className="text-[8px] font-black text-emerald-500 uppercase tracking-widest mb-1">Số lượng</p>
-                        <p className="text-lg font-black text-emerald-700 leading-none">{Number(selectedTransaction.quantity).toLocaleString('vi-VN')}</p>
-                        <p className="text-[10px] font-bold text-emerald-600 mt-1">{selectedTransaction.unit || 'kg'}</p>
+                      <div className="bg-white/80 backdrop-blur p-3 rounded-xl border border-white text-center shadow-sm">
+                        <p className={`text-[8px] font-black ${selectedTransaction.category_code === 'GCT' ? 'text-emerald-500' : 'text-blue-500'} uppercase tracking-widest mb-1`}>Số lượng</p>
+                        <p className={`text-lg font-black ${selectedTransaction.category_code === 'GCT' ? 'text-emerald-700' : 'text-blue-700'} leading-none`}>{selectedTransaction.quantity ? Number(selectedTransaction.quantity).toLocaleString('vi-VN') : '0'}</p>
+                        <p className={`text-[10px] font-bold ${selectedTransaction.category_code === 'GCT' ? 'text-emerald-600' : 'text-blue-600'} mt-1`}>{selectedTransaction.unit || 'kg'}</p>
                       </div>
-                      <div className="bg-white/80 backdrop-blur p-3 rounded-xl border border-emerald-100 text-center">
-                        <p className="text-[8px] font-black text-emerald-500 uppercase tracking-widest mb-1">Đơn giá</p>
-                        <p className="text-lg font-black text-emerald-700 leading-none">{Number(selectedTransaction.unit_price).toLocaleString('vi-VN')}</p>
-                        <p className="text-[10px] font-bold text-emerald-600 mt-1">/{selectedTransaction.unit || 'kg'}</p>
+                      <div className="bg-white/80 backdrop-blur p-3 rounded-xl border border-white text-center shadow-sm">
+                        <p className={`text-[8px] font-black ${selectedTransaction.category_code === 'GCT' ? 'text-emerald-500' : 'text-blue-500'} uppercase tracking-widest mb-1`}>Đơn giá</p>
+                        <p className={`text-lg font-black ${selectedTransaction.category_code === 'GCT' ? 'text-emerald-700' : 'text-blue-700'} leading-none`}>{selectedTransaction.unit_price ? Number(selectedTransaction.unit_price).toLocaleString('vi-VN') : '0'}</p>
+                        <p className={`text-[10px] font-bold ${selectedTransaction.category_code === 'GCT' ? 'text-emerald-600' : 'text-blue-600'} mt-1`}>/{selectedTransaction.unit || 'kg'}</p>
                       </div>
-                      <div className="bg-emerald-500 p-3 rounded-xl shadow-md text-center">
-                        <p className="text-[8px] font-black text-white uppercase tracking-widest mb-1">Tổng</p>
-                        <p className="text-lg font-black text-white leading-none">{(Number(selectedTransaction.quantity) * Number(selectedTransaction.unit_price)).toLocaleString('vi-VN')}</p>
-                        <p className="text-[10px] font-bold text-emerald-100 mt-1">VNĐ</p>
+                      <div className={`${selectedTransaction.category_code === 'GCT' ? 'bg-emerald-500' : 'bg-blue-500'} p-3 rounded-xl shadow-md text-center`}>
+                        <p className="text-[8px] font-black text-white uppercase tracking-widest mb-1">Tổng tiền</p>
+                        <p className="text-lg font-black text-white leading-none">{Number(selectedTransaction.amount).toLocaleString('vi-VN')}</p>
+                        <p className="text-[10px] font-bold text-white/80 mt-1">VNĐ</p>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-
-              {/* Standard display for other categories with quantity/unit_price */}
-              {selectedTransaction.category_code !== 'GCT' && selectedTransaction.quantity && selectedTransaction.unit_price && (
-                <div className="col-span-full grid grid-cols-3 gap-4">
-                  <div className="bg-blue-50/50 p-5 rounded-[24px] border border-blue-100/50"><p className="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-1">Số lượng</p><p className="text-xl font-black text-blue-600">{Number(selectedTransaction.quantity).toLocaleString('vi-VN')} {selectedTransaction.unit || 'kg'}</p></div>
-                  <div className="bg-blue-50/50 p-5 rounded-[24px] border border-blue-100/50"><p className="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-1">Đơn giá</p><p className="text-xl font-black text-blue-600">{Number(selectedTransaction.unit_price).toLocaleString('vi-VN')}đ</p></div>
-                  <div className="bg-blue-50/50 p-5 rounded-[24px] border border-blue-100/50"><p className="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-1">Tổng</p><p className="text-xl font-black text-blue-600">{(Number(selectedTransaction.quantity) * Number(selectedTransaction.unit_price)).toLocaleString('vi-VN')}đ</p></div>
                 </div>
               )}
               <div className="space-y-4">
@@ -583,6 +602,7 @@ const Transactions: React.FC = () => {
               </div>
             </div>
             <div className="pt-8 border-t border-slate-100 flex gap-4 relative z-10">
+              <button onClick={() => handleEdit(selectedTransaction)} className="flex-1 py-4 rounded-[20px] bg-[#13ec49] text-black font-black uppercase tracking-widest text-xs hover:bg-[#11d440] transition-all flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[18px]">edit</span> Chỉnh sửa</button>
               <button onClick={() => setShowDetailModal(false)} className="flex-1 py-4 rounded-[20px] bg-slate-100 text-slate-600 font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all">Đóng</button>
             </div>
           </div>

@@ -109,7 +109,7 @@ const ManagementBlog: React.FC = () => {
                                 <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                                     Danh mục
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
                                     Trạng thái
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
@@ -144,12 +144,12 @@ const ManagementBlog: React.FC = () => {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className="text-sm text-gray-600">
+                                        <span className="text-sm text-gray-600 whitespace-nowrap">
                                             {post.category_name || '—'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${getStatusBadge(post.status)}`}>
+                                        <span className={`px-2 py-1 rounded-full text-xs font-bold whitespace-nowrap ${getStatusBadge(post.status)}`}>
                                             {getStatusText(post.status)}
                                         </span>
                                     </td>

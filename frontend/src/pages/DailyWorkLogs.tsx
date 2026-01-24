@@ -244,7 +244,7 @@ const DailyWorkLogs: React.FC = () => {
                                                     <div>
                                                         <p className="font-extrabold text-slate-900">{item.partner_name}</p>
                                                         <div className="flex items-center gap-2">
-                                                            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">{item.job_name || 'Khác'}</p>
+                                                            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider whitespace-nowrap">{item.job_name || 'Khác'}</p>
                                                             {item.season_name && (
                                                                 <>
                                                                     <span className="text-slate-300">•</span>
@@ -265,7 +265,7 @@ const DailyWorkLogs: React.FC = () => {
                                                 </div>
                                             </td>
                                             <td className="px-8 py-5 text-center">
-                                                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${item.status === 'DONE' ? 'bg-[#13ec49]/10 text-green-600' :
+                                                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${item.status === 'DONE' ? 'bg-[#13ec49]/10 text-green-600' :
                                                     item.status === 'INPROGRESS' ? 'bg-blue-50 text-blue-600' :
                                                         item.status === 'CANCELLED' ? 'bg-red-50 text-red-600' :
                                                             item.status === 'REJECTED' ? 'bg-orange-50 text-orange-600' :

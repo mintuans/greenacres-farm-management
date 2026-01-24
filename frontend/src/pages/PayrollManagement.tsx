@@ -118,7 +118,7 @@ const PayrollManagement: React.FC = () => {
                     <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                         <p className="text-sm font-medium text-slate-500">Chờ xử lý</p>
                         <h3 className="text-3xl font-black text-orange-600 mt-2">
-                            {stats.draft_count + stats.approved_count}
+                            {Number(stats.draft_count) + Number(stats.approved_count)}
                         </h3>
                         <p className="text-xs text-slate-400 mt-1">{formatVND(stats.pending_amount)}</p>
                     </div>

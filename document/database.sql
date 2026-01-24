@@ -609,37 +609,49 @@ FOR EACH ROW
 EXECUTE FUNCTION trg_sync_schedule_to_log();
 
 -- 4. Tự động cập nhật số dư Đối tác (Nhân viên) dựa trên Phiếu lương
-CREATE OR REPLACE FUNCTION trg_update_partner_balance_on_payroll()
+-- 1. Hàm cập nhật số dư khi có Giao dịch (Transaction)
+CREATE OR REPLACE FUNCTION trg_update_partner_balance_on_transaction()
 RETURNS TRIGGER AS $$
 BEGIN
     IF (TG_OP = 'INSERT') THEN
-        -- Khi tạo phiếu lương mới (mặc định không phải CANCELLED)
-        IF (NEW.status <> 'CANCELLED') THEN
-            UPDATE partners SET current_balance = current_balance + NEW.final_amount WHERE id = NEW.partner_id;
+        -- Nếu chi tiền (EXPENSE) => Số dư nợ giảm đi
+        IF (NEW.type = 'EXPENSE') THEN
+            UPDATE partners SET current_balance = current_balance - NEW.amount WHERE id = NEW.partner_id;
+        -- Nếu thu tiền (INCOME) => Số dư nợ tăng lên
+        ELSIF (NEW.type = 'INCOME') THEN
+            UPDATE partners SET current_balance = current_balance + NEW.amount WHERE id = NEW.partner_id;
         END IF;
     ELSIF (TG_OP = 'UPDATE') THEN
-        -- Trừ số cũ (nếu cũ không phải CANCELLED)
-        IF (OLD.status <> 'CANCELLED') THEN
-            UPDATE partners SET current_balance = current_balance - OLD.final_amount WHERE id = OLD.partner_id;
+        -- Hoàn lại số cũ
+        IF (OLD.type = 'EXPENSE') THEN
+            UPDATE partners SET current_balance = current_balance + OLD.amount WHERE id = OLD.partner_id;
+        ELSIF (OLD.type = 'INCOME') THEN
+            UPDATE partners SET current_balance = current_balance - OLD.amount WHERE id = OLD.partner_id;
         END IF;
-        -- Cộng số mới (nếu mới không phải CANCELLED)
-        IF (NEW.status <> 'CANCELLED') THEN
-            UPDATE partners SET current_balance = current_balance + NEW.final_amount WHERE id = NEW.partner_id;
+        -- Cộng số mới
+        IF (NEW.type = 'EXPENSE') THEN
+            UPDATE partners SET current_balance = current_balance - NEW.amount WHERE id = NEW.partner_id;
+        ELSIF (NEW.type = 'INCOME') THEN
+            UPDATE partners SET current_balance = current_balance + NEW.amount WHERE id = NEW.partner_id;
         END IF;
     ELSIF (TG_OP = 'DELETE') THEN
-        -- Khi xóa phiếu lương (nếu không phải CANCELLED)
-        IF (OLD.status <> 'CANCELLED') THEN
-            UPDATE partners SET current_balance = current_balance - OLD.final_amount WHERE id = OLD.partner_id;
+        -- Khi xóa giao dịch => Giao dịch chi mất đi thì nợ phải tăng lại
+        IF (OLD.type = 'EXPENSE') THEN
+            UPDATE partners SET current_balance = current_balance + OLD.amount WHERE id = OLD.partner_id;
+        ELSIF (OLD.type = 'INCOME') THEN
+            UPDATE partners SET current_balance = current_balance - OLD.amount WHERE id = OLD.partner_id;
         END IF;
     END IF;
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER payroll_balance_sync_trigger
-AFTER INSERT OR UPDATE OR DELETE ON payrolls
+-- 2. Đăng ký Trigger cho bảng transactions
+DROP TRIGGER IF EXISTS trg_transaction_balance_sync ON transactions;
+CREATE TRIGGER trg_transaction_balance_sync
+AFTER INSERT OR UPDATE OR DELETE ON transactions
 FOR EACH ROW
-EXECUTE FUNCTION trg_update_partner_balance_on_payroll();
+EXECUTE FUNCTION trg_update_partner_balance_on_transaction();
 
 -- 5. Hàm lấy danh sách giao dịch theo tháng/năm
 CREATE OR REPLACE FUNCTION get_transactions_by_month(

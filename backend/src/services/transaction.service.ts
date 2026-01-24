@@ -86,6 +86,45 @@ export const createTransaction = async (data: any): Promise<Transaction> => {
     return result.rows[0];
 };
 
+export const updateTransaction = async (id: string, data: any): Promise<Transaction | null> => {
+    const query = `
+        UPDATE transactions
+        SET 
+            partner_id = $1,
+            season_id = $2,
+            category_id = $3,
+            amount = $4,
+            paid_amount = $5,
+            type = $6,
+            transaction_date = $7,
+            note = $8,
+            is_inventory_affected = $9,
+            quantity = $10,
+            unit = $11,
+            unit_price = $12,
+            updated_at = NOW()
+        WHERE id = $13
+        RETURNING *
+    `;
+    const values = [
+        data.partner_id || null,
+        data.season_id || null,
+        data.category_id || null,
+        data.amount,
+        data.paid_amount || 0,
+        data.type,
+        data.transaction_date || new Date(),
+        data.note || null,
+        data.is_inventory_affected || false,
+        data.quantity || null,
+        data.unit || null,
+        data.unit_price || null,
+        id
+    ];
+    const result = await pool.query(query, values);
+    return result.rows[0] || null;
+};
+
 export const deleteTransaction = async (id: string): Promise<boolean> => {
     const query = 'DELETE FROM transactions WHERE id = $1';
     const result = await pool.query(query, [id]);

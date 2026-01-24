@@ -4,7 +4,7 @@ export interface Partner {
     id: string;
     partner_code: string;
     partner_name: string;
-    type: 'SUPPLIER' | 'BUYER' | 'WORKER';
+    type: 'SUPPLIER' | 'BUYER' | 'WORKER' | 'FAMILY';
     phone?: string;
     address?: string;
     current_balance: number;
@@ -14,14 +14,14 @@ export interface Partner {
 export interface CreatePartnerInput {
     partner_code: string;
     partner_name: string;
-    type: 'SUPPLIER' | 'BUYER' | 'WORKER';
+    type: 'SUPPLIER' | 'BUYER' | 'WORKER' | 'FAMILY';
     phone?: string;
     address?: string;
 }
 
 export interface UpdatePartnerInput {
     partner_name?: string;
-    type?: 'SUPPLIER' | 'BUYER' | 'WORKER';
+    type?: 'SUPPLIER' | 'BUYER' | 'WORKER' | 'FAMILY';
     phone?: string;
     address?: string;
 }
@@ -112,4 +112,34 @@ export const getPartnerBalance = async (id: string): Promise<number> => {
     const query = 'SELECT current_balance FROM partners WHERE id = $1';
     const result = await pool.query(query, [id]);
     return result.rows[0]?.current_balance || 0;
+};
+
+// Tự động sinh mã partner tiếp theo
+export const getNextPartnerCode = async (type: string): Promise<string> => {
+    let prefix = '';
+    switch (type) {
+        case 'WORKER': prefix = 'NV'; break;
+        case 'SUPPLIER': prefix = 'NCC'; break;
+        case 'BUYER': prefix = 'NM'; break;
+        case 'FAMILY': prefix = 'GD'; break;
+        default: prefix = 'PN';
+    }
+
+    const query = `
+        SELECT partner_code 
+        FROM partners 
+        WHERE type = $1 AND partner_code LIKE $2
+        ORDER BY partner_code DESC 
+        LIMIT 1
+    `;
+    const result = await pool.query(query, [type, `${prefix}%`]);
+
+    if (result.rows.length === 0) {
+        return `${prefix}001`;
+    }
+
+    const lastCode = result.rows[0].partner_code;
+    const numberPart = lastCode.substring(prefix.length);
+    const nextNumber = parseInt(numberPart) + 1;
+    return `${prefix}${nextNumber.toString().padStart(3, '0')}`;
 };
