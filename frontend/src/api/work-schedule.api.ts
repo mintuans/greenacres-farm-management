@@ -14,6 +14,7 @@ export interface WorkSchedule {
     job_name?: string;      // For display
     season_id?: string;
     season_name?: string;   // For display
+    has_payroll?: boolean;
 }
 
 export const getWorkSchedules = async (): Promise<WorkSchedule[]> => {

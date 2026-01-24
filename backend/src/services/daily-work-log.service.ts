@@ -27,7 +27,12 @@ export interface DailyWorkLog {
 
 export const getDailyWorkLogs = async (): Promise<DailyWorkLog[]> => {
     const query = `
-        SELECT dl.*, p.partner_name, s.shift_name, jt.job_name, pr.payroll_code, sn.season_name
+        SELECT 
+            dl.id, dl.partner_id, dl.payroll_id, dl.season_id, dl.unit_id, 
+            dl.schedule_id, dl.work_date, dl.shift_id, dl.job_type_id, 
+            dl.quantity, dl.unit, dl.applied_rate, dl.total_amount, 
+            dl.mandays, dl.status, dl.note, dl.created_at,
+            p.partner_name, s.shift_name, jt.job_name, pr.payroll_code, sn.season_name
         FROM daily_work_logs dl
         LEFT JOIN partners p ON dl.partner_id = p.id
         LEFT JOIN work_shifts s ON dl.shift_id = s.id
@@ -41,7 +46,15 @@ export const getDailyWorkLogs = async (): Promise<DailyWorkLog[]> => {
 };
 
 export const getDailyWorkLogById = async (id: string): Promise<DailyWorkLog | null> => {
-    const query = 'SELECT * FROM daily_work_logs WHERE id = $1';
+    const query = `
+        SELECT 
+            id, partner_id, payroll_id, season_id, unit_id, 
+            schedule_id, work_date, shift_id, job_type_id, 
+            quantity, unit, applied_rate, total_amount, 
+            mandays, status, note, created_at
+        FROM daily_work_logs 
+        WHERE id = $1
+    `;
     const result = await pool.query(query, [id]);
     return result.rows[0] || null;
 };

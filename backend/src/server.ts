@@ -1,11 +1,14 @@
 import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import http from 'http';
+import { initSocket } from './config/socket';
 
 // Load environment variables
 dotenv.config();
 
 const app: Application = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
 
 // Middlewares
@@ -69,8 +72,11 @@ app.use((err: Error, _req: Request, res: Response, _next: any) => {
     });
 });
 
+// Initialize Socket.io
+initSocket(server);
+
 // Start server
-app.listen(PORT, async () => {
+server.listen(PORT, async () => {
     console.log(`🚀 Server is running on port ${PORT}`);
     console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🔗 API: http://localhost:${PORT}/api`);

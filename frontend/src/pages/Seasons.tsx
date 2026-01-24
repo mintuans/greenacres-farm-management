@@ -354,7 +354,7 @@ const Seasons: React.FC = () => {
                     <span className="material-symbols-outlined text-green-500 bg-green-50 p-2 rounded-xl text-[20px]">payments</span>
                   </div>
                   <h3 className="text-3xl font-black text-slate-900">
-                    {(currentSeason.expected_revenue || 0).toLocaleString('vi-VN')}đ
+                    {Number(currentSeason.expected_revenue || 0).toLocaleString('vi-VN')}đ
                   </h3>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3">Mục tiêu tài chính vụ này</p>
                 </div>
@@ -422,7 +422,7 @@ const Seasons: React.FC = () => {
                           <td className="px-8 py-5">{new Date(s.start_date).toLocaleDateString('vi-VN')}</td>
                           <td className="px-8 py-5 text-right font-black text-slate-900">
                             <div className="flex items-center justify-end gap-3">
-                              <span>{(s.expected_revenue || 0).toLocaleString('vi-VN')}đ</span>
+                              <span>{Number(s.expected_revenue || 0).toLocaleString('vi-VN')}đ</span>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();

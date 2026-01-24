@@ -106,8 +106,10 @@ const DailyWorkLogs: React.FC = () => {
     };
 
     const filteredLogs = logs.filter(l =>
-        (l.partner_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (l.job_name || '').toLowerCase().includes(searchTerm.toLowerCase())
+        !l.payroll_id && (
+            (l.partner_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (l.job_name || '').toLowerCase().includes(searchTerm.toLowerCase())
+        )
     );
 
     return (

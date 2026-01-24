@@ -47,9 +47,9 @@ export interface TopWorker {
 /**
  * Lấy thống kê tổng quan Dashboard
  */
-export const getDashboardStats = async (startDate?: string, endDate?: string): Promise<DashboardStats> => {
-    const query = `SELECT * FROM get_dashboard_stats($1, $2)`;
-    const values = [startDate || null, endDate || null];
+export const getDashboardStats = async (startDate?: string, endDate?: string, seasonId?: string): Promise<DashboardStats> => {
+    const query = `SELECT * FROM get_dashboard_stats($1, $2, $3)`;
+    const values = [startDate || null, endDate || null, seasonId || null];
 
     const result = await pool.query(query, values);
     return result.rows[0];

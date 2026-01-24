@@ -143,11 +143,11 @@ const ShowcaseProducts: React.FC = () => {
                                             {/* Price */}
                                             <div className="flex items-center gap-2 mb-3">
                                                 <span className="text-2xl font-bold text-[#13ec49]">
-                                                    {product.price.toLocaleString('vi-VN')}đ
+                                                    {Number(product.price).toLocaleString('vi-VN')}đ
                                                 </span>
                                                 {product.original_price && product.original_price > product.price && (
                                                     <span className="text-sm text-gray-400 line-through">
-                                                        {product.original_price.toLocaleString('vi-VN')}đ
+                                                        {Number(product.original_price).toLocaleString('vi-VN')}đ
                                                     </span>
                                                 )}
                                             </div>

@@ -52,7 +52,10 @@ export const createSeason = async (data: CreateSeasonInput): Promise<Season> => 
 // Lấy danh sách mùa vụ
 export const getSeasons = async (status?: string, unitId?: string): Promise<Season[]> => {
     let query = `
-        SELECT s.*, pu.unit_name
+        SELECT 
+            s.id, s.unit_id, s.season_code, s.season_name, 
+            s.start_date, s.end_date, s.status, s.expected_revenue,
+            pu.unit_name
         FROM seasons s
         LEFT JOIN production_units pu ON s.unit_id = pu.id
         WHERE 1=1
@@ -79,7 +82,10 @@ export const getSeasons = async (status?: string, unitId?: string): Promise<Seas
 // Lấy mùa vụ theo ID
 export const getSeasonById = async (id: string): Promise<Season | null> => {
     const query = `
-        SELECT s.*, pu.unit_name
+        SELECT 
+            s.id, s.unit_id, s.season_code, s.season_name, 
+            s.start_date, s.end_date, s.status, s.expected_revenue,
+            pu.unit_name
         FROM seasons s
         LEFT JOIN production_units pu ON s.unit_id = pu.id
         WHERE s.id = $1

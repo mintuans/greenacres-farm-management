@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { getDashboardStats, getCashFlowHistory, getLowStockItems, getTopWorkers, DashboardStats, CashFlowData, LowStockItem, TopWorker } from '../api/dashboard.api';
+import { getSeasons, Season } from '../api/season.api';
 
 const StatCard: React.FC<{
   label: string;
@@ -30,16 +30,30 @@ const Dashboard: React.FC = () => {
   const [cashFlow, setCashFlow] = useState<CashFlowData[]>([]);
   const [lowStockItems, setLowStockItems] = useState<LowStockItem[]>([]);
   const [topWorkers, setTopWorkers] = useState<TopWorker[]>([]);
+  const [seasons, setSeasons] = useState<Season[]>([]);
+  const [selectedSeason, setSelectedSeason] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [loadingChart, setLoadingChart] = useState(true);
   const [loadingLowStock, setLoadingLowStock] = useState(true);
   const [loadingTopWorkers, setLoadingTopWorkers] = useState(true);
 
   useEffect(() => {
+    const fetchSeasons = async () => {
+      try {
+        const data = await getSeasons();
+        setSeasons(data || []);
+      } catch (error) {
+        console.error('Error fetching seasons:', error);
+      }
+    };
+    fetchSeasons();
+  }, []);
+
+  useEffect(() => {
     const fetchStats = async () => {
       try {
         setLoading(true);
-        const data = await getDashboardStats();
+        const data = await getDashboardStats(undefined, undefined, selectedSeason || undefined);
         setStats(data);
       } catch (error) {
         console.error('Error fetching dashboard stats:', error);
@@ -48,7 +62,7 @@ const Dashboard: React.FC = () => {
       }
     };
     fetchStats();
-  }, []);
+  }, [selectedSeason]);
 
   useEffect(() => {
     const fetchCashFlow = async () => {
@@ -150,7 +164,20 @@ const Dashboard: React.FC = () => {
             <span>Tháng hiện tại</span>
           </div>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-3 bg-white border border-slate-200 px-4 py-2 rounded-xl shadow-sm">
+            <span className="material-symbols-outlined text-slate-400 text-[20px]">filter_list</span>
+            <select
+              value={selectedSeason}
+              onChange={(e) => setSelectedSeason(e.target.value)}
+              className="bg-transparent border-none outline-none font-bold text-sm text-slate-700 cursor-pointer min-w-[150px]"
+            >
+              <option value="">Tất cả mùa vụ</option>
+              {seasons.map(s => (
+                <option key={s.id} value={s.id}>{s.season_name}</option>
+              ))}
+            </select>
+          </div>
           <button className="bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-bold transition-all hover:bg-slate-50 flex items-center gap-2">
             <span className="material-symbols-outlined text-[20px]">file_download</span>
             Xuất báo cáo

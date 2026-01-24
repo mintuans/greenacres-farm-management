@@ -6,11 +6,12 @@ import * as dashboardService from '../../services/dashboard.service';
  */
 export const getDashboardStats = async (req: Request, res: Response): Promise<any> => {
     try {
-        const { start_date, end_date } = req.query;
+        const { start_date, end_date, season_id } = req.query;
 
         const stats = await dashboardService.getDashboardStats(
             start_date as string,
-            end_date as string
+            end_date as string,
+            season_id as string
         );
 
         return res.json({ success: true, data: stats });

@@ -219,7 +219,7 @@ const ManagementProducts: React.FC = () => {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-600">{product.category_name}</td>
-                                    <td className="px-6 py-4 text-sm text-gray-900">{product.price.toLocaleString('vi-VN')}đ</td>
+                                    <td className="px-6 py-4 text-sm text-gray-900">{Number(product.price).toLocaleString('vi-VN')}đ</td>
                                     <td className="px-6 py-4 text-sm text-gray-900">{product.stock_quantity} {product.unit_of_measure}</td>
                                     <td className="px-6 py-4 text-sm">
                                         <span className={`px-2 py-1 rounded-full text-xs font-bold ${product.status === 'PUBLISHED' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'

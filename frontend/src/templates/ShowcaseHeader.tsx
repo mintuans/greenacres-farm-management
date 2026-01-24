@@ -98,7 +98,6 @@ const ShowcaseHeader: React.FC<ShowcaseHeaderProps> = ({
                 >
                     <div className="hidden lg:flex flex-col items-end">
                         <span className="text-sm font-semibold text-slate-700 leading-none group-hover:text-[#13ec49] transition-colors">{displayName}</span>
-                        <span className="text-[10px] text-slate-400 font-medium">{user?.role ? (user.role.charAt(0).toUpperCase() + user.role.slice(1)) : 'Khách'}</span>
                     </div>
                     <div className="size-10 rounded-full border-2 border-[#13ec49] p-0.5 shadow-sm overflow-hidden group-hover:scale-110 transition-all">
                         <img

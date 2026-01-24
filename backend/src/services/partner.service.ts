@@ -40,7 +40,7 @@ export const createPartner = async (data: CreatePartnerInput): Promise<Partner> 
 
 // Lấy danh sách đối tác
 export const getPartners = async (type?: string): Promise<Partner[]> => {
-    let query = 'SELECT * FROM partners';
+    let query = 'SELECT id, partner_code, partner_name, type, phone, address, current_balance, created_at FROM partners';
     const values: any[] = [];
 
     if (type) {
@@ -56,7 +56,7 @@ export const getPartners = async (type?: string): Promise<Partner[]> => {
 
 // Lấy đối tác theo ID
 export const getPartnerById = async (id: string): Promise<Partner | null> => {
-    const query = 'SELECT * FROM partners WHERE id = $1';
+    const query = 'SELECT id, partner_code, partner_name, type, phone, address, current_balance, created_at FROM partners WHERE id = $1';
     const result = await pool.query(query, [id]);
     return result.rows[0] || null;
 };

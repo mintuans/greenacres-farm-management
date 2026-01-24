@@ -22,7 +22,11 @@ export interface Transaction {
 
 export const getTransactions = async (month?: number, year?: number, seasonId?: string): Promise<Transaction[]> => {
     let query = `
-        SELECT t.*, p.partner_name, c.category_name, c.category_code, s.season_name
+        SELECT 
+            t.id, t.partner_id, t.season_id, t.category_id, t.amount, t.paid_amount, 
+            t.type, t.transaction_date, t.note, t.is_inventory_affected,
+            t.quantity, t.unit, t.unit_price,
+            p.partner_name, c.category_name, c.category_code, s.season_name
         FROM transactions t
         LEFT JOIN partners p ON t.partner_id = p.id
         LEFT JOIN categories c ON t.category_id = c.id
@@ -53,7 +57,14 @@ export const getTransactions = async (month?: number, year?: number, seasonId?: 
 };
 
 export const getTransactionById = async (id: string): Promise<Transaction | null> => {
-    const query = 'SELECT * FROM transactions WHERE id = $1';
+    const query = `
+        SELECT 
+            id, partner_id, season_id, category_id, amount, paid_amount, 
+            type, transaction_date, note, is_inventory_affected,
+            quantity, unit, unit_price
+        FROM transactions 
+        WHERE id = $1
+    `;
     const result = await pool.query(query, [id]);
     return result.rows[0] || null;
 };

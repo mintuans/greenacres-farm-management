@@ -5,9 +5,7 @@ export interface PostCommentDTO {
     commentable_id: string;
     content: string;
     rating: number;
-    parent_id?: number | null;
-    commenter_name: string;
-    commenter_email: string;
+    parent_id?: string | null;
 }
 
 export const getComments = async (type: string, id: string) => {
@@ -22,10 +20,26 @@ export const createComment = async (data: PostCommentDTO) => {
     return response.data;
 };
 
-export const addReaction = async (commentId: number, reactionType: string, sessionId: string) => {
+export const addReaction = async (commentId: string, reactionType: string) => {
     const response = await api.post(`/showcase/comments/${commentId}/reactions`, {
-        reaction_type: reactionType,
-        session_id: sessionId
+        reaction_type: reactionType
     });
+    return response.data;
+};
+
+export const deleteComment = async (commentId: string) => {
+    const response = await api.delete(`/showcase/comments/${commentId}`);
+    return response.data;
+};
+
+export const getCommentStats = async (type: string, id: string) => {
+    const response = await api.get('/showcase/comments/stats', {
+        params: { commentable_type: type, commentable_id: id }
+    });
+    return response.data;
+};
+
+export const getReactionDetails = async (commentId: string) => {
+    const response = await api.get(`/showcase/comments/${commentId}/reactions`);
     return response.data;
 };

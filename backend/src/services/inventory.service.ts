@@ -19,7 +19,11 @@ export interface InventoryItem {
 // Lấy danh sách vật tư (kèm tên danh mục)
 export const getInventory = async (categoryId?: string): Promise<InventoryItem[]> => {
     let query = `
-        SELECT i.*, c.category_name 
+        SELECT 
+            i.id, i.inventory_code, i.inventory_name, i.category_id, 
+            i.unit_of_measure, i.stock_quantity, i.min_stock_level, 
+            i.last_import_price, i.import_date, i.thumbnail_id, i.note, i.created_at,
+            c.category_name 
         FROM inventory i
         LEFT JOIN categories c ON i.category_id = c.id
         WHERE 1=1
@@ -38,7 +42,14 @@ export const getInventory = async (categoryId?: string): Promise<InventoryItem[]
 
 // Lấy chi tiết vật tư
 export const getInventoryItemById = async (id: string): Promise<InventoryItem | null> => {
-    const query = 'SELECT * FROM inventory WHERE id = $1';
+    const query = `
+        SELECT 
+            id, inventory_code, inventory_name, category_id, 
+            unit_of_measure, stock_quantity, min_stock_level, 
+            last_import_price, import_date, thumbnail_id, note, created_at
+        FROM inventory 
+        WHERE id = $1
+    `;
     const result = await pool.query(query, [id]);
     return result.rows[0] || null;
 };

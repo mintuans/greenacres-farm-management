@@ -13,11 +13,16 @@ export interface WorkSchedule {
     job_name?: string;
     season_id?: string;
     season_name?: string;
+    has_payroll?: boolean;
 }
 
 export const getWorkSchedules = async (): Promise<WorkSchedule[]> => {
     const query = `
-        SELECT ws.*, p.partner_name, s.shift_name, j.job_name, sn.season_name
+        SELECT ws.*, p.partner_name, s.shift_name, j.job_name, sn.season_name,
+               EXISTS (
+                   SELECT 1 FROM daily_work_logs l 
+                   WHERE l.schedule_id = ws.id AND l.payroll_id IS NOT NULL
+               ) as has_payroll
         FROM work_schedules ws
         LEFT JOIN partners p ON ws.partner_id = p.id
         LEFT JOIN work_shifts s ON ws.shift_id = s.id
@@ -81,6 +86,20 @@ export const updateWorkSchedule = async (id: string, data: any): Promise<WorkSch
 };
 
 export const deleteWorkSchedule = async (id: string): Promise<boolean> => {
+    // Kiểm tra xem lịch này đã được dùng để tính lương chưa
+    // Lịch -> Nhật ký (logs) -> Phiếu lương (payroll_id)
+    const checkQuery = `
+        SELECT l.id 
+        FROM daily_work_logs l
+        WHERE l.schedule_id = $1 AND l.payroll_id IS NOT NULL
+        LIMIT 1
+    `;
+    const checkResult = await pool.query(checkQuery, [id]);
+
+    if (checkResult.rows.length > 0) {
+        throw new Error('Không thể xóa lịch làm việc này vì đã được tính lương. Vui lòng xóa phiếu lương liên quan trước.');
+    }
+
     const query = 'DELETE FROM work_schedules WHERE id = $1';
     const result = await pool.query(query, [id]);
     return (result.rowCount ?? 0) > 0;

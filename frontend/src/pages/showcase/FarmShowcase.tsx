@@ -1,8 +1,9 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { io } from 'socket.io-client';
 import { getMediaFiles, getFarmImages } from '../../services/media.service';
 import { getMediaUrl } from '../../services/products.service';
-import { getComments, createComment, addReaction } from '../../services/comments.service';
+import { getComments, createComment, addReaction, deleteComment, getCommentStats, getReactionDetails } from '../../services/comments.service';
 import { incrementVisitors, getVisitorCount } from '../../services/stats.service';
 import ShowcaseHeader from '../../templates/ShowcaseHeader';
 import { useAuth } from '@/src/contexts/AuthContext';
@@ -10,20 +11,21 @@ import { WeatherWidget } from '../../components';
 
 interface CommentItemProps {
     comment: any;
-    replyingTo: number | null;
-    setReplyingTo: (id: number | null) => void;
+    replyingTo: string | null;
+    setReplyingTo: (id: string | null) => void;
     replyContent: string;
     setReplyContent: (content: string) => void;
-    handleSubmitReply: (parentId: number) => void;
+    handleSubmitReply: (parentId: string) => void;
     isSubmitting: boolean;
-    handleReaction: (id: number, type: string) => void;
+    handleReaction: (id: string, type: string) => void;
     user: any;
     depth?: number;
+    onShowReactions: (commentId: string) => void;
 }
 
 const CommentItem: React.FC<CommentItemProps> = ({
     comment, replyingTo, setReplyingTo, replyContent, setReplyContent,
-    handleSubmitReply, isSubmitting, handleReaction, user, depth = 0
+    handleSubmitReply, isSubmitting, handleReaction, handleDelete, user, onShowReactions, depth = 0
 }) => {
     const isRoot = depth === 0;
     const emojiMap: any = { like: '👍', love: '❤️', haha: '😂', wow: '😮', sad: '😢', angry: '😡' };
@@ -60,7 +62,10 @@ const CommentItem: React.FC<CommentItemProps> = ({
 
                     {/* Floating Reactions Display */}
                     {comment.likes > 0 && (
-                        <div className="absolute -bottom-3 right-4 flex bg-white px-2 py-0.5 rounded-full shadow-md border border-gray-100 gap-1 text-[11px] animate-in zoom-in duration-300">
+                        <div
+                            className="absolute -bottom-3 right-4 flex bg-white px-2 py-0.5 rounded-full shadow-md border border-gray-100 gap-1 text-[11px] animate-in zoom-in duration-300 cursor-pointer hover:scale-110 hover:shadow-lg transition-all z-10"
+                            onClick={() => onShowReactions(comment.id)}
+                        >
                             {(comment.reactions || []).map((r: string, idx: number) => <span key={idx}>{r}</span>)}
                             <span className="text-gray-500 ml-1 font-bold">{comment.likes}</span>
                         </div>
@@ -106,6 +111,20 @@ const CommentItem: React.FC<CommentItemProps> = ({
                             className="text-[10px] font-bold text-primary hover:underline ml-2"
                         >
                             Xem thêm {replyCount} phản hồi...
+                        </button>
+                    )}
+
+                    {(user?.id === comment.user_id || user?.role === 'SUPER_ADMIN') && (
+                        <button
+                            onClick={() => {
+                                if (confirm('Bạn có chắc muốn xóa bình luận này?')) {
+                                    handleDelete(comment.id);
+                                }
+                            }}
+                            className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-bold text-red-400 hover:text-red-600 flex items-center gap-1"
+                        >
+                            <span className="material-symbols-outlined text-[14px]">delete</span>
+                            Xóa
                         </button>
                     )}
                 </div>
@@ -157,7 +176,9 @@ const CommentItem: React.FC<CommentItemProps> = ({
                                 handleSubmitReply={handleSubmitReply}
                                 isSubmitting={isSubmitting}
                                 handleReaction={handleReaction}
+                                handleDelete={handleDelete}
                                 user={user}
+                                onShowReactions={onShowReactions}
                                 depth={depth + 1}
                             />
                         ))}
@@ -191,15 +212,20 @@ const FarmShowcase: React.FC = () => {
 
     // Comments logic state
     const [comments, setComments] = React.useState<any[]>([]);
+    const [commentStats, setCommentStats] = React.useState({ total_count: 0, avg_rating: 0 });
     const [newComment, setNewComment] = React.useState('');
     const [rating, setRating] = React.useState(5);
     const [isSubmitting, setIsSubmitting] = React.useState(false);
-    const [replyingTo, setReplyingTo] = React.useState<number | null>(null);
+    const [replyingTo, setReplyingTo] = React.useState<string | null>(null);
     const [replyContent, setReplyContent] = React.useState('');
+    const [reactionDetails, setReactionDetails] = React.useState<any[]>([]);
+    const [showReactionModal, setShowReactionModal] = React.useState(false);
     const { user } = useAuth();
     const navigate = useNavigate();
+    const socketRef = React.useRef<any>(null);
 
-    const FARM_ID = 'farm-001'; // Unique ID for this farm showcase
+    const FARM_ID = 'farm-001';
+    const ROOM_NAME = `farm-${FARM_ID}`;
 
     const fetchStats = async () => {
         try {
@@ -231,8 +257,14 @@ const FarmShowcase: React.FC = () => {
 
     const fetchComments = async () => {
         try {
-            const response = await getComments('FARM', FARM_ID);
-            const rawComments = response.data;
+            const [commentsResponse, statsResponse] = await Promise.all([
+                getComments('FARM', FARM_ID),
+                getCommentStats('FARM', FARM_ID)
+            ]);
+
+            setCommentStats(statsResponse.data);
+
+            const rawComments = commentsResponse.data;
             const tree: any[] = [];
             const map = new Map();
 
@@ -240,8 +272,8 @@ const FarmShowcase: React.FC = () => {
             rawComments.forEach((c: any) => {
                 map.set(c.id, {
                     ...c,
-                    user: c.commenter_name || 'Khách',
-                    avatar: `https://i.pravatar.cc/150?u=${c.id}`,
+                    user: c.user_name || c.commenter_name || 'Khách',
+                    avatar: c.avatar_id ? getMediaUrl(c.avatar_id) : `https://ui-avatars.com/api/?name=${encodeURIComponent(c.user_name || 'Khách')}&background=13ec49&color=fff`,
                     time: new Date(c.created_at).toLocaleDateString('vi-VN'),
                     likes: parseInt(c.reaction_count) || 0,
                     reactions: (c.reaction_types || []).map((type: string) => emojiMap[type] || '👍'),
@@ -263,6 +295,113 @@ const FarmShowcase: React.FC = () => {
         }
     };
 
+    const updateStats = async () => {
+        try {
+            const response = await getCommentStats('FARM', FARM_ID);
+            setCommentStats(response.data);
+        } catch (error) {
+            console.error('Error updating stats:', error);
+        }
+    };
+
+    // Socket.io initialization
+    React.useEffect(() => {
+        // Kết nối socket
+        const socket = io('http://localhost:3000'); // Cần đổi thành URL backend nếu deploy
+        socketRef.current = socket;
+
+        socket.on('connect', () => {
+            console.log('✅ Connected to Real-time server');
+            socket.emit('join_comment_room', ROOM_NAME);
+        });
+
+        // Lắng nghe bình luận mới
+        socket.on('new_comment', (comment: any) => {
+            updateStats();
+            setComments(prev => {
+                // Kiểm tra xem bình luận đã tồn tại chưa (để tránh lặp khi chính người gửi nhận được socket)
+                const exists = (nodes: any[]): boolean => {
+                    for (const node of nodes) {
+                        if (node.id === comment.id) return true;
+                        if (node.replies?.length > 0 && exists(node.replies)) return true;
+                    }
+                    return false;
+                };
+
+                if (exists(prev)) return prev;
+
+                const emojiMap: any = { like: '👍', love: '❤️', haha: '😂', wow: '😮', sad: '😢', angry: '😡' };
+                const formatted = {
+                    ...comment,
+                    user: comment.user_name || 'Khách',
+                    avatar: comment.avatar_id ? getMediaUrl(comment.avatar_id) : `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.user_name || 'Khách')}&background=13ec49&color=fff`,
+                    time: 'Vừa xong',
+                    likes: 0,
+                    reactions: [],
+                    replies: []
+                };
+
+                if (comment.parent_id) {
+                    // Cập nhật reply vào cây
+                    const updateTree = (nodes: any[]): any[] => {
+                        return nodes.map(node => {
+                            if (node.id === comment.parent_id) {
+                                // Tránh lặp trong mảng replies
+                                if (node.replies.some((r: any) => r.id === comment.id)) return node;
+                                return { ...node, replies: [...(node.replies || []), formatted] };
+                            }
+                            if (node.replies?.length > 0) {
+                                return { ...node, replies: updateTree(node.replies) };
+                            }
+                            return node;
+                        });
+                    };
+                    return updateTree(prev);
+                }
+                return [formatted, ...prev];
+            });
+        });
+
+        // Lắng nghe cập nhật reaction
+        socket.on('update_reaction', (data: any) => {
+            const emojiMap: any = { like: '👍', love: '❤️', haha: '😂', wow: '😮', sad: '😢', angry: '😡' };
+            const updateReactionInTree = (nodes: any[]): any[] => {
+                return nodes.map(node => {
+                    if (node.id === data.comment_id) {
+                        return {
+                            ...node,
+                            likes: parseInt(data.reaction_count),
+                            reactions: (data.reaction_types || []).map((t: string) => emojiMap[t] || '👍')
+                        };
+                    }
+                    if (node.replies?.length > 0) {
+                        return { ...node, replies: updateReactionInTree(node.replies) };
+                    }
+                    return node;
+                });
+            };
+            setComments(prev => updateReactionInTree(prev));
+        });
+
+        // Lắng nghe sự kiện xóa
+        socket.on('delete_comment', (data: any) => {
+            updateStats();
+            const deleteInTree = (nodes: any[]): any[] => {
+                return nodes
+                    .filter(node => node.id !== data.id)
+                    .map(node => ({
+                        ...node,
+                        replies: node.replies ? deleteInTree(node.replies) : []
+                    }));
+            };
+            setComments(prev => deleteInTree(prev));
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, []);
+
     const handleSubmitComment = async () => {
         // Kiểm tra đăng nhập
         if (!user) {
@@ -275,17 +414,29 @@ const FarmShowcase: React.FC = () => {
         if (!newComment.trim()) return;
         setIsSubmitting(true);
         try {
-            await createComment({
-                commentable_type: 'FARM',
-                commentable_id: FARM_ID,
+            const response = await createComment({
                 content: newComment,
                 rating: rating,
-                commenter_name: user.name,
-                commenter_email: user.email
+                commentable_type: 'FARM',
+                commentable_id: FARM_ID
             });
+
+            // Cập nhật UI ngay lập tức cho người gửi
+            const comment = response.data;
+            const formatted = {
+                ...comment,
+                user: user?.full_name || 'Tôi',
+                avatar: comment.avatar_id ? getMediaUrl(comment.avatar_id) : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.full_name || 'Tôi')}&background=13ec49&color=fff`,
+                time: 'Vừa xong',
+                likes: 0,
+                reactions: [],
+                replies: []
+            };
+            setComments(prev => [formatted, ...prev]);
+            updateStats();
+
             setNewComment('');
-            setRating(0);
-            fetchComments();
+            setRating(5);
         } catch (error) {
             console.error('Error posting comment:', error);
             alert('Có lỗi khi gửi bình luận. Vui lòng thử lại!');
@@ -294,7 +445,7 @@ const FarmShowcase: React.FC = () => {
         }
     };
 
-    const handleSubmitReply = async (parentId: number) => {
+    const handleSubmitReply = async (parentId: string) => {
         // Kiểm tra đăng nhập
         if (!user) {
             if (confirm('Bạn cần đăng nhập để phản hồi. Chuyển đến trang đăng nhập?')) {
@@ -306,18 +457,42 @@ const FarmShowcase: React.FC = () => {
         if (!replyContent.trim()) return;
         setIsSubmitting(true);
         try {
-            await createComment({
+            const response = await createComment({
                 commentable_type: 'FARM',
                 commentable_id: FARM_ID,
                 content: replyContent,
                 parent_id: parentId,
-                rating: 5, // Default rating for replies
-                commenter_name: user?.name,
-                commenter_email: user?.email
+                rating: 5
             });
+
+            // Cập nhật UI ngay lập tức
+            const comment = response.data;
+            const formatted = {
+                ...comment,
+                user: user?.full_name || 'Tôi',
+                avatar: comment.avatar_id ? getMediaUrl(comment.avatar_id) : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.full_name || 'Tôi')}&background=13ec49&color=fff`,
+                time: 'Vừa xong',
+                likes: 0,
+                reactions: [],
+                replies: []
+            };
+
+            const updateTree = (nodes: any[]): any[] => {
+                return nodes.map(node => {
+                    if (node.id === parentId) {
+                        return { ...node, replies: [...(node.replies || []), formatted] };
+                    }
+                    if (node.replies?.length > 0) {
+                        return { ...node, replies: updateTree(node.replies) };
+                    }
+                    return node;
+                });
+            };
+            setComments(prev => updateTree(prev));
+            updateStats();
+
             setReplyContent('');
             setReplyingTo(null);
-            fetchComments();
         } catch (error) {
             console.error('Error posting reply:', error);
             alert('Có lỗi khi gửi phản hồi. Vui lòng thử lại!');
@@ -326,7 +501,39 @@ const FarmShowcase: React.FC = () => {
         }
     };
 
-    const handleReaction = async (commentId: number, type: string) => {
+    const handleDeleteComment = async (id: string) => {
+        try {
+            await deleteComment(id);
+
+            // Cập nhật UI ngay lập tức cho người thực hiện
+            const deleteInTree = (nodes: any[]): any[] => {
+                return nodes
+                    .filter(node => node.id !== id)
+                    .map(node => ({
+                        ...node,
+                        replies: node.replies ? deleteInTree(node.replies) : []
+                    }));
+            };
+
+            setComments(prev => deleteInTree(prev));
+            updateStats();
+        } catch (error) {
+            console.error('Error deleting comment:', error);
+            alert('Không thể xóa bình luận này.');
+        }
+    };
+
+    const handleShowReactions = async (commentId: string) => {
+        try {
+            const response = await getReactionDetails(commentId);
+            setReactionDetails(response.data);
+            setShowReactionModal(true);
+        } catch (error) {
+            console.error('Error fetching reaction details:', error);
+        }
+    };
+
+    const handleReaction = async (commentId: string, type: string) => {
         // Kiểm tra đăng nhập
         if (!user) {
             if (confirm('Bạn cần đăng nhập để bày tỏ cảm xúc. Chuyển đến trang đăng nhập?')) {
@@ -336,12 +543,36 @@ const FarmShowcase: React.FC = () => {
         }
 
         try {
-            const sessionId = localStorage.getItem('guest_session_id') || Math.random().toString(36).substring(7);
-            localStorage.setItem('guest_session_id', sessionId);
-            await addReaction(commentId, type, user.id); // Trình duyệt gửi user.id thay vì sessionId nếu đã đăng nhập
-            fetchComments();
-        } catch (error) {
+            await addReaction(commentId, type);
+
+            // Cập nhật UI ngay lập tức
+            const emojiMap: any = { like: '👍', love: '❤️', haha: '😂', wow: '😮', sad: '😢', angry: '😡' };
+            const updateReactionInTree = (nodes: any[]): any[] => {
+                return nodes.map(node => {
+                    if (node.id === commentId) {
+                        // Lưu ý: Đây là cập nhật tạm thời phía client, socket sẽ gửi về số lượng chuẩn xác nhất
+                        const currentReactions = node.reactions || [];
+                        const icon = emojiMap[type] || '👍';
+                        return {
+                            ...node,
+                            likes: (node.likes || 0) + (currentReactions.includes(icon) ? 0 : 1),
+                            reactions: Array.from(new Set([...currentReactions, icon]))
+                        };
+                    }
+                    if (node.replies?.length > 0) {
+                        return { ...node, replies: updateReactionInTree(node.replies) };
+                    }
+                    return node;
+                });
+            };
+            setComments(prev => updateReactionInTree(prev));
+        } catch (error: any) {
             console.error('Error adding reaction:', error);
+            if (error.response?.status === 403) {
+                alert('Bạn không có quyền bày tỏ cảm xúc. Vui lòng kiểm tra lại quyền hạn.');
+            } else {
+                alert('Không thể thực hiện. Vui lòng thử lại sau.');
+            }
         }
     };
 
@@ -692,15 +923,18 @@ const FarmShowcase: React.FC = () => {
                                         </div>
                                         <div className="flex items-center gap-2 bg-white px-3 py-1 rounded-full border border-gray-100 shadow-sm">
                                             <span className="text-[#f59e0b] material-symbols-outlined fill-1">star</span>
-                                            <span className="font-bold text-[#111813]">4.9</span>
-                                            <span className="text-gray-400 text-xs">(128 đánh giá)</span>
+                                            <span className="font-bold text-[#111813]">{commentStats.avg_rating || '0.0'}</span>
+                                            <span className="text-gray-400 text-xs">({commentStats.total_count} đánh giá)</span>
                                         </div>
                                     </div>
 
                                     {/* Add Comment Input */}
                                     <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex gap-4">
                                         <div className="size-10 rounded-full bg-gray-100 shrink-0 overflow-hidden border">
-                                            <img src="https://i.pravatar.cc/150?u=me" alt="Me" />
+                                            <img
+                                                src={user?.avatar_id ? getMediaUrl(user.avatar_id) : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.full_name || 'Me')}&background=13ec49&color=fff`}
+                                                alt="Me"
+                                            />
                                         </div>
                                         <div className="flex-1 flex flex-col gap-3">
                                             <textarea
@@ -746,151 +980,219 @@ const FarmShowcase: React.FC = () => {
                                                 handleSubmitReply={handleSubmitReply}
                                                 isSubmitting={isSubmitting}
                                                 handleReaction={handleReaction}
+                                                handleDelete={handleDeleteComment}
+                                                onShowReactions={handleShowReactions}
                                                 user={user}
                                             />
                                         ))}
-
-                                        {comments.length > visibleCommentsCount && (
-                                            <button
-                                                onClick={() => setVisibleCommentsCount(prev => prev + 5)}
-                                                className="w-full py-3 bg-white border border-gray-100 rounded-xl text-primary font-bold text-sm hover:bg-primary/5 transition-all shadow-sm flex items-center justify-center gap-2 mt-4"
-                                            >
-                                                <span className="material-symbols-outlined text-[18px]">expand_more</span>
-                                                Xem thêm {comments.length - visibleCommentsCount} bình luận...
-                                            </button>
-                                        )}
-
-                                        {visibleCommentsCount > 3 && (
-                                            <button
-                                                onClick={() => setVisibleCommentsCount(3)}
-                                                className="text-center text-xs text-gray-400 hover:text-primary transition-colors py-2"
-                                            >
-                                                Thu gọn bình luận
-                                            </button>
-                                        )}
                                     </div>
-                                </div>
-                            </div>
 
-                            {/* Right Column: Gallery Grid & Contact */}
-                            <div className="flex flex-col gap-6">
-
-                                <div className="bg-white p-5 rounded-2xl border border-[#dbe6de] shadow-sm">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <h3 className="text-lg font-bold text-[#111813]">Hình ảnh của vườn {totalFarmImagesCount > 0 && `(${totalFarmImagesCount})`}</h3>
-                                        <button
-                                            onClick={handleOpenGallery}
-                                            className="text-[#13ec49] hover:bg-[#13ec49]/10 p-1 rounded transition-colors flex items-center"
-                                        >
-                                            <span className="material-symbols-outlined">arrow_forward</span>
-                                        </button>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {[0, 1, 2, 3].map((index) => {
-                                            const media = farmImages[index];
-                                            const isLast = index === 3 && totalFarmImagesCount > 4;
-
-                                            return (
-                                                <div
-                                                    key={index}
-                                                    onClick={() => media && setSelectedMediaItem(media)}
-                                                    className="w-full aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-[#13ec49] transition-all relative group"
-                                                >
-                                                    {media ? (
-                                                        <>
-                                                            {media.mime_type?.startsWith('video/') ? (
-                                                                <div className="w-full h-full flex flex-col items-center justify-center bg-gray-800 text-white">
-                                                                    <span className="material-symbols-outlined text-3xl">movie</span>
-                                                                    <span className="text-[10px] mt-1">VIDEO</span>
+                                    {/* Reactions Details Modal */}
+                                    {showReactionModal && (
+                                        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+                                            <div
+                                                className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-5 duration-300"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-[#f8faf8]">
+                                                    <h3 className="text-lg font-bold text-[#111813] flex items-center gap-2">
+                                                        <span className="material-symbols-outlined text-primary">favorite</span>
+                                                        Cảm xúc dữ liệu
+                                                    </h3>
+                                                    <button
+                                                        onClick={() => setShowReactionModal(false)}
+                                                        className="size-8 rounded-full hover:bg-gray-200 flex items-center justify-center transition-colors"
+                                                    >
+                                                        <span className="material-symbols-outlined text-gray-400">close</span>
+                                                    </button>
+                                                </div>
+                                                <div className="max-h-[60vh] overflow-y-auto p-2">
+                                                    {reactionDetails.length > 0 ? (
+                                                        <div className="flex flex-col">
+                                                            {reactionDetails.map((react, i) => (
+                                                                <div key={i} className="flex items-center gap-4 p-3 hover:bg-[#f0f4f1] rounded-2xl transition-colors">
+                                                                    <div className="size-10 rounded-full bg-gray-200 shrink-0 overflow-hidden border-2 border-white shadow-sm">
+                                                                        <img
+                                                                            src={react.avatar_id ? getMediaUrl(react.avatar_id) : `https://ui-avatars.com/api/?name=${encodeURIComponent(react.user_name)}&background=13ec49&color=fff`}
+                                                                            alt={react.user_name}
+                                                                            className="w-full h-full object-cover"
+                                                                        />
+                                                                    </div>
+                                                                    <div className="flex-1">
+                                                                        <p className="font-bold text-sm text-[#111813]">{react.user_name}</p>
+                                                                    </div>
+                                                                    <div className="text-2xl drop-shadow-sm transform hover:scale-125 transition-transform">
+                                                                        {react.reaction_type === 'like' && '👍'}
+                                                                        {react.reaction_type === 'love' && '❤️'}
+                                                                        {react.reaction_type === 'haha' && '😂'}
+                                                                        {react.reaction_type === 'wow' && '😮'}
+                                                                        {react.reaction_type === 'sad' && '😢'}
+                                                                        {react.reaction_type === 'angry' && '😡'}
+                                                                    </div>
                                                                 </div>
-                                                            ) : (
-                                                                <div
-                                                                    className="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110"
-                                                                    style={{ backgroundImage: `url("${getMediaUrl(media.id)}")` }}
-                                                                ></div>
-                                                            )}
-                                                            {isLast && (
-                                                                <div
-                                                                    className="absolute inset-0 bg-black/60 flex items-center justify-center text-center z-20"
-                                                                    onClick={(e) => { e.stopPropagation(); handleOpenGallery(); }}
-                                                                >
-                                                                    <span className="text-white font-bold text-lg">+{totalFarmImagesCount - 4}</span>
-                                                                </div>
-                                                            )}
-                                                        </>
+                                                            ))}
+                                                        </div>
                                                     ) : (
-                                                        <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-300">
-                                                            <span className="material-symbols-outlined text-4xl">image</span>
+                                                        <div className="py-10 text-center text-gray-400">
+                                                            <span className="material-symbols-outlined text-4xl mb-2 opacity-20">sentiment_neutral</span>
+                                                            <p className="text-sm font-medium">Chưa có cảm xúc nào</p>
                                                         </div>
                                                     )}
                                                 </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-
-                                <WeatherWidget />
-
-                                {/* Location & Contact */}
-                                <div className="bg-white p-0 rounded-2xl border border-[#dbe6de] shadow-sm overflow-hidden flex flex-col">
-                                    <div className="h-64 bg-gray-200 relative">
-                                        <iframe
-                                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d981.1265571161107!2d106.2545571274932!3d10.38130837899188!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x310abb777529f873%3A0x5cb1dc2a4a25519e!2zTG9uZyDEkOG7i25oLCBUaMOgbmggcGjhu5EgTeG7uSBUaG8sIFRp4buBbiBHaWFuZywgVmnhu4d0IE5hbQ!5e0!3m2!1svi!2s!4v1768016922481!5m2!1svi!2s"
-                                            width="100%"
-                                            height="100%"
-                                            style={{ border: 0 }}
-                                            allowFullScreen={true}
-                                            loading="lazy"
-                                            referrerPolicy="no-referrer-when-downgrade"
-                                            title="Bản đồ vườn"
-                                        ></iframe>
-                                    </div>
-                                    <div className="p-5 flex flex-col gap-4">
-                                        <div>
-                                            <h3 className="text-lg font-bold text-[#111813] mb-1">Ghé thăm chúng tôi</h3>
-                                            <p className="text-[#61896b] text-sm">Đông Hòa, Thành phố Mỹ Tho, Tiền Giang, Việt Nam</p>
+                                                <div className="p-4 bg-[#f8faf8] border-t border-gray-100 flex justify-center">
+                                                    <button
+                                                        onClick={() => setShowReactionModal(false)}
+                                                        className="px-8 py-2 bg-primary text-white rounded-full font-bold text-sm shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-105 active:scale-95 transition-all"
+                                                    >
+                                                        Đóng
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div className="absolute inset-0 -z-10" onClick={() => setShowReactionModal(false)}></div>
                                         </div>
-                                        <div className="space-y-3">
-                                            <div className="flex items-center gap-3 text-sm">
-                                                <span className="material-symbols-outlined text-[#13ec49]">call</span>
-                                                <span className="text-[#111813]">0901 234 567</span>
-                                            </div>
-                                            <div className="flex items-center gap-3 text-sm">
-                                                <span className="material-symbols-outlined text-[#13ec49]">mail</span>
-                                                <span className="text-[#111813]">lmtuan21082003@gmail.com</span>
-                                            </div>
-                                            <div className="flex items-center gap-3 text-sm">
-                                                <span className="material-symbols-outlined text-[#13ec49]">schedule</span>
-                                                <span className="text-[#111813]">T2 - T7: 8:00 - 17:00</span>
-                                            </div>
-                                        </div>
-                                        <button className="w-full mt-2 py-2 rounded-lg bg-[#f0f4f1] text-[#111813] font-bold text-sm hover:bg-gray-200 transition-colors">
-                                            Chỉ đường
+                                    )}
+
+                                    {comments.length > visibleCommentsCount && (
+                                        <button
+                                            onClick={() => setVisibleCommentsCount(prev => prev + 5)}
+                                            className="w-full py-3 bg-white border border-gray-100 rounded-xl text-primary font-bold text-sm hover:bg-primary/5 transition-all shadow-sm flex items-center justify-center gap-2 mt-4"
+                                        >
+                                            <span className="material-symbols-outlined text-[18px]">expand_more</span>
+                                            Xem thêm {comments.length - visibleCommentsCount} bình luận...
                                         </button>
+                                    )}
+
+                                    {visibleCommentsCount > 3 && (
+                                        <button
+                                            onClick={() => setVisibleCommentsCount(3)}
+                                            className="text-center text-xs text-gray-400 hover:text-primary transition-colors py-2"
+                                        >
+                                            Thu gọn bình luận
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Right Column: Gallery Grid & Contact */}
+                        <div className="flex flex-col gap-6">
+
+                            <div className="bg-white p-5 rounded-2xl border border-[#dbe6de] shadow-sm">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-lg font-bold text-[#111813]">Hình ảnh của vườn {totalFarmImagesCount > 0 && `(${totalFarmImagesCount})`}</h3>
+                                    <button
+                                        onClick={handleOpenGallery}
+                                        className="text-[#13ec49] hover:bg-[#13ec49]/10 p-1 rounded transition-colors flex items-center"
+                                    >
+                                        <span className="material-symbols-outlined">arrow_forward</span>
+                                    </button>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {[0, 1, 2, 3].map((index) => {
+                                        const media = farmImages[index];
+                                        const isLast = index === 3 && totalFarmImagesCount > 4;
+
+                                        return (
+                                            <div
+                                                key={index}
+                                                onClick={() => media && setSelectedMediaItem(media)}
+                                                className="w-full aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-[#13ec49] transition-all relative group"
+                                            >
+                                                {media ? (
+                                                    <>
+                                                        {media.mime_type?.startsWith('video/') ? (
+                                                            <div className="w-full h-full flex flex-col items-center justify-center bg-gray-800 text-white">
+                                                                <span className="material-symbols-outlined text-3xl">movie</span>
+                                                                <span className="text-[10px] mt-1">VIDEO</span>
+                                                            </div>
+                                                        ) : (
+                                                            <div
+                                                                className="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110"
+                                                                style={{ backgroundImage: `url("${getMediaUrl(media.id)}")` }}
+                                                            ></div>
+                                                        )}
+                                                        {isLast && (
+                                                            <div
+                                                                className="absolute inset-0 bg-black/60 flex items-center justify-center text-center z-20"
+                                                                onClick={(e) => { e.stopPropagation(); handleOpenGallery(); }}
+                                                            >
+                                                                <span className="text-white font-bold text-lg">+{totalFarmImagesCount - 4}</span>
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-300">
+                                                        <span className="material-symbols-outlined text-4xl">image</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <WeatherWidget />
+
+                            {/* Location & Contact */}
+                            <div className="bg-white p-0 rounded-2xl border border-[#dbe6de] shadow-sm overflow-hidden flex flex-col">
+                                <div className="h-64 bg-gray-200 relative">
+                                    <iframe
+                                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d981.1265571161107!2d106.2545571274932!3d10.38130837899188!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x310abb777529f873%3A0x5cb1dc2a4a25519e!2zTG9uZyDEkOG7i25oLCBUaMOgbmggcGjhu5EgTeG7uSBUaG8sIFRp4buBbiBHaWFuZywgVmnhu4d0IE5hbQ!5e0!3m2!1svi!2s!4v1768016922481!5m2!1svi!2s"
+                                        width="100%"
+                                        height="100%"
+                                        style={{ border: 0 }}
+                                        allowFullScreen={true}
+                                        loading="lazy"
+                                        referrerPolicy="no-referrer-when-downgrade"
+                                        title="Bản đồ vườn"
+                                    ></iframe>
+                                </div>
+                                <div className="p-5 flex flex-col gap-4">
+                                    <div>
+                                        <h3 className="text-lg font-bold text-[#111813] mb-1">Ghé thăm chúng tôi</h3>
+                                        <p className="text-[#61896b] text-sm">Đông Hòa, Thành phố Mỹ Tho, Tiền Giang, Việt Nam</p>
                                     </div>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-3 text-sm">
+                                            <span className="material-symbols-outlined text-[#13ec49]">call</span>
+                                            <span className="text-[#111813]">0901 234 567</span>
+                                        </div>
+                                        <div className="flex items-center gap-3 text-sm">
+                                            <span className="material-symbols-outlined text-[#13ec49]">mail</span>
+                                            <span className="text-[#111813]">lmtuan21082003@gmail.com</span>
+                                        </div>
+                                        <div className="flex items-center gap-3 text-sm">
+                                            <span className="material-symbols-outlined text-[#13ec49]">schedule</span>
+                                            <span className="text-[#111813]">T2 - T7: 8:00 - 17:00</span>
+                                        </div>
+                                    </div>
+                                    <button className="w-full mt-2 py-2 rounded-lg bg-[#f0f4f1] text-[#111813] font-bold text-sm hover:bg-gray-200 transition-colors">
+                                        Chỉ đường
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                {/* Footer Copyright */}
+                <footer className="mt-auto border-t border-[#e5e9e6] bg-white py-8 px-10">
+                    <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-[#61896b] text-sm">
+                        <div className="flex items-center gap-2">
+                            <span className="material-symbols-outlined text-[#13ec49]">agriculture</span>
+                            <span className="font-bold text-[#111813]">GreenAcres</span>
+                            <span className="mx-2">|</span>
+                            <span>© {new Date().getFullYear()} Vườn Mận Lê Minh Tuấn. All rights reserved.</span>
+                        </div>
+                        <div className="flex gap-6">
+                            <a href="#" className="hover:text-[#13ec49] transition-colors">Chính sách bảo mật</a>
+                            <a href="#" className="hover:text-[#13ec49] transition-colors">Điều khoản dịch vụ</a>
+                            <a href="#" className="hover:text-[#13ec49] transition-colors">Liên hệ</a>
+                        </div>
+                    </div>
+                </footer>
             </div>
 
-            {/* Footer Copyright */}
-            <footer className="mt-auto border-t border-[#e5e9e6] bg-white py-8 px-10">
-                <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-[#61896b] text-sm">
-                    <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[#13ec49]">agriculture</span>
-                        <span className="font-bold text-[#111813]">GreenAcres</span>
-                        <span className="mx-2">|</span>
-                        <span>© {new Date().getFullYear()} Vườn Mận Lê Minh Tuấn. All rights reserved.</span>
-                    </div>
-                    <div className="flex gap-6">
-                        <a href="#" className="hover:text-[#13ec49] transition-colors">Chính sách bảo mật</a>
-                        <a href="#" className="hover:text-[#13ec49] transition-colors">Điều khoản dịch vụ</a>
-                        <a href="#" className="hover:text-[#13ec49] transition-colors">Liên hệ</a>
-                    </div>
-                </div>
-            </footer>
             {/* Full Gallery Modal */}
             {showGalleryModal && (
                 <div className="fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4 md:p-8 animate-in fade-in duration-300">
@@ -971,6 +1273,7 @@ const FarmShowcase: React.FC = () => {
                     </div>
                 </div>
             )}
+
             {/* Share Toast Notification */}
             {showToast && (
                 <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-[#111813] text-white px-6 py-3 rounded-full shadow-2xl z-[200] flex items-center gap-3 animate-in slide-in-from-bottom-5 duration-300">

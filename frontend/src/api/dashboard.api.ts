@@ -47,11 +47,12 @@ export interface TopWorker {
 /**
  * Lấy thống kê tổng quan Dashboard
  */
-export const getDashboardStats = async (startDate?: string, endDate?: string): Promise<DashboardStats> => {
+export const getDashboardStats = async (startDate?: string, endDate?: string, seasonId?: string): Promise<DashboardStats> => {
     const response = await api.get('/management/dashboard/stats', {
         params: {
             start_date: startDate,
-            end_date: endDate
+            end_date: endDate,
+            season_id: seasonId
         }
     });
     return response.data.data;

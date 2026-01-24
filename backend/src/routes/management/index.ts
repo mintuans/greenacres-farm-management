@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticate, checkSuperAdmin } from '../../middlewares/auth.middleware';
+import { authenticate } from '../../middlewares/auth.middleware';
 import productsRoutes from './products.routes';
 import mediaRoutes from './media.routes';
 import blogRoutes from './blog.routes';
@@ -29,10 +29,15 @@ import databaseBackupRoutes from '../database-backup.routes';
 
 const router = Router();
 
-// Áp dụng bảo vệ cho toàn bộ các route quản lý
-// Chỉ cho phép SUPER_ADMIN truy cập
+// Áp dụng bảo vệ cho các route quản lý
+// Cho phép SUPER_ADMIN hoặc người dùng có quyền quản lý (không phải role 'user')
 router.use(authenticate);
-router.use(checkSuperAdmin);
+router.use(async (req, res, next) => {
+    if (req.user?.role === 'SUPER_ADMIN' || (req.user?.role && req.user.role !== 'user')) {
+        return next();
+    }
+    return res.status(403).json({ success: false, message: 'Bạn không có quyền truy cập trang quản lý' });
+});
 
 router.use('/warehouse-items', warehouseRoutes);
 

@@ -79,8 +79,13 @@ const WorkSchedules: React.FC = () => {
 
     const handleDelete = async (id: string) => {
         if (confirm('Bạn có chắc muốn xóa kế hoạch làm việc này?')) {
-            await deleteWorkSchedule(id);
-            fetchData();
+            try {
+                await deleteWorkSchedule(id);
+                fetchData();
+            } catch (error: any) {
+                console.error('Error deleting schedule:', error);
+                alert(error.response?.data?.message || 'Không thể xóa kế hoạch này.');
+            }
         }
     };
 
@@ -239,30 +244,41 @@ const WorkSchedules: React.FC = () => {
                                         </td>
                                         <td className="px-8 py-5 text-right">
                                             <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                                                <button
-                                                    onClick={() => {
-                                                        setEditingItem(item);
-                                                        setFormData({
-                                                            partner_id: item.partner_id,
-                                                            shift_id: item.shift_id,
-                                                            job_type_id: item.job_type_id,
-                                                            work_date: new Date(item.work_date).toISOString().split('T')[0],
-                                                            status: item.status,
-                                                            note: item.note || '',
-                                                            season_id: item.season_id || ''
-                                                        });
-                                                        setShowModal(true);
-                                                    }}
-                                                    className="p-2.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
-                                                >
-                                                    <span className="material-symbols-outlined">edit</span>
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(item.id)}
-                                                    className="p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
-                                                >
-                                                    <span className="material-symbols-outlined">delete</span>
-                                                </button>
+                                                {item.has_payroll ? (
+                                                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-400 rounded-xl cursor-not-allowed" title="Đã tính lương, không thể sửa/xóa">
+                                                        <span className="material-symbols-outlined text-[18px]">lock</span>
+                                                        <span className="text-[10px] font-black uppercase">Đã tính lương</span>
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <button
+                                                            onClick={() => {
+                                                                setEditingItem(item);
+                                                                setFormData({
+                                                                    partner_id: item.partner_id,
+                                                                    shift_id: item.shift_id,
+                                                                    job_type_id: item.job_type_id,
+                                                                    work_date: new Date(item.work_date).toISOString().split('T')[0],
+                                                                    status: item.status,
+                                                                    note: item.note || '',
+                                                                    season_id: item.season_id || ''
+                                                                });
+                                                                setShowModal(true);
+                                                            }}
+                                                            className="p-2.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                                                            title="Sửa kế hoạch"
+                                                        >
+                                                            <span className="material-symbols-outlined">edit</span>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDelete(item.id)}
+                                                            className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                                            title="Xóa kế hoạch"
+                                                        >
+                                                            <span className="material-symbols-outlined">delete</span>
+                                                        </button>
+                                                    </>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
