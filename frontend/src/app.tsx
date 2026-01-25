@@ -27,8 +27,11 @@ import PayrollManagement from '@/src/pages/PayrollManagement';
 import FarmShowcase from '@/src/pages/showcase/FarmShowcase';
 import ShowcaseProducts from '@/src/pages/showcase/ShowcaseProducts';
 import ShowcaseEvents from '@/src/pages/showcase/ShowcaseEvents';
+import EventDetail from '@/src/pages/showcase/EventDetail';
 import ShowcaseBlog from '@/src/pages/showcase/ShowcaseBlog';
 import BlogDetail from '@/src/pages/showcase/BlogDetail';
+import PrivacyPolicy from '@/src/pages/showcase/PrivacyPolicy';
+import TermsOfService from '@/src/pages/showcase/TermsOfService';
 import UserProfile from '@/src/pages/UserProfile';
 
 // Management pages
@@ -69,8 +72,11 @@ const App: React.FC = () => {
                 <Route path="/showcase" element={<FarmShowcase />} />
                 <Route path="/showcase/products" element={<ShowcaseProducts />} />
                 <Route path="/showcase/events" element={<ShowcaseEvents />} />
+                <Route path="/showcase/events/:id" element={<EventDetail />} />
                 <Route path="/showcase/blog" element={<ShowcaseBlog />} />
                 <Route path="/showcase/blog/:slug" element={<BlogDetail />} />
+                <Route path="/showcase/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/showcase/terms-of-service" element={<TermsOfService />} />
                 <Route path="/profile" element={<UserProfile />} />
 
                 {/* Admin Routes - With Sidebar/Header */}

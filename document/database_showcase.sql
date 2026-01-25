@@ -301,7 +301,18 @@ CREATE TABLE comments (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP
 );
-
+DO $$
+BEGIN
+    -- Kiểm tra nếu constraint chưa tồn tại thì mới thêm
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint 
+        WHERE conname = 'comment_reactions_comment_id_user_id_key'
+    ) THEN
+        ALTER TABLE comment_reactions 
+        ADD CONSTRAINT comment_reactions_comment_id_user_id_key 
+        UNIQUE (comment_id, user_id);
+    END IF;
+END $$;
 -- 14. Bảng cảm xúc/reactions
 CREATE TABLE comment_reactions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

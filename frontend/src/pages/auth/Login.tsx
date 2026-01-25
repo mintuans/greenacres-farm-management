@@ -181,10 +181,9 @@ const Login: React.FC = () => {
 
             {/* Premium Footer */}
             <footer className="py-10 text-center relative z-10">
-                <div className="flex justify-center gap-8 mb-4">
-                    <a className="text-[10px] font-black text-[#61896b] uppercase tracking-widest hover:text-[#13ec49] transition-colors" href="#">Chính sách</a>
-                    <a className="text-[10px] font-black text-[#61896b] uppercase tracking-widest hover:text-[#13ec49] transition-colors" href="#">Điều khoản</a>
-                    <a className="text-[10px] font-black text-[#61896b] uppercase tracking-widest hover:text-[#13ec49] transition-colors" href="#">Trợ giúp</a>
+                <div className="flex justify-center gap-8 mb-4 font-black">
+                    <Link className="text-[10px] text-[#61896b] uppercase tracking-widest hover:text-[#13ec49] transition-colors" to="/showcase/privacy-policy">Chính sách</Link>
+                    <Link className="text-[10px] text-[#61896b] uppercase tracking-widest hover:text-[#13ec49] transition-colors" to="/showcase/terms-of-service">Điều khoản</Link>
                 </div>
                 <p className="text-[#61896b] text-[10px] font-bold opacity-50 italic">© 2024 GreenAcres Management Solutions. Empowering modern farming.</p>
             </footer>

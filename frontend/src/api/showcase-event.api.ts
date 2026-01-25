@@ -69,6 +69,15 @@ export const createGuest = async (data: Partial<Guest>): Promise<Guest> => {
     return response.data.data;
 };
 
+export const updateGuest = async (id: string, data: Partial<Guest>): Promise<Guest> => {
+    const response = await api.put(`/management/showcase-events/guests/${id}`, data);
+    return response.data.data;
+};
+
+export const deleteGuest = async (id: string): Promise<void> => {
+    await api.delete(`/management/showcase-events/guests/${id}`);
+};
+
 // Participants
 export const addParticipant = async (data: {
     event_id: string;

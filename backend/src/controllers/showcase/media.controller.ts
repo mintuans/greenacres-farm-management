@@ -39,3 +39,32 @@ export const getFarmImages = async (req: Request, res: Response): Promise<any> =
         return res.status(500).json({ success: false, error: error.message });
     }
 };
+
+/**
+ * Phục vụ ảnh trực tiếp (Binary Stream)
+ * Dùng cho <img src="/api/showcase/media/raw/ID" />
+ */
+export const getMediaResource = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { id } = req.params;
+
+        const result = await pool.query(`
+            SELECT image_data, image_type
+            FROM media_files
+            WHERE id = $1 AND deleted_at IS NULL
+        `, [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).send('Not found');
+        }
+
+        const media = result.rows[0];
+
+        res.setHeader('Content-Type', media.image_type || 'image/jpeg');
+        res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache 1 năm
+        return res.send(media.image_data);
+    } catch (error: any) {
+        console.error('Error in getMediaResource:', error);
+        return res.status(500).send('Server Error');
+    }
+};

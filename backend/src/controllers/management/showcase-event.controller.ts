@@ -75,6 +75,28 @@ export const createGuest = async (req: Request, res: Response): Promise<any> => 
     }
 };
 
+export const updateGuest = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { id } = req.params;
+        const guest = await showcaseEventService.updateGuest(id, req.body);
+        if (!guest) return res.status(404).json({ success: false, message: 'Guest not found' });
+        return res.json({ success: true, data: guest });
+    } catch (error: any) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+export const deleteGuest = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { id } = req.params;
+        const deleted = await showcaseEventService.deleteGuest(id);
+        if (!deleted) return res.status(404).json({ success: false, message: 'Guest not found' });
+        return res.json({ success: true, message: 'Guest deleted successfully' });
+    } catch (error: any) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 // --- Participants ---
 export const addParticipant = async (req: Request, res: Response): Promise<any> => {
     try {

@@ -155,7 +155,7 @@ const ManagementProducts: React.FC = () => {
         <div className="p-6">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold text-[#111813]">Quản lý Sản phẩm Showcase</h1>
+                <h1 className="text-2xl font-bold text-[#111813]">Quản lý Sản phẩm</h1>
                 <button
                     onClick={() => handleOpenModal()}
                     className="px-4 py-2 bg-[#13ec49] text-[#102215] font-bold rounded-lg hover:bg-[#10d63f] transition-colors"

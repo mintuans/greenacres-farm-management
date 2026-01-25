@@ -1,28 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ShowcaseHeader from '../../templates/ShowcaseHeader';
-import { getShowcaseEvents, getShowcaseEventById, ShowcaseEvent } from '../../api/showcase-event.api';
+import { getPublicEvents, ShowcaseEvent } from '../../services/events.service';
 import { getMediaUrl } from '../../services/products.service';
 
 const ShowcaseEvents: React.FC = () => {
-    const [event, setEvent] = useState<ShowcaseEvent | null>(null);
+    const [events, setEvents] = useState<ShowcaseEvent[]>([]);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
-        loadLatestEvent();
+        loadEvents();
     }, []);
 
-    const loadLatestEvent = async () => {
+    const loadEvents = async () => {
         try {
             setLoading(true);
-            const events = await getShowcaseEvents('PUBLISHED');
-            if (events && events.length > 0) {
-                // Get detailed info including participants for the latest event
-                const detailedEvent = await getShowcaseEventById(events[0].id);
-                setEvent(detailedEvent);
+            const response = await getPublicEvents();
+            if (response.success) {
+                setEvents(response.data);
             }
         } catch (error) {
-            console.error('Error loading showcase event:', error);
+            console.error('Error loading events:', error);
         } finally {
             setLoading(false);
         }
@@ -30,233 +29,247 @@ const ShowcaseEvents: React.FC = () => {
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('vi-VN', {
-            day: '2-digit',
-            month: 'long',
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: '2-digit'
+        });
+    };
+
+    const formatFullDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
             year: 'numeric'
         });
     };
 
     const formatTime = (dateString: string) => {
         const date = new Date(dateString);
-        return date.toLocaleTimeString('vi-VN', {
-            hour: '2-digit',
-            minute: '2-digit'
+        return date.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
         });
     };
 
+    const featuredEvent = events.length > 0 ? events[0] : null;
+    const upcomingEvents = events.length > 1 ? events.slice(1) : [];
+
     return (
-        <div className="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden bg-[#f6f8f6]">
+        <div className="bg-[#f0f4f2] min-h-screen flex flex-col font-['Plus_Jakarta_Sans',_sans-serif]">
             <ShowcaseHeader />
 
-            <main className="max-w-[1200px] mx-auto px-4 py-8 w-full">
-                {/* Breadcrumb */}
-                <div className="flex flex-wrap gap-2 items-center mb-6">
-                    <Link to="/showcase" className="text-[#61896b] hover:text-[#13ec49] text-sm font-medium hover:underline transition-colors">
-                        Trang chủ
-                    </Link>
-                    <span className="material-symbols-outlined text-sm text-[#61896b]">chevron_right</span>
-                    <span className="text-[#111813] text-sm font-semibold">Sự kiện Showcase</span>
-                </div>
-
+            <main className="max-w-[1200px] mx-auto px-4 md:px-10 py-12 w-full flex-1">
                 {loading ? (
-                    <div className="py-20 text-center">
-                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#13ec49]"></div>
-                        <p className="mt-4 text-[#61896b] font-bold italic">Đang tải sự kiện hấp dẫn...</p>
+                    <div className="flex flex-col items-center justify-center py-20 animate-pulse">
+                        <div className="size-16 border-4 border-[#13ec49] border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <p className="text-[#61896b] font-bold">Đang tải những sự kiện đặc sắc...</p>
                     </div>
-                ) : !event ? (
-                    <div className="py-20 text-center bg-white rounded-3xl border border-[#dbe6de]">
-                        <span className="material-symbols-outlined text-6xl text-[#dbe6de] mb-4">event_busy</span>
-                        <h2 className="text-xl font-bold text-[#111813]">Hiện chưa có sự kiện nào sắp tới</h2>
-                        <p className="text-[#61896b] mt-2 italic">Vui lòng quay lại sau nhé!</p>
+                ) : !featuredEvent ? (
+                    <div className="text-center py-24 bg-white rounded-[2rem] shadow-sm border border-slate-100">
+                        <span className="material-symbols-outlined text-6xl text-slate-200 mb-4">calendar_today</span>
+                        <h2 className="text-2xl font-bold text-[#111813]">Hiện chưa có sự kiện nào</h2>
+                        <p className="text-[#61896b] mt-2">Hãy quay lại sau để cập nhật các sự kiện mới nhất từ GreenAcres!</p>
                     </div>
                 ) : (
-                    <>
-                        {/* Wall of Fame Section */}
-                        <section className="mb-10 overflow-hidden">
-                            <div className="flex items-center justify-between mb-6 px-2">
-                                <div>
-                                    <h2 className="text-2xl font-black text-[#111813] flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-[#13ec49] text-3xl">groups</span>
-                                        Danh sách tham gia
-                                    </h2>
-                                    <p className="text-[#61896b] text-sm font-medium">Gặp gỡ những người chuyên gia và khách mời tham gia sự kiện!</p>
+                    <div className="flex flex-col gap-12">
+                        {/* FEATURED EVENT SECTION */}
+                        <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-xl shadow-gray-200/50 border border-white flex flex-col md:flex-row animate-in fade-in slide-in-from-bottom-8 duration-700">
+                            {/* Left: Image */}
+                            <div className="md:w-1/2 relative h-[300px] md:h-auto overflow-hidden">
+                                <img
+                                    src={featuredEvent.banner_id ? getMediaUrl(featuredEvent.banner_id) : 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800'}
+                                    className="w-full h-full object-cover"
+                                    alt={featuredEvent.title}
+                                />
+                                <div className="absolute top-6 left-6 flex gap-2">
+                                    <span className="bg-[#13ec49] text-black text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider">Featured</span>
+                                    <span className="bg-black/50 backdrop-blur-md text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider">Social Event</span>
                                 </div>
-                                <button className="bg-[#13ec49] hover:bg-[#13ec49]/90 text-[#111813] px-6 py-2.5 rounded-full font-bold shadow-lg shadow-[#13ec49]/20 transition-all flex items-center gap-2">
-                                    Tham gia ngay <span className="material-symbols-outlined text-lg">celebration</span>
-                                </button>
                             </div>
 
-                            {/* Scrollable Attendees */}
-                            <div className="flex gap-6 overflow-x-auto pb-6 hide-scrollbar px-2 -mx-2">
-                                {event.participants && event.participants.length > 0 ? (
-                                    event.participants.map((p) => {
-                                        const colorMap: any = {
-                                            green: 'border-[#13ec49] bg-[#13ec49]/20',
-                                            yellow: 'border-[#D4AF37] bg-[#D4AF37]/20',
-                                            blue: 'border-blue-400 bg-blue-400/20',
-                                            purple: 'border-purple-400 bg-purple-400/20',
-                                            pink: 'border-pink-400 bg-pink-400/20'
-                                        };
-                                        const themeClass = colorMap[p.color_theme] || colorMap.green;
-                                        const borderColor = themeClass.split(' ')[0].replace('border-', '');
-                                        const shadowColor = themeClass.split(' ')[1];
+                            {/* Right: Info */}
+                            <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+                                <div className="flex items-center gap-2 text-[#13ec49] mb-4">
+                                    <span className="material-symbols-outlined text-base">agriculture</span>
+                                    <span className="text-xs font-black uppercase tracking-[0.2em]">Festive Gathering</span>
+                                </div>
+                                <h2 className="text-[#111813] text-3xl md:text-5xl font-black leading-tight mb-6">
+                                    {featuredEvent.title}
+                                </h2>
+                                <div className="flex flex-wrap gap-6 mb-8 text-slate-500 font-bold text-sm">
+                                    <div className="flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-lg">calendar_today</span>
+                                        {formatDate(featuredEvent.event_date)}, {formatTime(featuredEvent.event_date)}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-lg">location_on</span>
+                                        {featuredEvent.location || 'Main Community Barn'}
+                                    </div>
+                                </div>
+                                <p className="text-slate-500 leading-relaxed mb-10 text-lg">
+                                    {featuredEvent.description || 'Celebrate the harvest and toast to the new year with gourmet farm-to-table food, live bluegrass music, and our signature giant bonfire.'}
+                                </p>
 
-                                        return (
-                                            <div key={p.id} className="flex-none group">
-                                                <div className="relative">
-                                                    <div className={`absolute inset-0 ${shadowColor} rounded-full scale-110 blur-md group-hover:scale-125 transition-all`}></div>
-                                                    <div className={`relative size-28 rounded-full border-4 ${themeClass.split(' ')[0]} p-1 bg-white overflow-hidden shadow-xl transition-transform group-hover:scale-105`}>
-                                                        {p.avatar_id ? (
-                                                            <img
-                                                                src={getMediaUrl(p.avatar_id)}
-                                                                alt={p.full_name}
-                                                                className="size-full rounded-full object-cover"
-                                                            />
-                                                        ) : (
-                                                            <div className="size-full rounded-full bg-slate-100 flex items-center justify-center font-black text-slate-400 text-2xl">
-                                                                {p.full_name.charAt(0)}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    {(p.is_vip || p.role_at_event) && (
-                                                        <div className={`absolute -bottom-1 left-1/2 -translate-x-1/2 ${p.is_vip ? 'bg-[#D4AF37]' : 'bg-[#13ec49]'} text-white text-[10px] font-black px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm uppercase tracking-tighter z-10 border border-white`}>
-                                                            {p.is_vip ? 'VIP' : 'Tham gia'}
+                                <div className="flex items-center justify-between pt-8 border-t border-slate-100">
+                                    <div className="flex flex-col gap-2">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Who's coming?</span>
+                                        <div className="flex items-center">
+                                            <div className="flex -space-x-3 overflow-hidden">
+                                                {featuredEvent.participants.slice(0, 4).map((p) => {
+                                                    const colorMap: any = {
+                                                        green: 'bg-[#13ec49] text-black',
+                                                        yellow: 'bg-[#D4AF37] text-white',
+                                                        blue: 'bg-blue-400 text-white',
+                                                        purple: 'bg-purple-400 text-white',
+                                                        pink: 'bg-pink-400 text-white'
+                                                    };
+                                                    const themeClass = colorMap[p.color_theme || 'green'] || colorMap.green;
+
+                                                    return (
+                                                        <div key={p.id} className="inline-block relative">
+                                                            {p.avatar_id ? (
+                                                                <img
+                                                                    className="size-10 rounded-full ring-2 ring-white object-cover"
+                                                                    src={getMediaUrl(p.avatar_id)}
+                                                                    alt={p.full_name}
+                                                                />
+                                                            ) : (
+                                                                <div className={`size-10 rounded-full ${themeClass} ring-2 ring-white flex items-center justify-center font-black text-xs`}>
+                                                                    {p.full_name.charAt(0)}
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                    )}
-                                                </div>
-                                                <div className="mt-4 text-center">
-                                                    <p className="font-bold text-sm leading-tight text-[#111813] group-hover:text-[#13ec49] transition-colors">{p.full_name}</p>
-                                                    <p className="text-[10px] text-[#61896b] uppercase font-black tracking-widest mt-0.5 opacity-70">
-                                                        {p.role_at_event || p.default_title || 'Khách mời'}
-                                                    </p>
-                                                </div>
+                                                    );
+                                                })}
+                                                {featuredEvent.participants.length > 4 && (
+                                                    <div className="flex items-center justify-center size-10 rounded-full bg-slate-100 ring-2 ring-white text-slate-500 text-xs font-black">
+                                                        +{featuredEvent.participants.length - 4}
+                                                    </div>
+                                                )}
                                             </div>
-                                        );
-                                    })
-                                ) : (
-                                    <div className="py-10 text-center w-full italic text-[#61896b] font-medium opacity-50">
-                                        Công tác mời khách đang được triển khai...
-                                    </div>
-                                )}
-                            </div>
-                        </section>
-
-                        {/* Main Event Content */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            {/* Left Column - Event Details */}
-                            <div className="lg:col-span-2 flex flex-col gap-8">
-                                {/* Hero Image */}
-                                <div className="relative overflow-hidden rounded-3xl bg-[#102215] min-h-[460px] flex flex-col justify-end group shadow-2xl">
-                                    <div
-                                        className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-110"
-                                        style={{
-                                            backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(0,0,0,0.9) 100%), url("${event.banner_id ? getMediaUrl(event.banner_id) : 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=1200'}")`
-                                        }}
-                                    ></div>
-                                    <div className="relative p-10">
-                                        <div className="flex gap-2 mb-4">
-                                            <span className="inline-block px-4 py-1.5 bg-[#D4AF37] text-black text-[10px] font-black rounded-full uppercase tracking-[0.2em] shadow-lg">Sự kiện nổi bật</span>
-                                            <span className="inline-block px-4 py-1.5 bg-white/20 backdrop-blur-md text-white text-[10px] font-black rounded-full uppercase tracking-[0.2em]">GreenAcres</span>
-                                        </div>
-                                        <h1 className="text-white text-4xl md:text-6xl font-black leading-[1.1] mb-6 tracking-tight drop-shadow-2xl">
-                                            {event.title}
-                                        </h1>
-                                        <div className="flex flex-wrap gap-6 text-white/90 items-center">
-                                            <div className="flex items-center gap-3 backdrop-blur-md bg-white/10 px-4 py-2 rounded-2xl">
-                                                <span className="material-symbols-outlined text-[#13ec49] text-2xl">calendar_today</span>
-                                                <span className="text-sm font-bold">{formatDate(event.event_date)}</span>
-                                            </div>
-                                            <div className="flex items-center gap-3 backdrop-blur-md bg-white/10 px-4 py-2 rounded-2xl">
-                                                <span className="material-symbols-outlined text-[#13ec49] text-2xl">schedule</span>
-                                                <span className="text-sm font-bold">{formatTime(event.event_date)} - Kết thúc</span>
-                                            </div>
+                                            <span className="ml-4 text-xs font-bold text-slate-400">Bạn bè & Người thân</span>
                                         </div>
                                     </div>
-                                </div>
-
-                                {/* Event Description */}
-                                <div className="bg-white p-10 rounded-3xl border border-[#dbe6de] shadow-xl shadow-slate-200/50">
-                                    <div className="flex items-center gap-3 mb-8">
-                                        <div className="size-12 bg-[#13ec49]/10 rounded-2xl flex items-center justify-center">
-                                            <span className="material-symbols-outlined text-[#13ec49] text-3xl">description</span>
-                                        </div>
-                                        <h2 className="text-2xl font-black text-[#111813] tracking-tight">Chi tiết sự kiện</h2>
-                                    </div>
-                                    <div className="text-[#4b6b53] leading-[1.8] mb-10 text-lg font-medium whitespace-pre-wrap italic">
-                                        {event.description || 'Thông tin chi tiết về sự kiện sẽ được cập nhật sớm nhất. Hãy sẵn sàng cho những trải nghiệm tuyệt vời tại GreenAcres!'}
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-[#dbe6de] pt-10">
-                                        <div className="group">
-                                            <h3 className="text-[10px] font-black text-[#61896b] uppercase tracking-[0.2em] mb-6">Địa điểm tổ chức</h3>
-                                            <div className="flex gap-4">
-                                                <div className="bg-[#13ec49] size-14 rounded-2xl flex items-center justify-center shadow-lg shadow-[#13ec49]/30 transition-transform group-hover:rotate-12">
-                                                    <span className="material-symbols-outlined text-white text-3xl">location_on</span>
-                                                </div>
-                                                <div>
-                                                    <p className="font-black text-[#111813] text-lg leading-tight mb-1">{event.location || 'Tại trang trại GreenAcres'}</p>
-                                                    <p className="text-sm text-[#61896b] font-bold">Mỹ Tho, Tiền Giang, Việt Nam</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="group">
-                                            <h3 className="text-[10px] font-black text-[#61896b] uppercase tracking-[0.2em] mb-6">Trang phục</h3>
-                                            <div className="flex gap-4">
-                                                <div className="bg-[#D4AF37] size-14 rounded-2xl flex items-center justify-center shadow-lg shadow-[#D4AF37]/30 transition-transform group-hover:-rotate-12">
-                                                    <span className="material-symbols-outlined text-white text-3xl">apparel</span>
-                                                </div>
-                                                <div>
-                                                    <p className="font-black text-[#111813] text-lg leading-tight mb-1">Lễ hội / Tự do</p>
-                                                    <p className="text-sm text-[#61896b] font-bold">Khuyến nghị phong cách Nông trại</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Right Column - RSVP & Info */}
-                            <div className="flex flex-col gap-8">
-                                {/* RSVP Card */}
-                                <div className="bg-white p-8 rounded-[40px] border-2 border-[#13ec49] shadow-2xl shadow-[#13ec49]/10 sticky top-24 overflow-hidden relative">
-                                    <div className="absolute top-0 right-0 size-32 bg-[#13ec49]/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-                                    <h3 className="text-2xl font-black mb-3 tracking-tight">Đăng ký ngay!</h3>
-                                    <p className="text-[#61896b] text-sm font-bold mb-8 leading-relaxed">Tham gia cùng chúng tôi để có một trải nghiệm đáng nhớ nhất trong năm!</p>
-                                    <button className="w-full bg-[#13ec49] hover:bg-[#13ec49]/90 text-black h-16 rounded-3xl font-black text-lg transition-all flex items-center justify-center gap-3 group mb-4 shadow-xl shadow-[#13ec49]/30 active:scale-95">
-                                        Tham gia ngay
-                                        <span className="material-symbols-outlined text-2xl group-hover:rotate-12 transition-transform">celebration</span>
+                                    <button
+                                        onClick={() => navigate(`/showcase/events/${featuredEvent.id}`)}
+                                        className="bg-[#13ec49] hover:bg-[#20bd4a] text-black font-black px-10 py-5 rounded-2xl shadow-xl shadow-[#13ec49]/20 transition-all active:scale-95 group"
+                                    >
+                                        Join Event
                                     </button>
-                                    <button className="w-full bg-slate-50 hover:bg-slate-100 text-[#111813] font-bold h-14 rounded-2xl transition-all active:scale-95 border border-slate-100">
-                                        Tôi quan tâm
-                                    </button>
-                                </div>
-
-                                {/* Pro Tip */}
-                                <div className="bg-slate-900 p-8 rounded-[40px] relative overflow-hidden group shadow-2xl transform hover:-translate-y-2 transition-transform">
-                                    <div className="absolute top-0 right-0 size-24 bg-[#D4AF37]/20 rounded-full -mr-10 -mt-10 blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-                                    <h4 className="font-black text-[#D4AF37] flex items-center gap-2 mb-4 uppercase tracking-widest text-xs">
-                                        <span className="material-symbols-outlined text-xl">stars</span>
-                                        GreenAcres Tip
-                                    </h4>
-                                    <p className="text-sm text-slate-300 font-bold leading-loose italic">
-                                        "Hãy mang theo máy ảnh của bạn để lưu lại những khoảnh khắc tuyệt đẹp cùng các chuyên gia của chúng tôi tại sự kiện này!"
-                                    </p>
                                 </div>
                             </div>
                         </div>
-                    </>
+
+                        {/* UPCOMING WORKSHOPS SECTION */}
+                        <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
+                            <div className="flex items-center justify-between mb-8">
+                                <h3 className="text-[#111813] text-2xl font-black">Sự kiện khác</h3>
+                                <button className="text-[#13ec49] font-black text-xs uppercase tracking-wider hover:underline">View All</button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                {upcomingEvents.length > 0 ? (
+                                    upcomingEvents.map((ev) => (
+                                        <div key={ev.id} className="bg-white rounded-[2rem] overflow-hidden shadow-lg shadow-gray-200/30 border border-slate-50 group hover:-translate-y-2 transition-all duration-300">
+                                            <div className="relative h-64 h-overflow-hidden">
+                                                <img
+                                                    src={ev.banner_id ? getMediaUrl(ev.banner_id) : 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600'}
+                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                                    alt={ev.title}
+                                                />
+                                                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-sm">
+                                                    <span className="text-[#111813] text-[10px] font-black uppercase tracking-wider">{formatDate(ev.event_date)}</span>
+                                                </div>
+                                            </div>
+                                            <div className="p-8">
+                                                <span className="text-[#13ec49] text-[10px] font-black uppercase tracking-[0.2em] mb-2 block">Soil Health</span>
+                                                <h4 className="text-[#111813] text-xl font-black mb-3 line-clamp-2 leading-snug group-hover:text-[#13ec49] transition-colors">{ev.title}</h4>
+                                                <p className="text-slate-400 text-sm leading-relaxed mb-8 line-clamp-2">
+                                                    {ev.description || 'Learn the secrets of black gold. We\'ll cover rotation, temperature, and moisture control for perfect yield.'}
+                                                </p>
+                                                <div className="flex items-center justify-between pt-6 border-t border-slate-50">
+                                                    <div className="flex -space-x-2">
+                                                        {ev.participants.slice(0, 2).map(p => {
+                                                            const colorMap: any = {
+                                                                green: 'bg-[#13ec49] text-black',
+                                                                yellow: 'bg-[#D4AF37] text-white',
+                                                                blue: 'bg-blue-400 text-white',
+                                                                purple: 'bg-purple-400 text-white',
+                                                                pink: 'bg-pink-400 text-white'
+                                                            };
+                                                            const themeClass = colorMap[p.color_theme || 'green'] || colorMap.green;
+
+                                                            return (
+                                                                <div key={p.id} className={`size-8 rounded-full ring-2 ring-white overflow-hidden ${themeClass}`}>
+                                                                    {p.avatar_id ? (
+                                                                        <img src={getMediaUrl(p.avatar_id)} className="size-full object-cover" alt="" />
+                                                                    ) : (
+                                                                        <div className="size-full flex items-center justify-center text-[10px] font-black">
+                                                                            {p.full_name.charAt(0)}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                        {ev.participants.length > 2 && (
+                                                            <div className="size-8 rounded-full bg-slate-50 ring-2 ring-white flex items-center justify-center text-[8px] font-black text-slate-400">
+                                                                +{ev.participants.length - 2}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <button
+                                                        onClick={() => navigate(`/showcase/events/${ev.id}`)}
+                                                        className="bg-[#f0f4f2] hover:bg-[#13ec49] text-[#111813] hover:text-black font-black text-[11px] px-6 py-2.5 rounded-full transition-all active:scale-95"
+                                                    >
+                                                        Details
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="col-span-full py-20 text-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200 flex flex-col items-center">
+                                        <span className="material-symbols-outlined text-4xl text-slate-300 mb-2">event</span>
+                                        <p className="text-slate-400 font-bold italic">Nhiều workshop hấp dẫn sắp được công bố!</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 )}
             </main>
 
-            {/* Toast Notification Style */}
+            {/* Footer */}
+            <footer className="mt-auto border-t border-[#e5e9e6] bg-white py-8 px-10">
+                <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-[#61896b] text-sm">
+                    <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[#13ec49]">agriculture</span>
+                        <span className="font-bold text-[#111813]">GreenAcres</span>
+                        <span className="mx-2">|</span>
+                        <span>© {new Date().getFullYear()} Vườn Mận Lê Minh Tuấn. All rights reserved.</span>
+                    </div>
+                    <div className="flex gap-6">
+                        <Link to="/showcase/privacy-policy" className="hover:text-[#13ec49] transition-colors">Chính sách bảo mật</Link>
+                        <Link to="/showcase/terms-of-service" className="hover:text-[#13ec49] transition-colors">Điều khoản dịch vụ</Link>
+                    </div>
+                </div>
+            </footer>
+
             <style>
                 {`
-                    .hide-scrollbar::-webkit-scrollbar {
-                        display: none;
+                    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+                    
+                    body {
+                        font-family: 'Plus_Jakarta_Sans', sans-serif;
                     }
-                    .hide-scrollbar {
-                        -ms-overflow-style: none;
-                        scrollbar-width: none;
+                    
+                    .line-clamp-2 {
+                        display: -webkit-box;
+                        -webkit-line-clamp: 2;
+                        -webkit-box-orient: vertical;
+                        overflow: hidden;
                     }
                 `}
             </style>

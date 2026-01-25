@@ -1072,103 +1072,103 @@ const FarmShowcase: React.FC = () => {
                                     )}
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Right Column: Gallery Grid & Contact */}
-                        <div className="flex flex-col gap-6">
+                            {/* Right Column: Gallery Grid & Contact */}
+                            <div className="flex flex-col gap-6">
 
-                            <div className="bg-white p-5 rounded-2xl border border-[#dbe6de] shadow-sm">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h3 className="text-lg font-bold text-[#111813]">Hình ảnh của vườn {totalFarmImagesCount > 0 && `(${totalFarmImagesCount})`}</h3>
-                                    <button
-                                        onClick={handleOpenGallery}
-                                        className="text-[#13ec49] hover:bg-[#13ec49]/10 p-1 rounded transition-colors flex items-center"
-                                    >
-                                        <span className="material-symbols-outlined">arrow_forward</span>
-                                    </button>
+                                <div className="bg-white p-5 rounded-2xl border border-[#dbe6de] shadow-sm">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="text-lg font-bold text-[#111813]">Hình ảnh của vườn {totalFarmImagesCount > 0 && `(${totalFarmImagesCount})`}</h3>
+                                        <button
+                                            onClick={handleOpenGallery}
+                                            className="text-[#13ec49] hover:bg-[#13ec49]/10 p-1 rounded transition-colors flex items-center"
+                                        >
+                                            <span className="material-symbols-outlined">arrow_forward</span>
+                                        </button>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {[0, 1, 2, 3].map((index) => {
+                                            const media = farmImages[index];
+                                            const isLast = index === 3 && totalFarmImagesCount > 4;
+
+                                            return (
+                                                <div
+                                                    key={index}
+                                                    onClick={() => media && setSelectedMediaItem(media)}
+                                                    className="w-full aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-[#13ec49] transition-all relative group"
+                                                >
+                                                    {media ? (
+                                                        <>
+                                                            {media.mime_type?.startsWith('video/') ? (
+                                                                <div className="w-full h-full flex flex-col items-center justify-center bg-gray-800 text-white">
+                                                                    <span className="material-symbols-outlined text-3xl">movie</span>
+                                                                    <span className="text-[10px] mt-1">VIDEO</span>
+                                                                </div>
+                                                            ) : (
+                                                                <div
+                                                                    className="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110"
+                                                                    style={{ backgroundImage: `url("${getMediaUrl(media.id)}")` }}
+                                                                ></div>
+                                                            )}
+                                                            {isLast && (
+                                                                <div
+                                                                    className="absolute inset-0 bg-black/60 flex items-center justify-center text-center z-20"
+                                                                    onClick={(e) => { e.stopPropagation(); handleOpenGallery(); }}
+                                                                >
+                                                                    <span className="text-white font-bold text-lg">+{totalFarmImagesCount - 4}</span>
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-300">
+                                                            <span className="material-symbols-outlined text-4xl">image</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                    {[0, 1, 2, 3].map((index) => {
-                                        const media = farmImages[index];
-                                        const isLast = index === 3 && totalFarmImagesCount > 4;
 
-                                        return (
-                                            <div
-                                                key={index}
-                                                onClick={() => media && setSelectedMediaItem(media)}
-                                                className="w-full aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-[#13ec49] transition-all relative group"
-                                            >
-                                                {media ? (
-                                                    <>
-                                                        {media.mime_type?.startsWith('video/') ? (
-                                                            <div className="w-full h-full flex flex-col items-center justify-center bg-gray-800 text-white">
-                                                                <span className="material-symbols-outlined text-3xl">movie</span>
-                                                                <span className="text-[10px] mt-1">VIDEO</span>
-                                                            </div>
-                                                        ) : (
-                                                            <div
-                                                                className="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110"
-                                                                style={{ backgroundImage: `url("${getMediaUrl(media.id)}")` }}
-                                                            ></div>
-                                                        )}
-                                                        {isLast && (
-                                                            <div
-                                                                className="absolute inset-0 bg-black/60 flex items-center justify-center text-center z-20"
-                                                                onClick={(e) => { e.stopPropagation(); handleOpenGallery(); }}
-                                                            >
-                                                                <span className="text-white font-bold text-lg">+{totalFarmImagesCount - 4}</span>
-                                                            </div>
-                                                        )}
-                                                    </>
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-300">
-                                                        <span className="material-symbols-outlined text-4xl">image</span>
-                                                    </div>
-                                                )}
+                                <WeatherWidget />
+
+                                {/* Location & Contact */}
+                                <div className="bg-white p-0 rounded-2xl border border-[#dbe6de] shadow-sm overflow-hidden flex flex-col">
+                                    <div className="h-64 bg-gray-200 relative">
+                                        <iframe
+                                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d981.1265571161107!2d106.2545571274932!3d10.38130837899188!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x310abb777529f873%3A0x5cb1dc2a4a25519e!2zTG9uZyDEkOG7i25oLCBUaMOgbmggcGjhu5EgTeG7uSBUaG8sIFRp4buBbiBHaWFuZywgVmnhu4d0IE5hbQ!5e0!3m2!1svi!2s!4v1768016922481!5m2!1svi!2s"
+                                            width="100%"
+                                            height="100%"
+                                            style={{ border: 0 }}
+                                            allowFullScreen={true}
+                                            loading="lazy"
+                                            referrerPolicy="no-referrer-when-downgrade"
+                                            title="Bản đồ vườn"
+                                        ></iframe>
+                                    </div>
+                                    <div className="p-5 flex flex-col gap-4">
+                                        <div>
+                                            <h3 className="text-lg font-bold text-[#111813] mb-1">Ghé thăm chúng tôi</h3>
+                                            <p className="text-[#61896b] text-sm">Đông Hòa, Thành phố Mỹ Tho, Tiền Giang, Việt Nam</p>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-3 text-sm">
+                                                <span className="material-symbols-outlined text-[#13ec49]">call</span>
+                                                <span className="text-[#111813]">0384 396 100</span>
                                             </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            <WeatherWidget />
-
-                            {/* Location & Contact */}
-                            <div className="bg-white p-0 rounded-2xl border border-[#dbe6de] shadow-sm overflow-hidden flex flex-col">
-                                <div className="h-64 bg-gray-200 relative">
-                                    <iframe
-                                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d981.1265571161107!2d106.2545571274932!3d10.38130837899188!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x310abb777529f873%3A0x5cb1dc2a4a25519e!2zTG9uZyDEkOG7i25oLCBUaMOgbmggcGjhu5EgTeG7uSBUaG8sIFRp4buBbiBHaWFuZywgVmnhu4d0IE5hbQ!5e0!3m2!1svi!2s!4v1768016922481!5m2!1svi!2s"
-                                        width="100%"
-                                        height="100%"
-                                        style={{ border: 0 }}
-                                        allowFullScreen={true}
-                                        loading="lazy"
-                                        referrerPolicy="no-referrer-when-downgrade"
-                                        title="Bản đồ vườn"
-                                    ></iframe>
-                                </div>
-                                <div className="p-5 flex flex-col gap-4">
-                                    <div>
-                                        <h3 className="text-lg font-bold text-[#111813] mb-1">Ghé thăm chúng tôi</h3>
-                                        <p className="text-[#61896b] text-sm">Đông Hòa, Thành phố Mỹ Tho, Tiền Giang, Việt Nam</p>
+                                            <div className="flex items-center gap-3 text-sm">
+                                                <span className="material-symbols-outlined text-[#13ec49]">mail</span>
+                                                <span className="text-[#111813]">lmtuan21082003@gmail.com</span>
+                                            </div>
+                                            <div className="flex items-center gap-3 text-sm">
+                                                <span className="material-symbols-outlined text-[#13ec49]">schedule</span>
+                                                <span className="text-[#111813]">T2 - T7: 8:00 - 17:00</span>
+                                            </div>
+                                        </div>
+                                        <button className="w-full mt-2 py-2 rounded-lg bg-[#f0f4f1] text-[#111813] font-bold text-sm hover:bg-gray-200 transition-colors">
+                                            Chỉ đường
+                                        </button>
                                     </div>
-                                    <div className="space-y-3">
-                                        <div className="flex items-center gap-3 text-sm">
-                                            <span className="material-symbols-outlined text-[#13ec49]">call</span>
-                                            <span className="text-[#111813]">0901 234 567</span>
-                                        </div>
-                                        <div className="flex items-center gap-3 text-sm">
-                                            <span className="material-symbols-outlined text-[#13ec49]">mail</span>
-                                            <span className="text-[#111813]">lmtuan21082003@gmail.com</span>
-                                        </div>
-                                        <div className="flex items-center gap-3 text-sm">
-                                            <span className="material-symbols-outlined text-[#13ec49]">schedule</span>
-                                            <span className="text-[#111813]">T2 - T7: 8:00 - 17:00</span>
-                                        </div>
-                                    </div>
-                                    <button className="w-full mt-2 py-2 rounded-lg bg-[#f0f4f1] text-[#111813] font-bold text-sm hover:bg-gray-200 transition-colors">
-                                        Chỉ đường
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -1185,9 +1185,8 @@ const FarmShowcase: React.FC = () => {
                             <span>© {new Date().getFullYear()} Vườn Mận Lê Minh Tuấn. All rights reserved.</span>
                         </div>
                         <div className="flex gap-6">
-                            <a href="#" className="hover:text-[#13ec49] transition-colors">Chính sách bảo mật</a>
-                            <a href="#" className="hover:text-[#13ec49] transition-colors">Điều khoản dịch vụ</a>
-                            <a href="#" className="hover:text-[#13ec49] transition-colors">Liên hệ</a>
+                            <Link to="/showcase/privacy-policy" className="hover:text-[#13ec49] transition-colors">Chính sách bảo mật</Link>
+                            <Link to="/showcase/terms-of-service" className="hover:text-[#13ec49] transition-colors">Điều khoản dịch vụ</Link>
                         </div>
                     </div>
                 </footer>

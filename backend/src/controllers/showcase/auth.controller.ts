@@ -37,7 +37,7 @@ export const register = async (req: Request, res: Response) => {
         const result = await pool.query(`
             INSERT INTO public_users (email, password_hash, full_name, phone)
             VALUES ($1, $2, $3, $4)
-            RETURNING id, email, full_name, phone, created_at
+            RETURNING id, email, full_name, phone, avatar_id, created_at
         `, [validatedData.email, hashedPassword, validatedData.full_name, validatedData.phone]);
 
         const user = result.rows[0];
@@ -154,6 +154,7 @@ export const login = async (req: Request, res: Response) => {
                     id: user.id,
                     email: user.email,
                     full_name: user.full_name,
+                    avatar_id: user.avatar_id,
                     role: userRole
                 },
                 token

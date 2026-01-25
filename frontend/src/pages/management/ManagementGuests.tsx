@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import {
     getAllGuests,
     createGuest,
+    updateGuest,
+    deleteGuest,
     Guest
 } from '../../api/showcase-event.api';
 import { getMediaFiles, MediaFile } from '../../services/media.service';
@@ -13,6 +15,7 @@ const ManagementGuests: React.FC = () => {
     const [showModal, setShowModal] = useState(false);
     const [showMediaPicker, setShowMediaPicker] = useState(false);
     const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
+    const [editingId, setEditingId] = useState<string | null>(null);
     const [formData, setFormData] = useState<Partial<Guest>>({
         full_name: '',
         default_title: '',
@@ -50,12 +53,39 @@ const ManagementGuests: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await createGuest(formData);
+            if (editingId) {
+                await updateGuest(editingId, formData);
+            } else {
+                await createGuest(formData);
+            }
             setShowModal(false);
+            setEditingId(null);
             setFormData({ full_name: '', default_title: '', phone: '', email: '', avatar_id: '' });
             loadGuests();
         } catch (error) {
-            alert('Không thể tạo khách mời');
+            alert(`Không thể ${editingId ? 'cập nhật' : 'tạo'} khách mời`);
+        }
+    };
+
+    const handleEdit = (guest: Guest) => {
+        setEditingId(guest.id);
+        setFormData({
+            full_name: guest.full_name,
+            default_title: guest.default_title,
+            phone: guest.phone,
+            email: guest.email,
+            avatar_id: guest.avatar_id
+        });
+        setShowModal(true);
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!window.confirm('Bạn có chắc chắn muốn xóa khách mời này?')) return;
+        try {
+            await deleteGuest(id);
+            loadGuests();
+        } catch (error) {
+            alert('Không thể xóa khách mời');
         }
     };
 
@@ -70,6 +100,7 @@ const ManagementGuests: React.FC = () => {
                 </div>
                 <button
                     onClick={() => {
+                        setEditingId(null);
                         setFormData({ full_name: '', default_title: '', phone: '', email: '', avatar_id: '' });
                         setShowModal(true);
                     }}
@@ -119,9 +150,22 @@ const ManagementGuests: React.FC = () => {
                                             <td className="px-6 py-4 text-slate-500">{guest.phone || '-'}</td>
                                             <td className="px-6 py-4 text-slate-500">{guest.email || '-'}</td>
                                             <td className="px-6 py-4 text-right">
-                                                <button className="p-2 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all opacity-0 group-hover:opacity-100">
-                                                    <span className="material-symbols-outlined text-[20px]">edit</span>
-                                                </button>
+                                                <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                                                    <button
+                                                        onClick={() => handleEdit(guest)}
+                                                        className="p-2 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all"
+                                                        title="Chỉnh sửa"
+                                                    >
+                                                        <span className="material-symbols-outlined text-[20px]">edit</span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(guest.id)}
+                                                        className="p-2 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all"
+                                                        title="Xóa"
+                                                    >
+                                                        <span className="material-symbols-outlined text-[20px]">delete</span>
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
@@ -132,13 +176,21 @@ const ManagementGuests: React.FC = () => {
                 )}
             </div>
 
-            {/* Modal Add Guest */}
+            {/* Modal Add/Edit Guest */}
             {showModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
                     <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200">
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Khách mời mới</h2>
-                            <button onClick={() => setShowModal(false)} className="size-10 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 transition-all">
+                            <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+                                {editingId ? 'Chỉnh sửa khách mời' : 'Khách mời mới'}
+                            </h2>
+                            <button
+                                onClick={() => {
+                                    setShowModal(false);
+                                    setEditingId(null);
+                                }}
+                                className="size-10 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 transition-all"
+                            >
                                 <span className="material-symbols-outlined">close</span>
                             </button>
                         </div>
@@ -185,7 +237,7 @@ const ManagementGuests: React.FC = () => {
                                     <input
                                         type="tel"
                                         className="w-full bg-slate-50 border-2 border-transparent rounded-2xl px-5 py-3.5 focus:border-[#13ec49] focus:bg-white outline-none transition-all font-bold text-sm"
-                                        value={formData.phone}
+                                        value={formData.phone || ''}
                                         onChange={e => setFormData({ ...formData, phone: e.target.value })}
                                     />
                                 </div>
@@ -194,17 +246,24 @@ const ManagementGuests: React.FC = () => {
                                     <input
                                         type="email"
                                         className="w-full bg-slate-50 border-2 border-transparent rounded-2xl px-5 py-3.5 focus:border-[#13ec49] focus:bg-white outline-none transition-all font-bold text-sm"
-                                        value={formData.email}
+                                        value={formData.email || ''}
                                         onChange={e => setFormData({ ...formData, email: e.target.value })}
                                     />
                                 </div>
                             </div>
                             <div className="pt-4 flex gap-3">
-                                <button type="button" onClick={() => setShowModal(false)} className="flex-1 h-12 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-2xl transition-all">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowModal(false);
+                                        setEditingId(null);
+                                    }}
+                                    className="flex-1 h-12 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-2xl transition-all"
+                                >
                                     Hủy
                                 </button>
                                 <button type="submit" className="flex-1 h-12 bg-[#13ec49] hover:bg-[#13ec49]/90 text-black font-bold rounded-2xl shadow-lg shadow-[#13ec49]/20 transition-all active:scale-95">
-                                    Lưu lại
+                                    {editingId ? 'Cập nhật' : 'Lưu lại'}
                                 </button>
                             </div>
                         </form>
@@ -245,8 +304,27 @@ const ManagementGuests: React.FC = () => {
                     </div>
                 </div>
             )}
+            <style>
+                {`
+                    .custom-scrollbar::-webkit-scrollbar {
+                        width: 6px;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-track {
+                        background: #f1f1f1;
+                        border-radius: 10px;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-thumb {
+                        background: #d1d5db;
+                        border-radius: 10px;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                        background: #9ca3af;
+                    }
+                `}
+            </style>
         </div>
     );
 };
 
 export default ManagementGuests;
+

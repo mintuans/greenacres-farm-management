@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/src/contexts/AuthContext';
+import { getMediaUrl } from '../services/products.service';
 
 interface ShowcaseHeaderProps {
     searchTerm?: string;
@@ -18,8 +19,10 @@ const ShowcaseHeader: React.FC<ShowcaseHeaderProps> = ({
     const navigate = useNavigate();
 
     // Default values for Guest
-    const displayName = user?.name || 'Du khách';
-    const avatarUrl = user?.avatar || `https://ui-avatars.com/api/?name=Du+Khach&background=13ec49&color=fff`;
+    const displayName = user?.full_name || user?.name || 'Du khách';
+    const avatarUrl = user?.avatar_id
+        ? getMediaUrl(user.avatar_id)
+        : (user?.avatar || `https://ui-avatars.com/api/?name=Du+Khach&background=13ec49&color=fff`);
 
     const isActive = (path: string) => location.pathname === path;
 

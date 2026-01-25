@@ -172,3 +172,55 @@ export const checkSuperAdmin = async (req: Request, res: Response, next: NextFun
     }
 };
 
+/**
+ * Middleware kiểm tra vai trò người dùng từ database (Hỗ trợ nhiều vai trò)
+ */
+export const checkRole = (roleName: string) => {
+    return async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+        if (!req.user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Vui lòng đăng nhập',
+            });
+        }
+
+        try {
+            // Bypass cho SUPER_ADMIN
+            const adminQuery = `
+                SELECT COUNT(*) 
+                FROM user_roles ur
+                JOIN roles r ON ur.role_id = r.id
+                WHERE ur.user_id = $1 AND r.name = 'SUPER_ADMIN'
+            `;
+            const adminResult = await pool.query(adminQuery, [req.user.id]);
+            if (parseInt(adminResult.rows[0].count) > 0) {
+                return next();
+            }
+
+            const query = `
+                SELECT COUNT(*) 
+                FROM user_roles ur
+                JOIN roles r ON ur.role_id = r.id
+                WHERE ur.user_id = $1 AND r.name = $2
+            `;
+
+            const result = await pool.query(query, [req.user.id, roleName]);
+            const hasRole = parseInt(result.rows[0].count) > 0;
+
+            if (hasRole) {
+                return next();
+            }
+
+            return res.status(403).json({
+                success: false,
+                message: 'Bạn không có quyền thực hiện hành động này',
+            });
+        } catch (error) {
+            console.error('Role check error:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Lỗi kiểm tra quyền hạn',
+            });
+        }
+    };
+};

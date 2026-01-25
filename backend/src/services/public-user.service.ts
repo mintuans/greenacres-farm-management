@@ -10,6 +10,8 @@ export interface PublicUser {
     avatar_id?: string;
     google_id?: string;
     facebook_id?: string;
+    bio?: string;
+    address?: string;
     is_verified: boolean;
     is_active: boolean;
     login_attempts: number;
@@ -19,13 +21,13 @@ export interface PublicUser {
 }
 
 export const getPublicUsers = async (): Promise<PublicUser[]> => {
-    const query = 'SELECT id, email, phone, full_name, avatar_id, google_id, facebook_id, is_verified, is_active, login_attempts, created_at, last_login_at FROM public_users WHERE deleted_at IS NULL ORDER BY created_at DESC';
+    const query = 'SELECT id, email, phone, full_name, avatar_id, bio, address, google_id, facebook_id, is_verified, is_active, login_attempts, created_at, last_login_at FROM public_users WHERE deleted_at IS NULL ORDER BY created_at DESC';
     const result = await pool.query(query);
     return result.rows;
 };
 
 export const getPublicUserById = async (id: string): Promise<PublicUser | null> => {
-    const query = 'SELECT id, email, phone, full_name, avatar_id, google_id, facebook_id, is_verified, is_active, login_attempts, created_at, last_login_at FROM public_users WHERE id = $1 AND deleted_at IS NULL';
+    const query = 'SELECT id, email, phone, full_name, avatar_id, bio, address, google_id, facebook_id, is_verified, is_active, login_attempts, created_at, last_login_at FROM public_users WHERE id = $1 AND deleted_at IS NULL';
     const result = await pool.query(query, [id]);
     return result.rows[0] || null;
 };
@@ -78,6 +80,18 @@ export const updatePublicUser = async (id: string, data: any): Promise<PublicUse
         const passwordHash = await hashPassword(data.password);
         fields.push(`password_hash = $${paramIndex++}`);
         values.push(passwordHash);
+    }
+    if (data.avatar_id !== undefined) {
+        fields.push(`avatar_id = $${paramIndex++}`);
+        values.push(data.avatar_id);
+    }
+    if (data.bio !== undefined) {
+        fields.push(`bio = $${paramIndex++}`);
+        values.push(data.bio);
+    }
+    if (data.address !== undefined) {
+        fields.push(`address = $${paramIndex++}`);
+        values.push(data.address);
     }
 
     if (fields.length === 0) return getPublicUserById(id);
