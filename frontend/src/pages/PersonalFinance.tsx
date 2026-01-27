@@ -16,7 +16,7 @@ const PersonalFinance: React.FC = () => {
         <div className="flex gap-4">
           <div className="bg-white border border-slate-200 px-5 py-3 rounded-2xl flex items-center gap-3 shadow-sm text-sm font-bold text-slate-900">
             <span className="material-symbols-outlined text-slate-400">calendar_month</span>
-            Tháng 10, 2024
+            Tháng 1, 2026
           </div>
           <button className="bg-[#13ec49] text-black px-8 py-3 rounded-2xl text-sm font-black shadow-xl shadow-[#13ec49]/20 hover:scale-105 transition-all flex items-center gap-2">
             <span className="material-symbols-outlined">add</span>
@@ -57,7 +57,7 @@ const PersonalFinance: React.FC = () => {
               <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Đã dùng</p>
             </div>
           </div>
-          
+
           <div className="space-y-4">
             <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
               <span>Đã chi (25,4tr)</span>
@@ -68,7 +68,7 @@ const PersonalFinance: React.FC = () => {
             </div>
             <div className="bg-[#f6f8f6] p-4 rounded-2xl flex items-center gap-4 text-sm">
               <span className="material-symbols-outlined text-[#13ec49]">info</span>
-              <p className="text-slate-600 font-medium">Bạn còn <span className="font-black text-slate-900">14.600.000đ</span> cho tháng 10 này.</p>
+              <p className="text-slate-600 font-medium">Bạn còn <span className="font-black text-slate-900">14.600.000đ</span> cho tháng 1 này.</p>
             </div>
           </div>
         </div>
@@ -81,7 +81,7 @@ const PersonalFinance: React.FC = () => {
             </div>
             <button className="text-[#13ec49] text-xs font-black uppercase tracking-widest hover:underline">Xem báo cáo</button>
           </div>
-          
+
           <div className="flex-1 flex items-end justify-between gap-4 h-48">
             {[
               { l: 'Ăn uống', h: 45, v: '1,4tr' },
@@ -90,7 +90,7 @@ const PersonalFinance: React.FC = () => {
               { l: 'Điện nước', h: 35, v: '1,2tr' }
             ].map((bar, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-4 group">
-                <div 
+                <div
                   className="w-full max-w-[48px] bg-[#13ec49]/20 group-hover:bg-[#13ec49] rounded-xl transition-all relative"
                   style={{ height: `${bar.h}%` }}
                 >

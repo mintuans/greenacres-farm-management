@@ -91,7 +91,6 @@ export const joinEvent = async (req: Request, res: Response): Promise<any> => {
             is_vip: false,
             sort_order: 99
         });
-
         return res.json({ success: true, message: 'Tham gia sự kiện thành công' });
     } catch (error: any) {
         console.error('Error joining event:', error);

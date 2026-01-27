@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ShowcaseHeader from '../../templates/ShowcaseHeader';
+import logoWeb from '../../assets/logo_web.png';
 import { Link } from 'react-router-dom';
 
 const Contact: React.FC = () => {
@@ -36,7 +37,7 @@ const Contact: React.FC = () => {
                         <div className="flex flex-col gap-4 text-center animate-in fade-in slide-in-from-top-4 duration-700">
                             <h1 className="text-[#111813] text-4xl md:text-6xl font-black tracking-tight">Liên hệ với chúng tôi</h1>
                             <p className="text-[#61896b] text-lg max-w-2xl mx-auto">
-                                Chúng tôi luôn sẵn lòng lắng nghe ý kiến đóng góp, giải đáp thắc mắc hoặc hỗ trợ bạn trải nghiệm các sản phẩm từ GreenAcres.
+                                Chúng tôi luôn sẵn lòng lắng nghe ý kiến đóng góp, giải đáp thắc mắc hoặc hỗ trợ bạn trải nghiệm các sản phẩm từ Vườn Nhà Mình.
                             </p>
                         </div>
 
@@ -218,10 +219,10 @@ const Contact: React.FC = () => {
                 <footer className="mt-auto border-t border-[#e5e9e6] bg-white py-8 px-10">
                     <div className="max-w-[1200px] mx-auto flex justify-center items-center gap-4 text-[#61896b] text-sm">
                         <div className="flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[#13ec49]">agriculture</span>
-                            <span className="font-bold text-[#111813]">GreenAcres</span>
+                            <img src={logoWeb} alt="Logo" className="size-6 object-contain" />
+                            <span className="font-bold text-[#111813]">Vườn Nhà Mình</span>
                             <span className="mx-2">|</span>
-                            <span>© {new Date().getFullYear()} Vườn Mận Lê Minh Tuấn. Đã đăng ký bản quyền.</span>
+                            <span>© {new Date().getFullYear()} Vườn Nhà Mình. Đã đăng ký bản quyền.</span>
                         </div>
                     </div>
                 </footer>

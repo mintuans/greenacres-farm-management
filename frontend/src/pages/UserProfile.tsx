@@ -4,6 +4,7 @@ import { useAuth } from '@/src/contexts/AuthContext';
 import { uploadMedia } from '../services/media.service';
 import { updateMyProfile } from '../services/profile.service';
 import { getMediaUrl } from '../services/products.service';
+import logoWeb from '../assets/logo_web.png';
 
 const UserProfile: React.FC = () => {
     const { user, login, logout } = useAuth();
@@ -286,8 +287,8 @@ const UserProfile: React.FC = () => {
             {/* Footer Branding */}
             <footer className="mt-auto py-10 text-center border-t border-slate-100 bg-white">
                 <div className="flex items-center justify-center gap-2 text-slate-400 mb-1">
-                    <span className="material-symbols-outlined text-[18px]">agriculture</span>
-                    <p className="text-sm font-medium">© 2024 FarmTrack Management Systems</p>
+                    <img src={logoWeb} alt="Logo" className="size-5 object-contain" />
+                    <p className="text-sm font-medium">© 2026 Vườn Nhà Mình</p>
                 </div>
                 <p className="text-slate-300 text-xs">Empowering farmers with smart digital tools.</p>
             </footer>

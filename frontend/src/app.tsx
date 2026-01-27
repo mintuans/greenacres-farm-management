@@ -22,6 +22,7 @@ import FarmEvents from '@/src/pages/FarmEvents';
 import WorkSchedules from '@/src/pages/WorkSchedules';
 import DailyWorkLogs from '@/src/pages/DailyWorkLogs';
 import PayrollManagement from '@/src/pages/PayrollManagement';
+import Notifications from '@/src/pages/Notifications';
 
 // Showcase pages
 import FarmShowcase from '@/src/pages/showcase/FarmShowcase';
@@ -115,6 +116,7 @@ const App: React.FC = () => {
                                         <Route path="/master-data/work-schedules" element={<WorkSchedules />} />
                                         <Route path="/master-data/daily-work-logs" element={<DailyWorkLogs />} />
                                         <Route path="/master-data/payroll" element={<PayrollManagement />} />
+                                        <Route path="/master-data/notifications" element={<Notifications />} />
                                         <Route path="/settings/users" element={<Users />} />
                                         <Route path="/settings/roles" element={<Roles />} />
                                         <Route path="/settings/permissions" element={<Permissions />} />

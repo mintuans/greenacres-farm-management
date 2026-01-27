@@ -2,6 +2,8 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { getMediaUrl } from '../services/products.service';
+import logoWeb from '../assets/logo_web.png';
+import NotificationDropdown from '../components/NotificationDropdown';
 
 interface ShowcaseHeaderProps {
     searchTerm?: string;
@@ -26,6 +28,9 @@ const ShowcaseHeader: React.FC<ShowcaseHeaderProps> = ({
 
     const isActive = (path: string) => location.pathname === path;
 
+    const [isNotifOpen, setIsNotifOpen] = React.useState(false);
+    const [unreadCount, setUnreadCount] = React.useState(0);
+
     const handleProfileClick = () => {
         if (isAuthenticated) {
             navigate('/profile');
@@ -38,10 +43,8 @@ const ShowcaseHeader: React.FC<ShowcaseHeaderProps> = ({
         <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e5e9e6] bg-white px-6 md:px-10 py-3 sticky top-0 z-50">
             <div className="flex items-center gap-8">
                 <Link to="/showcase" className="flex items-center gap-4 text-[#111813] hover:opacity-80 transition-opacity">
-                    <div className="size-8 rounded bg-[#13ec49]/20 flex items-center justify-center text-[#13ec49]">
-                        <span className="material-symbols-outlined">agriculture</span>
-                    </div>
-                    <h2 className="text-lg font-bold leading-tight tracking-[-0.015em]">Vườn mận LMT</h2>
+                    <img src={logoWeb} alt="Vườn Nhà Mình Logo" className="size-14 object-contain" />
+                    <h2 className="text-lg font-bold leading-tight tracking-[-0.015em]">Vườn Nhà Mình</h2>
                 </Link>
                 <div className="hidden md:flex items-center gap-9">
                     <Link
@@ -94,6 +97,25 @@ const ShowcaseHeader: React.FC<ShowcaseHeaderProps> = ({
                         />
                     </div>
                 </label>
+
+                <div className="relative">
+                    <button
+                        onClick={() => setIsNotifOpen(!isNotifOpen)}
+                        className={`relative p-2 transition-colors rounded-xl ${isNotifOpen ? 'bg-[#13ec49]/10 text-[#13ec49]' : 'text-slate-400 hover:text-[#13ec49] hover:bg-slate-50'}`}
+                    >
+                        <span className="material-symbols-outlined text-[24px]">notifications</span>
+                        {unreadCount > 0 && (
+                            <span className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full border-2 border-white flex items-center justify-center animate-pulse">
+                                {unreadCount > 99 ? '99+' : unreadCount}
+                            </span>
+                        )}
+                    </button>
+                    <NotificationDropdown
+                        isOpen={isNotifOpen}
+                        onClose={() => setIsNotifOpen(false)}
+                        onUnreadCountChange={setUnreadCount}
+                    />
+                </div>
 
                 <div
                     className="flex items-center gap-3 cursor-pointer group"

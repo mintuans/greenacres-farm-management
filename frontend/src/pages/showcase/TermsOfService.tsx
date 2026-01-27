@@ -1,6 +1,7 @@
 import React from 'react';
 import ShowcaseHeader from '../../templates/ShowcaseHeader';
 import { Link } from 'react-router-dom';
+import logoWeb from '../../assets/logo_web.png';
 
 const TermsOfService: React.FC = () => {
     return (
@@ -25,7 +26,7 @@ const TermsOfService: React.FC = () => {
                                 1. Chấp nhận điều khoản
                             </h2>
                             <p className="text-[#3c4740] text-lg leading-relaxed">
-                                Bằng việc truy cập, đăng ký hoặc sử dụng bất kỳ tính năng nào của hệ thống quản lý và dịch vụ <strong>GreenAcres</strong>, bạn xác nhận rằng mình đã đọc, hiểu và hoàn toàn đồng ý tuân thủ các điều khoản và điều kiện được nêu tại đây. Nếu bạn không đồng ý với bất kỳ phần nào của các điều khoản này, vui lòng ngừng sử dụng dịch vụ của chúng tôi ngay lập tức.
+                                Bằng việc truy cập, đăng ký hoặc sử dụng bất kỳ tính năng nào của hệ thống quản lý và dịch vụ <strong>Vườn Nhà Mình</strong>, bạn xác nhận rằng mình đã đọc, hiểu và hoàn toàn đồng ý tuân thủ các điều khoản và điều kiện được nêu tại đây. Nếu bạn không đồng ý với bất kỳ phần nào của các điều khoản này, vui lòng ngừng sử dụng dịch vụ của chúng tôi ngay lập tức.
                             </p>
                         </div>
 
@@ -39,7 +40,7 @@ const TermsOfService: React.FC = () => {
                                     2. Đăng ký & Bảo mật tài khoản
                                 </h2>
                                 <div className="space-y-4 text-[#3c4740] leading-relaxed">
-                                    <p>Khi tạo tài khoản tại GreenAcres, bạn cam kết cung cấp thông tin chính xác, đầy đủ và cập nhật. Bạn chịu trách nhiệm hoàn toàn về việc bảo mật mật khẩu và tất cả các hoạt động diễn ra dưới tài khoản của mình.</p>
+                                    <p>Khi tạo tài khoản tại Vườn Nhà Mình, bạn cam kết cung cấp thông tin chính xác, đầy đủ và cập nhật. Bạn chịu trách nhiệm hoàn toàn về việc bảo mật mật khẩu và tất cả các hoạt động diễn ra dưới tài khoản của mình.</p>
                                     <p>Bạn phải thông báo ngay cho chúng tôi nếu phát hiện bất kỳ hành vi truy cập trái phép hoặc vi phạm bảo mật nào. Chúng tôi không chịu trách nhiệm cho bất kỳ tổn thất hoặc thiệt hại nào phát sinh từ việc bạn không tuân thủ quy định bảo mật này.</p>
                                 </div>
                             </section>
@@ -76,7 +77,7 @@ const TermsOfService: React.FC = () => {
                                     4. Sở hữu trí tuệ
                                 </h2>
                                 <div className="space-y-4 text-[#3c4740] leading-relaxed">
-                                    <p>Tất cả nội dung bao gồm nhưng không giới hạn ở: logo, mã nguồn, thiết kế giao diện, hình ảnh, văn bản và các tài sản kỹ thuật số khác trên hệ thống đều thuộc quyền sở hữu độc quyền của <strong>GreenAcres - Vườn Mận Lê Minh Tuấn</strong>.</p>
+                                    <p>Tất cả nội dung bao gồm nhưng không giới hạn ở: logo, mã nguồn, thiết kế giao diện, hình ảnh, văn bản và các tài sản kỹ thuật số khác trên hệ thống đều thuộc quyền sở hữu độc quyền của <strong>Vườn Nhà Mình</strong>.</p>
                                     <p>Mọi hành vi sao chép, trích dẫn hoặc sử dụng các tài sản này cho mục đích thương mại mà không có sự đồng ý bằng văn bản của chúng tôi đều bị coi là vi phạm bản quyền và sẽ được xử lý theo quy định của pháp luật.</p>
                                 </div>
                             </section>
@@ -111,10 +112,10 @@ const TermsOfService: React.FC = () => {
                 <footer className="mt-auto border-t border-[#e5e9e6] bg-white py-8 px-10">
                     <div className="max-w-[1200px] mx-auto flex justify-center items-center gap-4 text-[#61896b] text-sm">
                         <div className="flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[#13ec49]">agriculture</span>
-                            <span className="font-bold text-[#111813]">GreenAcres</span>
+                            <img src={logoWeb} alt="Logo" className="size-6 object-contain" />
+                            <span className="font-bold text-[#111813]">Vườn Nhà Mình</span>
                             <span className="mx-2">|</span>
-                            <span>© {new Date().getFullYear()} Vườn Mận Lê Minh Tuấn. Đã đăng ký bản quyền.</span>
+                            <span>© {new Date().getFullYear()} Vườn Nhà Mình. Đã đăng ký bản quyền.</span>
                         </div>
                     </div>
                 </footer>

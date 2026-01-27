@@ -1,4 +1,4 @@
-# 🌾 GreenAcres Farm Management
+# 🏡 Vườn Nhà Mình - Farm Management
 
 Hệ thống quản lý nông trại toàn diện với giao diện hiện đại.
 

@@ -66,3 +66,19 @@ export const getStats = async (_req: Request, res: Response): Promise<any> => {
         return res.status(500).json({ success: false, message: error.message });
     }
 };
+
+export const bulkImport = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const items = req.body; // Expecting an array of items
+        if (!Array.isArray(items)) {
+            return res.status(400).json({ success: false, message: 'Data must be an array' });
+        }
+        const results = await inventoryService.bulkCreateInventoryItems(items);
+
+        await logActivity(req, 'BULK_IMPORT_INVENTORY', 'inventory', undefined, undefined, { count: items.length });
+
+        return res.json({ success: true, data: results });
+    } catch (error: any) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};

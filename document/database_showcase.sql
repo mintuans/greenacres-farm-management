@@ -235,7 +235,8 @@ CREATE TABLE public_users (
     last_login_at TIMESTAMP,
     deleted_at TIMESTAMP
 );
-
+ALTER TABLE public_users ADD COLUMN IF NOT EXISTS bio TEXT;
+ALTER TABLE public_users ADD COLUMN IF NOT EXISTS address TEXT;
 -- 11. Bảng phiên đăng nhập (Sessions) - Tùy chọn
 CREATE TABLE user_sessions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

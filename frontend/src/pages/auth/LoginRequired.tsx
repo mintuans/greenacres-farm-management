@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import logoWeb from '../../assets/logo_web.png';
 
 const LoginRequired: React.FC = () => {
     const navigate = useNavigate();
@@ -53,8 +54,8 @@ const LoginRequired: React.FC = () => {
                 </div>
                 <div className="flex flex-col items-center gap-2">
                     <div className="flex items-center gap-2 text-[#13ec49]/60">
-                        <span className="material-symbols-outlined text-sm">agriculture</span>
-                        <p className="text-[#61896b] text-sm font-normal leading-normal">© 2024 FarmTrack Management Systems</p>
+                        <img src={logoWeb} alt="Logo" className="size-5 object-contain opacity-60" />
+                        <p className="text-[#61896b] text-sm font-normal leading-normal">© 2026 Vườn Nhà Mình</p>
                     </div>
                     <p className="text-[#61896b]/60 text-xs">Empowering farmers with smart digital tools.</p>
                 </div>

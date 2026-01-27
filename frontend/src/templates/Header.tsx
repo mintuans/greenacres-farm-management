@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { getMediaUrl } from '../services/products.service';
+import NotificationDropdown from '../components/NotificationDropdown';
 
 const Header: React.FC = () => {
     const { user } = useAuth();
@@ -16,6 +17,9 @@ const Header: React.FC = () => {
     const handleProfileClick = () => {
         navigate('/profile');
     };
+
+    const [isNotifOpen, setIsNotifOpen] = React.useState(false);
+    const [unreadCount, setUnreadCount] = React.useState(0);
 
     return (
         <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0 sticky top-0 z-20">
@@ -41,10 +45,24 @@ const Header: React.FC = () => {
                     <span className="material-symbols-outlined text-[18px]">visibility</span>
                     Trang Showcase
                 </button>
-                <button className="relative p-2 text-slate-400 hover:text-[#13ec49] transition-colors">
-                    <span className="material-symbols-outlined">notifications</span>
-                    <span className="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white"></span>
-                </button>
+                <div className="relative">
+                    <button
+                        onClick={() => setIsNotifOpen(!isNotifOpen)}
+                        className={`relative p-2 transition-colors rounded-xl ${isNotifOpen ? 'bg-[#13ec49]/10 text-[#13ec49]' : 'text-slate-400 hover:text-[#13ec49] hover:bg-slate-50'}`}
+                    >
+                        <span className="material-symbols-outlined">notifications</span>
+                        {unreadCount > 0 && (
+                            <span className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full border-2 border-white flex items-center justify-center animate-pulse">
+                                {unreadCount > 99 ? '99+' : unreadCount}
+                            </span>
+                        )}
+                    </button>
+                    <NotificationDropdown
+                        isOpen={isNotifOpen}
+                        onClose={() => setIsNotifOpen(false)}
+                        onUnreadCountChange={setUnreadCount}
+                    />
+                </div>
                 <div
                     className="hidden lg:flex items-center gap-3 cursor-pointer group"
                     onClick={handleProfileClick}

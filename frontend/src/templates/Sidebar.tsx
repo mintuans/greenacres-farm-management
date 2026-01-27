@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/src/contexts/AuthContext';
+import logoWeb from '../assets/logo_web.png';
 
 const Sidebar: React.FC = () => {
     const { logout } = useAuth();
@@ -43,6 +44,7 @@ const Sidebar: React.FC = () => {
         { label: 'Tin tức ', path: '/master-data/showcase-blog', icon: 'article' },
         { label: 'Quản lý Sự kiện', path: '/master-data/showcase-events', icon: 'event_available' },
         { label: 'Quản lý Khách mời', path: '/master-data/showcase-guests', icon: 'groups' },
+        { label: 'Thông báo', path: '/master-data/notifications', icon: 'send' },
     ];
 
     const payrollItems = [
@@ -61,12 +63,12 @@ const Sidebar: React.FC = () => {
 
     return (
         <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col h-full shrink-0">
-            <div className="p-6 flex flex-col gap-1">
-                <h1 className="text-slate-900 text-xl font-black tracking-tight flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[#13ec49] text-3xl">agriculture</span>
-                    GreenAcres
-                </h1>
-                <p className="text-slate-500 text-[11px] font-bold pl-9 uppercase tracking-widest">Quản lý nông trại</p>
+            <div className="p-6 flex flex-col items-center gap-2 text-center border-b border-slate-50">
+                <div className="flex items-center gap-2 w-full justify-center">
+                    <img src={logoWeb} alt="Vườn Nhà Mình Logo" className="size-14 object-contain shrink-0" />
+                    <h1 className="text-slate-900 text-lg font-black tracking-tight whitespace-nowrap">Vườn Nhà Mình</h1>
+                </div>
+                <p className="text-slate-500 text-[9px] font-black uppercase tracking-[0.2em] leading-tight whitespace-nowrap">Nông trại số, giá trị thật.</p>
             </div>
 
             <nav className="flex-1 px-4 py-4 flex flex-col gap-2 overflow-y-auto no-scrollbar">

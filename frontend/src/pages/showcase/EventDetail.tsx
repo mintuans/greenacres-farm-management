@@ -231,7 +231,7 @@ const EventDetail: React.FC = () => {
                                     <div className="relative p-10">
                                         <div className="flex gap-2 mb-4">
                                             <span className="inline-block px-4 py-1.5 bg-[#D4AF37] text-black text-[10px] font-black rounded-full uppercase tracking-[0.2em] shadow-lg">Sự kiện nổi bật</span>
-                                            <span className="inline-block px-4 py-1.5 bg-white/20 backdrop-blur-md text-white text-[10px] font-black rounded-full uppercase tracking-[0.2em]">GreenAcres</span>
+                                            <span className="inline-block px-4 py-1.5 bg-white/20 backdrop-blur-md text-white text-[10px] font-black rounded-full uppercase tracking-[0.2em]">Vườn Nhà Mình</span>
                                         </div>
                                         <h1 className="text-white text-4xl md:text-6xl font-black leading-[1.1] mb-6 tracking-tight drop-shadow-2xl">
                                             {event.title}
@@ -258,7 +258,7 @@ const EventDetail: React.FC = () => {
                                         <h2 className="text-2xl font-black text-[#111813] tracking-tight">Chi tiết sự kiện</h2>
                                     </div>
                                     <div className="text-[#4b6b53] leading-[1.8] mb-10 text-lg font-medium whitespace-pre-wrap italic">
-                                        {event.description || 'Thông tin chi tiết về sự kiện sẽ được cập nhật sớm nhất. Hãy sẵn sàng cho những trải nghiệm tuyệt vời tại GreenAcres!'}
+                                        {event.description || 'Thông tin chi tiết về sự kiện sẽ được cập nhật sớm nhất. Hãy sẵn sàng cho những trải nghiệm tuyệt vời tại Vườn Nhà Mình!'}
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-[#dbe6de] pt-10">
                                         <div className="group">
@@ -268,7 +268,7 @@ const EventDetail: React.FC = () => {
                                                     <span className="material-symbols-outlined text-white text-3xl">location_on</span>
                                                 </div>
                                                 <div>
-                                                    <p className="font-black text-[#111813] text-lg leading-tight mb-1">{event.location || 'Tại trang trại GreenAcres'}</p>
+                                                    <p className="font-black text-[#111813] text-lg leading-tight mb-1">{event.location || 'Tại Vườn Nhà Mình'}</p>
                                                     <p className="text-sm text-[#61896b] font-bold">Mỹ Tho, Tiền Giang, Việt Nam</p>
                                                 </div>
                                             </div>
@@ -314,7 +314,7 @@ const EventDetail: React.FC = () => {
                                     <div className="absolute top-0 right-0 size-24 bg-[#D4AF37]/20 rounded-full -mr-10 -mt-10 blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
                                     <h4 className="font-black text-[#D4AF37] flex items-center gap-2 mb-4 uppercase tracking-widest text-xs">
                                         <span className="material-symbols-outlined text-xl">stars</span>
-                                        GreenAcres Tip
+                                        Vườn Nhà Mình Tip
                                     </h4>
                                     <p className="text-sm text-slate-300 font-bold leading-loose italic">
                                         "Hãy mang theo máy ảnh của bạn để lưu lại những khoảnh khắc tuyệt đẹp cùng các chuyên gia của chúng tôi tại sự kiện này!"

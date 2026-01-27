@@ -6,6 +6,7 @@ const router = Router();
 router.get('/', inventoryController.getInventory);
 router.get('/stats', inventoryController.getStats);
 router.post('/', inventoryController.createItem);
+router.post('/import', inventoryController.bulkImport);
 router.put('/:id', inventoryController.updateItem);
 router.delete('/:id', inventoryController.deleteItem);
 

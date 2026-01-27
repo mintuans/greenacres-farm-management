@@ -579,7 +579,7 @@ const FarmShowcase: React.FC = () => {
 
     const handleShare = async () => {
         const shareData = {
-            title: 'Vườn Mận Lê Minh Tuấn',
+            title: 'Vườn Nhà Mình',
             text: 'Ghé thăm vườn mận hữu cơ chất lượng cao tại Mỹ Tho, Tiền Giang!',
             url: window.location.href,
         };
@@ -656,7 +656,8 @@ const FarmShowcase: React.FC = () => {
                                             {visitorCount.toLocaleString('vi-VN')}
                                         </span>
                                     </div>
-                                    <h1 className="text-[#111813] text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em]">Vườn Mận Lê Minh Tuấn</h1>
+                                    <h1 className="text-[#111813] text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em]">Vườn Nhà Mình</h1>
+                                    <p className="text-[#13ec49] font-bold text-lg italic -mt-1 mb-2">Đất lành, trái ngọt.</p>
                                     <div className="flex items-center gap-2 text-[#61896b]">
                                         <span className="material-symbols-outlined text-[20px]">location_on</span>
                                         <p className="text-base font-normal leading-normal">Mỹ Tho, Tiền Giang, Việt Nam</p>

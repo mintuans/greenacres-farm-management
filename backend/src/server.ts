@@ -44,6 +44,7 @@ import showcaseRoutes from './routes/showcase';
 import managementRoutes from './routes/management';
 import oauthRoutes from './routes/auth/oauth.routes';
 import payrollRoutes from './routes/payroll.routes';
+import notificationRoutes from './routes/notification.routes';
 import passport from './config/passport';
 
 // Initialize Passport
@@ -53,6 +54,7 @@ app.use('/api/showcase', showcaseRoutes);
 app.use('/api/management', managementRoutes);
 app.use('/api/auth', oauthRoutes);
 app.use('/api/payroll', payrollRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 
 // 404 handler

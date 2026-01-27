@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getInventory, getInventoryStats, createItem, updateItem, deleteItem, InventoryItem } from '../api/inventory.api';
+import { getInventory, getInventoryStats, createItem, updateItem, deleteItem, InventoryItem, bulkImportItems } from '../api/inventory.api';
 import { getCategoryTree, Category } from '../api/category.api';
 import { getMediaFiles, MediaFile } from '../services/media.service';
 import { getMediaUrl } from '../services/products.service';
@@ -22,6 +22,7 @@ const Inventory: React.FC = () => {
   // Custom Dropdown State
   const [showCatDropdown, setShowCatDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     inventory_code: '',
@@ -113,6 +114,72 @@ const Inventory: React.FC = () => {
     }
   };
 
+  const handleExport = () => {
+    const headers = ['SKU', 'Tên vật tư', 'Danh mục', 'Đơn vị tính', 'Số lượng', 'Mức tối thiểu', 'Giá nhập', 'Ngày nhập', 'Ghi chú'];
+    const csvData = filteredItems.map(item => [
+      item.inventory_code,
+      item.inventory_name,
+      item.category_name || '',
+      item.unit_of_measure || '',
+      item.stock_quantity,
+      item.min_stock_level,
+      item.last_import_price,
+      item.import_date ? new Date(item.import_date).toLocaleDateString('vi-VN') : '',
+      item.note || ''
+    ]);
+
+    const csvContent = [headers, ...csvData].map(row => row.map(v => `"${v}"`).join(',')).join('\n');
+    const blob = new Blob([`\ufeff${csvContent}`], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `inventory_export_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const text = event.target?.result as string;
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
+        if (lines.length <= 1) return;
+
+        const data = lines.slice(1).map(line => {
+          // Simple CSV parser that handles quotes
+          const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+          const row = matches ? matches.map(m => m.replace(/^"|"$/g, '')) : line.split(',');
+
+          return {
+            inventory_code: row[0] || generateRandomSKU(),
+            inventory_name: row[1] || 'Vật tư mới',
+            unit_of_measure: row[3] || 'Kg',
+            stock_quantity: Number(row[4]) || 0,
+            min_stock_level: Number(row[5]) || 0,
+            last_import_price: Number(row[6]) || 0,
+            import_date: new Date().toISOString(),
+            note: row[8] || ''
+          };
+        });
+
+        await bulkImportItems(data);
+        alert(`Đã nhập thành công ${data.length} mặt hàng!`);
+        fetchData();
+      } catch (error) {
+        console.error('Error importing data:', error);
+        alert('Lỗi khi nhập dữ liệu. Vui lòng kiểm tra định dạng file CSV.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
   const formatVND = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
   };
@@ -187,6 +254,27 @@ const Inventory: React.FC = () => {
           <p className="text-slate-500 mt-2">Theo dõi phân bón, thuốc bảo vệ thực vật và thức ăn chăn nuôi.</p>
         </div>
         <div className="flex gap-3">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept=".csv"
+            className="hidden"
+          />
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-2 px-5 py-2.5 bg-white text-slate-700 font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition-all shadow-sm"
+          >
+            <span className="material-symbols-outlined font-bold">download</span>
+            <span>Xuất Excel</span>
+          </button>
+          <button
+            onClick={handleImportClick}
+            className="flex items-center gap-2 px-5 py-2.5 bg-white text-slate-700 font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition-all shadow-sm"
+          >
+            <span className="material-symbols-outlined font-bold">upload</span>
+            <span>Nhập liệu</span>
+          </button>
           <button
             onClick={() => {
               setEditingItem(null);

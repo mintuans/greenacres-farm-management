@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import ShowcaseHeader from '../../templates/ShowcaseHeader';
 import { getPublicEvents, ShowcaseEvent } from '../../services/events.service';
 import { getMediaUrl } from '../../services/products.service';
+import logoWeb from '../../assets/logo_web.png';
 
 const ShowcaseEvents: React.FC = () => {
     const [events, setEvents] = useState<ShowcaseEvent[]>([]);
@@ -70,7 +71,7 @@ const ShowcaseEvents: React.FC = () => {
                     <div className="text-center py-24 bg-white rounded-[2rem] shadow-sm border border-slate-100">
                         <span className="material-symbols-outlined text-6xl text-slate-200 mb-4">calendar_today</span>
                         <h2 className="text-2xl font-bold text-[#111813]">Hiện chưa có sự kiện nào</h2>
-                        <p className="text-[#61896b] mt-2">Hãy quay lại sau để cập nhật các sự kiện mới nhất từ GreenAcres!</p>
+                        <p className="text-[#61896b] mt-2">Hãy quay lại sau để cập nhật các sự kiện mới nhất từ Vườn Nhà Mình!</p>
                     </div>
                 ) : (
                     <div className="flex flex-col gap-12">
@@ -92,7 +93,7 @@ const ShowcaseEvents: React.FC = () => {
                             {/* Right: Info */}
                             <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
                                 <div className="flex items-center gap-2 text-[#13ec49] mb-4">
-                                    <span className="material-symbols-outlined text-base">agriculture</span>
+                                    <img src={logoWeb} alt="Logo" className="size-5 object-contain" />
                                     <span className="text-xs font-black uppercase tracking-[0.2em]">Festive Gathering</span>
                                 </div>
                                 <h2 className="text-[#111813] text-3xl md:text-5xl font-black leading-tight mb-6">
@@ -245,10 +246,10 @@ const ShowcaseEvents: React.FC = () => {
             <footer className="mt-auto border-t border-[#e5e9e6] bg-white py-8 px-10">
                 <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-[#61896b] text-sm">
                     <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-[#13ec49]">agriculture</span>
-                        <span className="font-bold text-[#111813]">GreenAcres</span>
+                        <img src={logoWeb} alt="Logo" className="size-5 object-contain" />
+                        <span className="font-bold text-[#111813]">Vườn Nhà Mình</span>
                         <span className="mx-2">|</span>
-                        <span>© {new Date().getFullYear()} Vườn Mận Lê Minh Tuấn. All rights reserved.</span>
+                        <span>© {new Date().getFullYear()} Vườn Nhà Mình. All rights reserved.</span>
                     </div>
                     <div className="flex gap-6">
                         <Link to="/showcase/privacy-policy" className="hover:text-[#13ec49] transition-colors">Chính sách bảo mật</Link>

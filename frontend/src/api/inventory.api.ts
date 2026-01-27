@@ -41,3 +41,8 @@ export const deleteItem = async (id: string): Promise<void> => {
     await api.delete(`/management/inventory/${id}`);
 };
 
+export const bulkImportItems = async (items: any[]): Promise<any> => {
+    const response = await api.post('/management/inventory/import', items);
+    return response.data;
+};
+

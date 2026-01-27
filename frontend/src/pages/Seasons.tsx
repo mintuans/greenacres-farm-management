@@ -331,12 +331,12 @@ const Seasons: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex gap-4 w-full md:w-auto">
-                  <button
+                  {/* <button
                     onClick={() => handleEditClick(currentSeason)}
                     className="flex-1 md:flex-none bg-slate-900 text-white px-10 py-4 rounded-2xl font-black text-sm hover:bg-black transition-all shadow-xl shadow-slate-900/20 active:scale-95"
                   >
                     Chỉnh sửa vụ mùa
-                  </button>
+                  </button> */}
                   <button
                     onClick={() => setShowUsageModal(true)}
                     className="flex-1 md:flex-none bg-white border border-slate-200 text-slate-900 px-6 py-4 rounded-2xl font-black text-sm hover:bg-slate-50 transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2"
@@ -423,7 +423,7 @@ const Seasons: React.FC = () => {
                           <td className="px-8 py-5 text-right font-black text-slate-900">
                             <div className="flex items-center justify-end gap-3">
                               <span>{Number(s.expected_revenue || 0).toLocaleString('vi-VN')}đ</span>
-                              <button
+                              {/* <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleEditClick(s);
@@ -431,7 +431,7 @@ const Seasons: React.FC = () => {
                                 className="size-8 rounded-lg bg-slate-50 text-slate-400 hover:text-[#13ec49] hover:bg-[#13ec49]/10 transition-all flex items-center justify-center"
                               >
                                 <span className="material-symbols-outlined text-[18px]">edit</span>
-                              </button>
+                              </button> */}
                             </div>
                           </td>
                         </tr>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { showcaseRegister } from '@/src/services/auth.service';
+import logoWeb from '../../assets/logo_web.png';
 
 const Register: React.FC = () => {
     const [fullName, setFullName] = useState('');
@@ -54,12 +55,10 @@ const Register: React.FC = () => {
             {/* Minimal Header */}
             <header className="flex items-center justify-between px-6 md:px-10 py-6">
                 <Link to="/showcase" className="flex items-center gap-2 group">
-                    <div className="size-10 rounded-xl bg-[#13ec49] flex items-center justify-center text-white shadow-lg shadow-[#13ec49]/20 transition-transform group-hover:scale-110">
-                        <span className="material-symbols-outlined text-2xl">agriculture</span>
-                    </div>
+                    <img src={logoWeb} alt="Vườn Nhà Mình Logo" className="size-20 object-contain group-hover:scale-110 transition-transform" />
                     <div>
-                        <h2 className="text-[#111813] text-xl font-black leading-none tracking-tight">GreenAcres</h2>
-                        <span className="text-[10px] font-black text-[#61896b] uppercase tracking-widest leading-none">Management</span>
+                        <h2 className="text-[#111813] text-xl font-black leading-none tracking-tight">Vườn Nhà Mình</h2>
+                        <span className="text-[10px] font-black text-[#61896b] uppercase tracking-widest leading-none">Hệ thống quản lý</span>
                     </div>
                 </Link>
                 <Link to="/login" className="text-sm font-bold text-[#61896b] hover:text-[#13ec49] transition-colors flex items-center gap-1 group">
@@ -152,7 +151,7 @@ const Register: React.FC = () => {
                         <div className="flex items-start gap-3 px-2">
                             <input className="mt-1 accent-[#13ec49] h-4 w-4 border-[#dbe6de]" id="terms" type="checkbox" required />
                             <label className="text-xs text-[#61896b] font-bold italic" htmlFor="terms">
-                                Tôi đồng ý với <a className="text-[#13ec49] underline" href="#">Điều khoản dịch vụ</a> và <a className="text-[#13ec49] underline" href="#">Chính sách bảo mật</a> của GreenAcres.
+                                Tôi đồng ý với <a className="text-[#13ec49] underline" href="#">Điều khoản dịch vụ</a> và <a className="text-[#13ec49] underline" href="#">Chính sách bảo mật</a> của Vườn Nhà Mình.
                             </label>
                         </div>
 
@@ -199,7 +198,7 @@ const Register: React.FC = () => {
                     <Link className="text-[10px] text-[#61896b] uppercase tracking-widest hover:text-[#13ec49] transition-colors" to="/showcase/privacy-policy">Chính sách</Link>
                     <Link className="text-[10px] text-[#61896b] uppercase tracking-widest hover:text-[#13ec49] transition-colors" to="/showcase/terms-of-service">Điều khoản</Link>
                 </div>
-                <p className="text-[#61896b] text-[10px] font-bold opacity-50 italic">© 2024 GreenAcres Management Solutions. Cultivating the future.</p>
+                <p className="text-[#61896b] text-[10px] font-bold opacity-50 italic">© 2026 Vườn Nhà Mình. Đất lành, trái ngọt.</p>
             </footer>
         </div>
     );
