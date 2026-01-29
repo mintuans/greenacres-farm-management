@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import ShowcaseHeader from '../../templates/ShowcaseHeader';
-import { getPublicEventById, joinEvent, ShowcaseEvent } from '../../services/events.service';
+import { getPublicEventById, joinEvent, ShowcaseEvent, getUploadPermission, uploadEventGallery } from '../../services/events.service';
 import { getMediaUrl } from '../../services/products.service';
+import { uploadMedia } from '../../services/media.service';
 import { useAuth } from '@/src/contexts/AuthContext';
 
 const EventDetail: React.FC = () => {
@@ -13,12 +14,32 @@ const EventDetail: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [joining, setJoining] = useState(false);
     const [forbidden, setForbidden] = useState(false);
+    const [showGreeting, setShowGreeting] = useState(false);
+    const [greetingMessage, setGreetingMessage] = useState('');
+    const [canUpload, setCanUpload] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (id) {
             loadEvent(id);
+            if (isAuthenticated) {
+                checkPermission(id);
+            }
         }
-    }, [id]);
+    }, [id, isAuthenticated]);
+
+    const checkPermission = async (eventId: string) => {
+        try {
+            const res = await getUploadPermission(eventId);
+            if (res.success) {
+                setCanUpload(res.canUpload);
+            }
+        } catch (error) {
+            console.error('Error checking upload permission:', error);
+        }
+    };
 
     const loadEvent = async (eventId: string) => {
         try {
@@ -58,7 +79,12 @@ const EventDetail: React.FC = () => {
             setJoining(true);
             const response = await joinEvent(id);
             if (response.success) {
-                alert(response.message || 'Hẹn gặp lại bạn tại sự kiện!');
+                if (response.greeting) {
+                    setGreetingMessage(response.greeting);
+                    setShowGreeting(true);
+                } else {
+                    alert(response.message || 'Hẹn gặp lại bạn tại sự kiện!');
+                }
                 // Reload event to see new participant list
                 loadEvent(id);
             } else {
@@ -89,6 +115,47 @@ const EventDetail: React.FC = () => {
     };
 
     const isUserJoined = event?.participants?.some(p => p.full_name === user?.name);
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !id) return;
+
+        try {
+            setUploading(true);
+            // 1. Upload to media library
+            const mediaRes: any = await uploadMedia(file, 'event_new_year');
+            if (mediaRes && mediaRes.success && mediaRes.data) {
+                // 2. Link to event gallery
+                const linkRes = await uploadEventGallery(id, mediaRes.data.id);
+                if (linkRes.success) {
+                    alert('Tải ảnh lên thành công!');
+                    loadEvent(id); // Reload to see new image
+                } else {
+                    alert(linkRes.message || 'Lỗi khi gắn ảnh vào sự kiện');
+                }
+            }
+        } catch (error) {
+            console.error('Error uploading file:', error);
+            alert('Lỗi khi tải ảnh lên');
+        } finally {
+            setUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+    const handlePrevImage = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (selectedImageIndex !== null && event?.gallery_ids) {
+            setSelectedImageIndex((selectedImageIndex - 1 + event.gallery_ids.length) % event.gallery_ids.length);
+        }
+    };
+
+    const handleNextImage = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (selectedImageIndex !== null && event?.gallery_ids) {
+            setSelectedImageIndex((selectedImageIndex + 1) % event.gallery_ids.length);
+        }
+    };
 
     return (
         <div className="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden bg-[#f6f8f6]">
@@ -147,7 +214,7 @@ const EventDetail: React.FC = () => {
                                         <span className="material-symbols-outlined text-[#13ec49] text-3xl">groups</span>
                                         Danh sách tham gia
                                     </h2>
-                                    <p className="text-[#61896b] text-sm font-medium">Gặp gỡ những người chuyên gia và khách mời tham gia sự kiện!</p>
+                                    <p className="text-[#61896b] text-sm font-medium">Cùng đón chào những vị khách quý sẽ cùng chúng ta khai xuân, hái lộc đầu năm! 🌸🧧✨</p>
                                 </div>
                                 <button
                                     onClick={handleJoin}
@@ -257,9 +324,11 @@ const EventDetail: React.FC = () => {
                                         </div>
                                         <h2 className="text-2xl font-black text-[#111813] tracking-tight">Chi tiết sự kiện</h2>
                                     </div>
-                                    <div className="text-[#4b6b53] leading-[1.8] mb-10 text-lg font-medium whitespace-pre-wrap italic">
+                                    <div className="text-[#4b6b53] leading-[1.8] mb-10 text-lg font-medium whitespace-pre-wrap italic border-l-4 border-[#13ec49] pl-6 py-2 bg-[#f6fcf8] rounded-r-2xl">
                                         {event.description || 'Thông tin chi tiết về sự kiện sẽ được cập nhật sớm nhất. Hãy sẵn sàng cho những trải nghiệm tuyệt vời tại Vườn Nhà Mình!'}
                                     </div>
+
+
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-[#dbe6de] pt-10">
                                         <div className="group">
                                             <h3 className="text-[10px] font-black text-[#61896b] uppercase tracking-[0.2em] mb-6">Địa điểm tổ chức</h3>
@@ -281,7 +350,7 @@ const EventDetail: React.FC = () => {
                                                 </div>
                                                 <div>
                                                     <p className="font-black text-[#111813] text-lg leading-tight mb-1">Lễ hội / Tự do</p>
-                                                    <p className="text-sm text-[#61896b] font-bold">Khuyến nghị phong cách Nông trại</p>
+                                                    <p className="text-sm text-[#61896b] font-bold">Gì cũm được, bạn đẹp là được🧧✨</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -292,22 +361,89 @@ const EventDetail: React.FC = () => {
                             {/* Right Column - RSVP & Info */}
                             <div className="flex flex-col gap-8">
                                 {/* RSVP Card */}
-                                <div className="bg-white p-8 rounded-[40px] border-2 border-[#13ec49] shadow-2xl shadow-[#13ec49]/10 sticky top-24 overflow-hidden relative">
-                                    <div className="absolute top-0 right-0 size-32 bg-[#13ec49]/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-                                    <h3 className="text-2xl font-black mb-3 tracking-tight">Đăng ký ngay!</h3>
-                                    <p className="text-[#61896b] text-sm font-bold mb-8 leading-relaxed">Tham gia cùng chúng tôi để có một trải nghiệm đáng nhớ nhất trong năm!</p>
-                                    <button
-                                        onClick={handleJoin}
-                                        disabled={joining || isUserJoined}
-                                        className={`w-full ${isUserJoined ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-[#13ec49] hover:bg-[#13ec49]/90 text-black shadow-[#13ec49]/30 active:scale-95'} h-16 rounded-3xl font-black text-lg transition-all flex items-center justify-center gap-3 group mb-4 shadow-xl`}
-                                    >
-                                        {isUserJoined ? 'Bạn đã trong danh sách' : joining ? 'Đang thực hiện...' : 'Tham gia ngay'}
-                                        <span className="material-symbols-outlined text-2xl group-hover:rotate-12 transition-transform">{isUserJoined ? 'check' : 'celebration'}</span>
-                                    </button>
-                                    <button className="w-full bg-slate-50 hover:bg-slate-100 text-[#111813] font-bold h-14 rounded-2xl transition-all active:scale-95 border border-slate-100">
-                                        Tôi quan tâm
-                                    </button>
-                                </div>
+                                {!isUserJoined && (
+                                    <div className="bg-white p-8 rounded-[40px] border-2 border-[#13ec49] shadow-2xl shadow-[#13ec49]/10 sticky top-24 overflow-hidden relative">
+                                        <div className="absolute top-0 right-0 size-32 bg-[#13ec49]/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+                                        <h3 className="text-2xl font-black mb-3 tracking-tight">Đăng ký ngay!</h3>
+                                        <p className="text-[#61896b] text-sm font-bold mb-8 leading-relaxed">Tham gia cùng chúng tôi để có một trải nghiệm đáng nhớ nhất trong năm!</p>
+                                        <button
+                                            onClick={handleJoin}
+                                            disabled={joining}
+                                            className="w-full bg-[#13ec49] hover:bg-[#13ec49]/90 text-black shadow-[#13ec49]/30 active:scale-95 h-16 rounded-3xl font-black text-lg transition-all flex items-center justify-center gap-3 group mb-4 shadow-xl"
+                                        >
+                                            {joining ? 'Đang thực hiện...' : 'Tham gia ngay'}
+                                            <span className="material-symbols-outlined text-2xl group-hover:rotate-12 transition-transform">celebration</span>
+                                        </button>
+                                        <button className="w-full bg-slate-50 hover:bg-slate-100 text-[#111813] font-bold h-14 rounded-2xl transition-all active:scale-95 border border-slate-100">
+                                            Tôi quan tâm
+                                        </button>
+                                    </div>
+                                )}
+
+                                {/* Gallery Section (Moved to Sidebar) */}
+                                {(event.gallery_ids && event.gallery_ids.length > 0 || canUpload) && (
+                                    <div className="bg-white p-6 rounded-[40px] border border-[#dbe6de] shadow-xl shadow-slate-200/50">
+                                        <div className="flex items-center justify-between mb-6">
+                                            <div className="flex items-center gap-2">
+                                                <span className="material-symbols-outlined text-[#13ec49]">photo_library</span>
+                                                <h3 className="text-xs font-black text-[#111813] uppercase tracking-widest">Khoảnh khắc</h3>
+                                            </div>
+
+                                            {canUpload && (
+                                                <>
+                                                    <button
+                                                        onClick={() => fileInputRef.current?.click()}
+                                                        disabled={uploading}
+                                                        className="flex items-center justify-center size-10 bg-[#13ec49]/10 hover:bg-[#13ec49] text-[#13ec49] hover:text-black rounded-xl transition-all active:scale-95 border border-[#13ec49]/20 shadow-sm group"
+                                                        title="Đóng góp ảnh"
+                                                    >
+                                                        <span className="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">
+                                                            {uploading ? 'sync' : 'add_photo_alternate'}
+                                                        </span>
+                                                    </button>
+                                                    <input
+                                                        type="file"
+                                                        ref={fileInputRef}
+                                                        onChange={handleFileUpload}
+                                                        className="hidden"
+                                                        accept="image/*"
+                                                    />
+                                                </>
+                                            )}
+                                        </div>
+
+                                        {event.gallery_ids && event.gallery_ids.length > 0 ? (
+                                            <div className="grid grid-cols-2 gap-3">
+                                                {event.gallery_ids.map((imgId, index) => (
+                                                    <div
+                                                        key={imgId}
+                                                        className={`relative aspect-square rounded-2xl overflow-hidden group shadow-md border border-slate-100 cursor-zoom-in ${index > 3 ? 'hidden' : ''}`}
+                                                        onClick={() => setSelectedImageIndex(index)}
+                                                    >
+                                                        <img
+                                                            src={getMediaUrl(imgId)}
+                                                            className="size-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                            alt=""
+                                                        />
+                                                        {index === 3 && event.gallery_ids!.length > 4 && (
+                                                            <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex flex-col items-center justify-center text-white">
+                                                                <span className="text-xl font-black">+{event.gallery_ids!.length - 3}</span>
+                                                                <span className="text-[8px] font-bold uppercase tracking-widest">Xem thêm</span>
+                                                            </div>
+                                                        )}
+                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="py-8 border-2 border-dashed border-slate-100 rounded-3xl text-center bg-slate-50/50">
+                                                <span className="material-symbols-outlined text-2xl text-slate-200 mb-1">collections</span>
+                                                <p className="text-slate-400 text-[10px] font-bold italic px-4">Chưa có ảnh chia sẻ.</p>
+                                                {canUpload && <p className="text-[#13ec49] text-[8px] font-black uppercase mt-1 animate-pulse">Hãy đóng góp ảnh!</p>}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
                                 {/* Pro Tip */}
                                 <div className="bg-slate-900 p-8 rounded-[40px] relative overflow-hidden group shadow-2xl transform hover:-translate-y-2 transition-transform">
@@ -317,7 +453,7 @@ const EventDetail: React.FC = () => {
                                         Vườn Nhà Mình Tip
                                     </h4>
                                     <p className="text-sm text-slate-300 font-bold leading-loose italic">
-                                        "Hãy mang theo máy ảnh của bạn để lưu lại những khoảnh khắc tuyệt đẹp cùng các chuyên gia của chúng tôi tại sự kiện này!"
+                                        "Hái lộc đầu xuân, vạn sự như ý! Đừng bỏ lỡ cơ hội nhận những phần quà 'lộc xuân' mang đậm hương vị quê nhà dành riêng cho bạn tại sự kiện lần này nhé! 🧧🌸✨"
                                     </p>
                                 </div>
                             </div>
@@ -325,6 +461,49 @@ const EventDetail: React.FC = () => {
                     </>
                 )}
             </main>
+
+            {/* Stunning Greeting Modal */}
+            {showGreeting && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                    {/* Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-black/60 backdrop-blur-md animate-in fade-in duration-500"
+                        onClick={() => setShowGreeting(false)}
+                    ></div>
+
+                    {/* Content */}
+                    <div className="relative bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[3rem] p-12 max-w-2xl w-full shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] overflow-hidden animate-in zoom-in slide-in-from-bottom-12 duration-700">
+                        {/* Decorative Background Elements */}
+                        <div className="absolute top-0 right-0 size-64 bg-[#13ec49]/20 rounded-full -mr-32 -mt-32 blur-3xl animate-pulse"></div>
+                        <div className="absolute bottom-0 left-0 size-64 bg-yellow-400/10 rounded-full -ml-32 -mb-32 blur-3xl animate-pulse"></div>
+
+                        <div className="relative z-10 text-center">
+                            <div className="size-24 bg-gradient-to-br from-[#13ec49] to-[#0ea032] rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-[#13ec49]/40 transform rotate-12 hover:rotate-0 transition-transform duration-500">
+                                <span className="material-symbols-outlined text-5xl text-white">celebration</span>
+                            </div>
+
+                            <h2 className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tight leading-tight">
+                                Chào mừng bạn!
+                            </h2>
+
+                            <div className="bg-white/90 rounded-[2rem] p-8 md:p-10 shadow-inner mb-10 transform -rotate-1 relative overflow-hidden">
+                                <span className="material-symbols-outlined absolute top-4 left-4 text-[#13ec49]/20 text-6xl">format_quote</span>
+                                <p className="text-[#111813] text-xl md:text-2xl font-black italic relative z-10 leading-relaxed">
+                                    {greetingMessage}
+                                </p>
+                            </div>
+
+                            <button
+                                onClick={() => setShowGreeting(false)}
+                                className="bg-[#13ec49] hover:bg-white text-black font-black px-12 py-5 rounded-2xl shadow-xl shadow-[#13ec49]/20 transition-all active:scale-95 group flex items-center gap-3 mx-auto"
+                            >
+                                <span>Tuyệt quá!</span>
+                                <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <style>
                 {`
@@ -337,6 +516,53 @@ const EventDetail: React.FC = () => {
                     }
                 `}
             </style>
+            {/* Image Detail Modal (Lightbox) */}
+            {selectedImageIndex !== null && event?.gallery_ids && (
+                <div
+                    className="fixed inset-0 z-[300] flex items-center justify-center p-4 md:p-10 animate-in fade-in zoom-in duration-300"
+                    onClick={() => setSelectedImageIndex(null)}
+                >
+                    <div className="absolute inset-0 bg-black/95 backdrop-blur-xl"></div>
+
+                    <button
+                        className="absolute top-6 right-6 size-12 flex items-center justify-center bg-white/10 hover:bg-white text-white hover:text-black rounded-full transition-all z-10"
+                        onClick={() => setSelectedImageIndex(null)}
+                    >
+                        <span className="material-symbols-outlined font-bold">close</span>
+                    </button>
+
+                    {/* Navigation Arrows */}
+                    {event.gallery_ids.length > 1 && (
+                        <>
+                            <button
+                                className="absolute left-4 md:left-10 top-1/2 -translate-y-1/2 size-12 md:size-16 flex items-center justify-center bg-white/10 hover:bg-[#13ec49] text-white hover:text-black rounded-full transition-all z-10 border border-white/10"
+                                onClick={handlePrevImage}
+                            >
+                                <span className="material-symbols-outlined text-3xl md:text-4xl">chevron_left</span>
+                            </button>
+                            <button
+                                className="absolute right-4 md:right-10 top-1/2 -translate-y-1/2 size-12 md:size-16 flex items-center justify-center bg-white/10 hover:bg-[#13ec49] text-white hover:text-black rounded-full transition-all z-10 border border-white/10"
+                                onClick={handleNextImage}
+                            >
+                                <span className="material-symbols-outlined text-3xl md:text-4xl">chevron_right</span>
+                            </button>
+                        </>
+                    )}
+
+                    <div className="relative w-full max-w-5xl h-full flex items-center justify-center" onClick={e => e.stopPropagation()}>
+                        <img
+                            src={getMediaUrl(event.gallery_ids[selectedImageIndex])}
+                            alt="Phóng to"
+                            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                        />
+
+                        {/* Image Counter */}
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full text-white/80 text-xs font-bold border border-white/10">
+                            {selectedImageIndex + 1} / {event.gallery_ids.length}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

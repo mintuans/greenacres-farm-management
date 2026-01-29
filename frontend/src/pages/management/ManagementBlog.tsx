@@ -83,121 +83,123 @@ const ManagementBlog: React.FC = () => {
 
             {/* Table */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                {loading ? (
-                    <div className="text-center py-12">
-                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#13ec49]"></div>
-                        <p className="text-gray-500 mt-2">Đang tải...</p>
-                    </div>
-                ) : posts.length === 0 ? (
-                    <div className="text-center py-12">
-                        <span className="material-symbols-outlined text-6xl text-gray-300">article</span>
-                        <p className="text-gray-500 mt-2">Chưa có bài viết nào</p>
-                        <button
-                            onClick={() => navigate('/master-data/showcase-blog/add')}
-                            className="mt-4 text-[#13ec49] font-bold hover:underline"
-                        >
-                            Tạo bài viết đầu tiên
-                        </button>
-                    </div>
-                ) : (
-                    <table className="w-full">
-                        <thead className="bg-gray-50 border-b border-gray-100">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                    Bài viết
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                    Danh mục
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                    Trạng thái
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                    Lượt xem
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                    Ngày xuất bản
-                                </th>
-                                <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                    Thao tác
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {posts.map((post) => (
-                                <tr key={post.id} className="hover:bg-gray-50 transition-colors">
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
-                                            {post.thumbnail_id && (
-                                                <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shrink-0">
-                                                    <img
-                                                        src={getMediaUrl(post.thumbnail_id)}
-                                                        alt={post.title}
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                </div>
-                                            )}
-                                            <div className="min-w-0">
-                                                <p className="font-bold text-gray-900 truncate">{post.title}</p>
-                                                <p className="text-sm text-gray-500 truncate">{post.excerpt}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-sm text-gray-600 whitespace-nowrap">
-                                            {post.category_name || '—'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-bold whitespace-nowrap ${getStatusBadge(post.status)}`}>
-                                            {getStatusText(post.status)}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-1 text-sm text-gray-600">
-                                            <span className="material-symbols-outlined text-sm">visibility</span>
-                                            {post.view_count || 0}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-sm text-gray-600">
-                                            {formatDate(post.published_at)}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center justify-end gap-2">
-                                            <button
-                                                onClick={() => navigate(`/master-data/showcase-blog/edit/${post.id}`)}
-                                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                                title="Chỉnh sửa"
-                                            >
-                                                <span className="material-symbols-outlined text-sm">edit</span>
-                                            </button>
-                                            <button
-                                                onClick={async () => {
-                                                    if (confirm('Bạn có chắc muốn xóa bài viết này?')) {
-                                                        try {
-                                                            await deleteBlogPost(post.id);
-                                                            alert('Xóa bài viết thành công!');
-                                                            loadPosts();
-                                                        } catch (error: any) {
-                                                            console.error('Error deleting post:', error);
-                                                            alert(error.response?.data?.message || 'Có lỗi khi xóa bài viết!');
-                                                        }
-                                                    }
-                                                }}
-                                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                title="Xóa"
-                                            >
-                                                <span className="material-symbols-outlined text-sm">delete</span>
-                                            </button>
-                                        </div>
-                                    </td>
+                <div className="overflow-x-auto">
+                    {loading ? (
+                        <div className="text-center py-12">
+                            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#13ec49]"></div>
+                            <p className="text-gray-500 mt-2">Đang tải...</p>
+                        </div>
+                    ) : posts.length === 0 ? (
+                        <div className="text-center py-12">
+                            <span className="material-symbols-outlined text-6xl text-gray-300">article</span>
+                            <p className="text-gray-500 mt-2">Chưa có bài viết nào</p>
+                            <button
+                                onClick={() => navigate('/master-data/showcase-blog/add')}
+                                className="mt-4 text-[#13ec49] font-bold hover:underline"
+                            >
+                                Tạo bài viết đầu tiên
+                            </button>
+                        </div>
+                    ) : (
+                        <table className="w-full min-w-[1000px]">
+                            <thead className="bg-gray-50 border-b border-gray-100">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                        Bài viết
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                        Danh mục
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                                        Trạng thái
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                        Lượt xem
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                        Ngày xuất bản
+                                    </th>
+                                    <th className="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                        Thao tác
+                                    </th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {posts.map((post) => (
+                                    <tr key={post.id} className="hover:bg-gray-50 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                {post.thumbnail_id && (
+                                                    <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+                                                        <img
+                                                            src={getMediaUrl(post.thumbnail_id)}
+                                                            alt={post.title}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </div>
+                                                )}
+                                                <div className="min-w-0">
+                                                    <p className="font-bold text-gray-900 truncate">{post.title}</p>
+                                                    <p className="text-sm text-gray-500 truncate">{post.excerpt}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-sm text-gray-600 whitespace-nowrap">
+                                                {post.category_name || '—'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-2 py-1 rounded-full text-xs font-bold whitespace-nowrap ${getStatusBadge(post.status)}`}>
+                                                {getStatusText(post.status)}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-1 text-sm text-gray-600">
+                                                <span className="material-symbols-outlined text-sm">visibility</span>
+                                                {post.view_count || 0}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-sm text-gray-600">
+                                                {formatDate(post.published_at)}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={() => navigate(`/master-data/showcase-blog/edit/${post.id}`)}
+                                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                    title="Chỉnh sửa"
+                                                >
+                                                    <span className="material-symbols-outlined text-sm">edit</span>
+                                                </button>
+                                                <button
+                                                    onClick={async () => {
+                                                        if (confirm('Bạn có chắc muốn xóa bài viết này?')) {
+                                                            try {
+                                                                await deleteBlogPost(post.id);
+                                                                alert('Xóa bài viết thành công!');
+                                                                loadPosts();
+                                                            } catch (error: any) {
+                                                                console.error('Error deleting post:', error);
+                                                                alert(error.response?.data?.message || 'Có lỗi khi xóa bài viết!');
+                                                            }
+                                                        }
+                                                    }}
+                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                    title="Xóa"
+                                                >
+                                                    <span className="material-symbols-outlined text-sm">delete</span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
             </div>
         </div>
     );

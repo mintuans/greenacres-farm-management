@@ -57,7 +57,6 @@ const LoginRequired: React.FC = () => {
                         <img src={logoWeb} alt="Logo" className="size-5 object-contain opacity-60" />
                         <p className="text-[#61896b] text-sm font-normal leading-normal">© 2026 Vườn Nhà Mình</p>
                     </div>
-                    <p className="text-[#61896b]/60 text-xs">Empowering farmers with smart digital tools.</p>
                 </div>
             </footer>
         </div>

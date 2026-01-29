@@ -81,6 +81,7 @@ const ManagementShowcaseEvents: React.FC = () => {
                             <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200">
                                 <tr>
                                     <th className="px-6 py-4">Sự kiện</th>
+                                    <th className="px-6 py-4">Gallery</th>
                                     <th className="px-6 py-4">Ngày diễn ra</th>
                                     <th className="px-6 py-4">Địa điểm</th>
                                     <th className="px-6 py-4">Trạng thái</th>
@@ -105,6 +106,24 @@ const ManagementShowcaseEvents: React.FC = () => {
                                                         </div>
                                                     )}
                                                     <span className="font-bold text-slate-900">{event.title}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex -space-x-2">
+                                                    {event.gallery_ids && event.gallery_ids.length > 0 ? (
+                                                        <>
+                                                            {event.gallery_ids.slice(0, 3).map((imgId, idx) => (
+                                                                <img key={idx} src={getMediaUrl(imgId)} className="size-8 rounded-full border-2 border-white object-cover" alt="" />
+                                                            ))}
+                                                            {event.gallery_ids.length > 3 && (
+                                                                <div className="size-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500">
+                                                                    +{event.gallery_ids.length - 3}
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        <span className="text-slate-300 italic text-xs">Trống</span>
+                                                    )}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-slate-600 italic">

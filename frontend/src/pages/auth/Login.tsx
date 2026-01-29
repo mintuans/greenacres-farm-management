@@ -173,7 +173,7 @@ const Login: React.FC = () => {
                     {/* Sign Up Link */}
                     <div className="mt-12 text-center space-y-2">
                         <p className="text-[#61896b] text-sm font-bold">Bạn chưa có tài khoản?</p>
-                        <Link className="inline-block text-[#13ec49] text-base font-black uppercase tracking-widest hover:underline hover:scale-105 transition-all" to="/register">Đăng ký miễn phí</Link>
+                        <Link className="inline-block text-[#13ec49] text-base font-black uppercase tracking-widest hover:underline hover:scale-105 transition-all" to="/register">Đăng ký</Link>
                     </div>
                 </div>
             </main>

@@ -17,6 +17,7 @@ export interface ShowcaseEvent {
     event_date: string;
     location?: string;
     status: string;
+    gallery_ids?: string[];
     participants: EventParticipant[];
 }
 
@@ -40,5 +41,21 @@ export const getPublicEventById = async (id: string) => {
  */
 export const joinEvent = async (id: string) => {
     const response = await api.post(`/showcase/events/${id}/join`);
+    return response.data;
+};
+
+/**
+ * Kiểm tra quyền upload
+ */
+export const getUploadPermission = async (id: string) => {
+    const response = await api.get(`/showcase/events/${id}/upload-permission`);
+    return response.data;
+};
+
+/**
+ * Upload ảnh lên gallery sự kiện
+ */
+export const uploadEventGallery = async (eventId: string, mediaId: string) => {
+    const response = await api.post(`/showcase/events/${eventId}/upload-gallery`, { media_id: mediaId });
     return response.data;
 };

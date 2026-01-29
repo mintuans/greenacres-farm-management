@@ -91,9 +91,75 @@ export const joinEvent = async (req: Request, res: Response): Promise<any> => {
             is_vip: false,
             sort_order: 99
         });
-        return res.json({ success: true, message: 'Tham gia sự kiện thành công' });
+
+        // 5. Kiểm tra xem có lời chúc riêng hay không
+        const greeting = await showcaseEventService.getGreetingForUser(event_id, authUser.id);
+        let greetingMsg = null;
+
+        if (greeting) {
+            greetingMsg = greeting.greeting_message;
+            // Đánh dấu đã gửi
+            await showcaseEventService.markGreetingAsSent(greeting.id);
+        }
+
+        return res.json({
+            success: true,
+            message: 'Tham gia sự kiện thành công',
+            greeting: greetingMsg
+        });
     } catch (error: any) {
         console.error('Error joining event:', error);
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+/**
+ * Kiểm tra quyền upload ảnh gallery của user
+ */
+export const getUploadPermission = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { id } = req.params;
+        const authUser = (req as any).user;
+
+        if (!authUser) {
+            return res.json({ success: true, canUpload: false });
+        }
+
+        const canUpload = await showcaseEventService.checkUserUploadPermission(id, authUser.id);
+        return res.json({ success: true, canUpload });
+    } catch (error: any) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+/**
+ * Thêm ảnh vào gallery (Dành cho user có quyền)
+ */
+export const uploadGalleryImage = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { id: event_id } = req.params;
+        const { media_id } = req.body;
+        const authUser = (req as any).user;
+
+        if (!authUser) {
+            return res.status(401).json({ success: false, message: 'Bạn cần đăng nhập' });
+        }
+
+        if (!media_id) {
+            return res.status(400).json({ success: false, message: 'Thiếu media_id' });
+        }
+
+        // Kiểm tra quyền
+        const canUpload = await showcaseEventService.checkUserUploadPermission(event_id, authUser.id);
+        if (!canUpload) {
+            return res.status(403).json({ success: false, message: 'Bạn không có quyền upload ảnh cho sự kiện này' });
+        }
+
+        await showcaseEventService.addGalleryImageToEvent(event_id, media_id);
+
+        return res.json({ success: true, message: 'Tải ảnh lên thành công' });
+    } catch (error: any) {
+        console.error('Error in uploadGalleryImage:', error);
         return res.status(500).json({ success: false, message: error.message });
     }
 };

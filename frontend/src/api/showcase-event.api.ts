@@ -17,6 +17,7 @@ export interface ShowcaseEvent {
     event_date: string;
     location?: string;
     status: 'DRAFT' | 'PUBLISHED' | 'ENDED';
+    gallery_ids?: string[];
     participants?: ShowcaseEventParticipant[];
 }
 
@@ -30,7 +31,20 @@ export interface ShowcaseEventParticipant {
     role_at_event?: string;
     color_theme: string;
     is_vip: boolean;
+    can_upload_gallery: boolean;
     sort_order: number;
+}
+
+export interface EventGreeting {
+    id: string;
+    event_id: string;
+    public_user_id: string;
+    full_name?: string;
+    email?: string;
+    avatar_id?: string;
+    greeting_message: string;
+    is_sent: boolean;
+    created_at: string;
 }
 
 // Events
@@ -93,4 +107,27 @@ export const addParticipant = async (data: {
 
 export const removeParticipant = async (id: string): Promise<void> => {
     await api.delete(`/management/showcase-events/participants/${id}`);
+};
+
+export const updateParticipantPermission = async (id: string, canUpload: boolean): Promise<void> => {
+    await api.put(`/management/showcase-events/participants/${id}/permission`, { can_upload_gallery: canUpload });
+};
+
+// Greetings
+export const getEventGreetings = async (eventId: string): Promise<EventGreeting[]> => {
+    const response = await api.get(`/management/showcase-events/${eventId}/greetings`);
+    return response.data.data;
+};
+
+export const saveEventGreeting = async (data: Partial<EventGreeting>): Promise<EventGreeting> => {
+    const response = await api.post('/management/showcase-events/greetings', data);
+    return response.data.data;
+};
+
+export const deleteEventGreeting = async (id: string): Promise<void> => {
+    await api.delete(`/management/showcase-events/greetings/${id}`);
+};
+
+export const sendGreetingNotification = async (id: string): Promise<void> => {
+    await api.post(`/management/showcase-events/greetings/${id}/send-notification`);
 };

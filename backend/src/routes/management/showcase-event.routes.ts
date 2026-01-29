@@ -19,5 +19,12 @@ router.delete('/guests/:id', showcaseEventController.deleteGuest);
 // Participants
 router.post('/participants', showcaseEventController.addParticipant);
 router.delete('/participants/:id', showcaseEventController.removeParticipant);
+router.put('/participants/:id/permission', showcaseEventController.updateParticipantPermission);
+
+// Greetings
+router.get('/:eventId/greetings', showcaseEventController.getGreetings);
+router.post('/greetings', showcaseEventController.upsertGreeting);
+router.delete('/greetings/:id', showcaseEventController.deleteGreeting);
+router.post('/greetings/:id/send-notification', showcaseEventController.sendGreetingNotification);
 
 export default router;
