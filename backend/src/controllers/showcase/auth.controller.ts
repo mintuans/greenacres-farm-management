@@ -3,7 +3,9 @@ import pool from '../../config/database';
 import { hashPassword, comparePassword } from '../../helpers/hash.helper';
 import { generateToken } from '../../helpers/jwt.helper';
 import { logActivity } from '../../services/audit-log.service';
+import { sendResetPasswordEmail } from '../../services/email.service';
 import { z } from 'zod';
+import crypto from 'crypto';
 
 const publicRegisterSchema = z.object({
     email: z.string().email('Email không hợp lệ'),
@@ -15,6 +17,15 @@ const publicRegisterSchema = z.object({
 const publicLoginSchema = z.object({
     email: z.string().email('Email không hợp lệ'),
     password: z.string().min(1, 'Mật khẩu không được để trống'),
+});
+
+const forgotPasswordSchema = z.object({
+    email: z.string().email('Email không hợp lệ'),
+});
+
+const resetPasswordSchema = z.object({
+    token: z.string().min(1, 'Token không được để trống'),
+    password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
 });
 
 /**
@@ -159,6 +170,116 @@ export const login = async (req: Request, res: Response) => {
                 },
                 token
             }
+        });
+    } catch (error: any) {
+        if (error.name === 'ZodError') {
+            return res.status(400).json({ success: false, message: error.errors[0].message });
+        }
+        return res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+/**
+ * Quên mật khẩu
+ */
+export const forgotPassword = async (req: Request, res: Response) => {
+    try {
+        const validatedData = forgotPasswordSchema.parse(req.body);
+
+        // Tìm người dùng
+        const result = await pool.query('SELECT * FROM public_users WHERE email = $1', [validatedData.email]);
+        const user = result.rows[0];
+
+        if (!user) {
+            // Để bảo mật, chúng ta vẫn trả về success cho dù email không tồn tại
+            // nhưng thực tế có thể thông báo là email đã được gửi nếu tồn tại
+            return res.json({
+                success: true,
+                message: 'Nếu email tồn tại trong hệ thống, hướng dẫn khôi phục mật khẩu sẽ được gửi đến bạn.'
+            });
+        }
+
+        // Tạo token reset
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetExpires = new Date(Date.now() + 3600000); // 1 giờ sau
+
+        // Lưu vào DB
+        await pool.query(`
+            UPDATE public_users 
+            SET reset_password_token = $1, reset_password_expires = $2 
+            WHERE id = $3
+        `, [resetToken, resetExpires, user.id]);
+
+        // Gửi email
+        try {
+            await sendResetPasswordEmail(user.email, resetToken);
+        } catch (emailError: any) {
+            console.error('Email sending failed:', emailError);
+            return res.status(500).json({
+                success: false,
+                message: 'Không thể gửi email khôi phục mật khẩu. Vui lòng kiểm tra lại cấu hình SMTP trong hệ thống.',
+                error: emailError.message
+            });
+        }
+
+        // Log action
+        await logActivity(req, 'FORGOT_PASSWORD_REQUEST', 'public_users', user.id, null, { email: user.email }, user.id);
+
+        return res.json({
+            success: true,
+            message: 'Hướng dẫn khôi phục mật khẩu đã được gửi đến email của bạn.'
+        });
+    } catch (error: any) {
+        if (error.name === 'ZodError') {
+            return res.status(400).json({ success: false, message: error.errors[0].message });
+        }
+        return res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+/**
+ * Đặt lại mật khẩu
+ */
+export const resetPassword = async (req: Request, res: Response) => {
+    try {
+        const validatedData = resetPasswordSchema.parse(req.body);
+
+        // Tìm user với token hợp lệ và chưa hết hạn
+        const result = await pool.query(`
+            SELECT * FROM public_users 
+            WHERE reset_password_token = $1 
+            AND reset_password_expires > NOW()
+            AND is_active = true
+        `, [validatedData.token]);
+
+        const user = result.rows[0];
+
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: 'Liên kết khôi phục mật khẩu không hợp lệ hoặc đã hết hạn.'
+            });
+        }
+
+        // Mã hóa mật khẩu mới
+        const hashedPassword = await hashPassword(validatedData.password);
+
+        // Cập nhật mật khẩu và xóa token
+        await pool.query(`
+            UPDATE public_users 
+            SET password_hash = $1, 
+                reset_password_token = NULL, 
+                reset_password_expires = NULL,
+                login_attempts = 0
+            WHERE id = $2
+        `, [hashedPassword, user.id]);
+
+        // Log action
+        await logActivity(req, 'RESET_PASSWORD_SUCCESS', 'public_users', user.id, null, { email: user.email }, user.id);
+
+        return res.json({
+            success: true,
+            message: 'Mật khẩu của bạn đã được cập nhật thành công.'
         });
     } catch (error: any) {
         if (error.name === 'ZodError') {

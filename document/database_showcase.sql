@@ -41,7 +41,8 @@ CREATE TABLE media_files (
     deleted_at TIMESTAMP
 );
 
-
+-- Add gallery_ids to showcase_events table
+ALTER TABLE showcase_events ADD COLUMN gallery_ids JSONB DEFAULT '[]';
 
 -- =================================================================================
 -- PHẦN 2: QUẢN LÝ SẢN PHẨM (Products)

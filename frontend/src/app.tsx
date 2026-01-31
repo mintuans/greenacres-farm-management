@@ -56,6 +56,8 @@ import Login from '@/src/pages/auth/Login';
 import Register from '@/src/pages/auth/Register';
 import LoginRequired from '@/src/pages/auth/LoginRequired';
 import AuthCallback from '@/src/pages/auth/AuthCallback';
+import ForgotPassword from '@/src/pages/auth/ForgotPassword';
+import ResetPassword from '@/src/pages/auth/ResetPassword';
 import { useAuth } from '@/src/contexts/AuthContext';
 
 const App: React.FC = () => {
@@ -70,6 +72,8 @@ const App: React.FC = () => {
                 <Route path="/register" element={<Register />} />
                 <Route path="/login-required" element={<LoginRequired />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/showcase" element={<FarmShowcase />} />
                 <Route path="/showcase/products" element={<ShowcaseProducts />} />
                 <Route path="/showcase/events" element={<ShowcaseEvents />} />
