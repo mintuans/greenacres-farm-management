@@ -41,8 +41,44 @@ CREATE TABLE media_files (
     deleted_at TIMESTAMP
 );
 
--- Add gallery_ids to showcase_events table
-ALTER TABLE showcase_events ADD COLUMN gallery_ids JSONB DEFAULT '[]';
+-- 1.1 Quản lý Khách mời (Guests)
+CREATE TABLE guests (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    full_name VARCHAR(255) NOT NULL,
+    default_title VARCHAR(255),               -- Chức danh mặc định (VD: CEO, Farmer)
+    avatar_id UUID REFERENCES media_files(id),
+    phone VARCHAR(20),
+    email VARCHAR(255),
+    user_id UUID,                             -- Link tới public_users (nếu có)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 1.2 Quản lý Sự kiện (Showcase Events)
+CREATE TABLE showcase_events (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    banner_id UUID REFERENCES media_files(id),
+    event_date TIMESTAMP NOT NULL,
+    location VARCHAR(255),
+    status VARCHAR(50) DEFAULT 'DRAFT' CHECK (status IN ('DRAFT', 'PUBLISHED', 'ENDED')),
+    gallery_ids JSONB DEFAULT '[]',           -- Danh sách media_id của gallery
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 1.3 Quản lý Người tham gia Sự kiện (Participants)
+CREATE TABLE showcase_event_participants (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    event_id UUID REFERENCES showcase_events(id) ON DELETE CASCADE,
+    guest_id UUID REFERENCES guests(id) ON DELETE CASCADE,
+    role_at_event VARCHAR(255),               -- Vai trò cụ thể trong sự kiện này
+    color_theme VARCHAR(50) DEFAULT 'green',  -- Chủ đề màu sắc hiển thị
+    is_vip BOOLEAN DEFAULT FALSE,
+    can_upload_gallery BOOLEAN DEFAULT FALSE, -- Quyền upload ảnh vào gallery sự kiện
+    sort_order INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 -- =================================================================================
 -- PHẦN 2: QUẢN LÝ SẢN PHẨM (Products)
@@ -351,6 +387,9 @@ CREATE TRIGGER update_blog_posts_updated_at BEFORE UPDATE ON blog_posts
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_comments_updated_at BEFORE UPDATE ON comments
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_showcase_events_updated_at BEFORE UPDATE ON showcase_events
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- =================================================================================
