@@ -38,9 +38,9 @@ export const getBlogPosts = async (req: Request, res: Response) => {
 
         const result = await pool.query(query, params);
 
-        res.json({ success: true, data: result.rows });
+        return res.json({ success: true, data: result.rows });
     } catch (error: any) {
-        res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message });
     }
 };
 
@@ -76,7 +76,7 @@ export const getBlogPostBySlug = async (req: Request, res: Response) => {
         // Tăng view_count
         await pool.query(`UPDATE blog_posts SET view_count = view_count + 1 WHERE id = $1`, [post.id]);
 
-        res.json({
+        return res.json({
             success: true,
             data: {
                 ...post,
@@ -84,6 +84,6 @@ export const getBlogPostBySlug = async (req: Request, res: Response) => {
             }
         });
     } catch (error: any) {
-        res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message });
     }
 };
