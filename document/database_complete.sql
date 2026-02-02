@@ -164,7 +164,7 @@ CREATE TABLE production_units (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     unit_code VARCHAR(20) UNIQUE NOT NULL,
     unit_name VARCHAR(100) NOT NULL,
-    type VARCHAR(50), -- 'CROP', 'LIVESTOCK'
+    type VARCHAR(50), -- 'CROP', 'LIVESTOCK'    
     area_size DECIMAL(10, 2),
     description TEXT
 );
