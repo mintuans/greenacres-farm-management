@@ -7,7 +7,7 @@
 -- Tạo tài khoản public user mới
 INSERT INTO public_users (
     email,
-    password,
+    password_hash,
     full_name,
     phone,
     address,
