@@ -6,7 +6,7 @@ let io: SocketServer;
 export const initSocket = (server: HttpServer) => {
     io = new SocketServer(server, {
         cors: {
-            origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174', 'http://163.223.8.88'],
+            origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174', 'http://163.223.8.88', 'https://vuonnhaminh.com', 'https://www.vuonnhaminh.com'],
             methods: ['GET', 'POST'],
             credentials: true
         }
