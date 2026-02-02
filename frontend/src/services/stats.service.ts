@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api/showcase/stats';
+const API_URL = '/api/showcase/stats';
 
 /**
  * Lấy số lượt truy cập hiện tại

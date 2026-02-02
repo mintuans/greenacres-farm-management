@@ -307,7 +307,7 @@ const FarmShowcase: React.FC = () => {
     // Socket.io initialization
     React.useEffect(() => {
         // Kết nối socket
-        const socket = io('http://localhost:3000'); // Cần đổi thành URL backend nếu deploy
+        const socket = io(import.meta.env.VITE_API_URL || undefined);
         socketRef.current = socket;
 
         socket.on('connect', () => {

@@ -59,7 +59,7 @@ export const databaseBackupApi = {
      */
     downloadBackup: (filename: string): string => {
         const token = localStorage.getItem('farm_token');
-        const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const baseURL = import.meta.env.VITE_API_URL || '/api';
         return `${baseURL}/management/database/backups/download/${filename}?token=${token}`;
     },
 };

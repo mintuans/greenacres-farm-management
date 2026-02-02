@@ -177,7 +177,7 @@ const Register: React.FC = () => {
                     <div className="grid grid-cols-2 gap-4">
                         <button
                             onClick={() => {
-                                const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+                                const backendUrl = import.meta.env.VITE_API_URL || '';
                                 window.location.href = `${backendUrl}/api/auth/google`;
                             }}
                             className="flex items-center justify-center h-14 rounded-2xl border-2 border-[#f0f4f1] hover:border-[#13ec49]/30 hover:bg-[#13ec49]/5 transition-all active:scale-95 group"
@@ -192,7 +192,7 @@ const Register: React.FC = () => {
                         </button>
                         <button
                             onClick={() => {
-                                const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+                                const backendUrl = import.meta.env.VITE_API_URL || '';
                                 window.location.href = `${backendUrl}/api/auth/facebook`;
                             }}
                             className="flex items-center justify-center h-14 rounded-2xl border-2 border-[#f0f4f1] hover:border-[#13ec49]/30 hover:bg-[#13ec49]/5 transition-all active:scale-95 group"
