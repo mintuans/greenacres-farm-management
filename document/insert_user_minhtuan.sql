@@ -17,7 +17,7 @@ INSERT INTO public_users (
     created_at
 ) VALUES (
     'lmtuan21082003@gmail.com',
-    '$2b$10$YQ4.ZJwVqGE8xKxqF5pZMeK6rJYvN8qF5pZMeK6rJYvN8qF5pZMeO', -- bcrypt hash of "123456"
+    '$2a$10$49H8mUzn7Gae0ayTVf0xX.L989fLKrHQXL2ZhJM2KQr5pZzINe6SG', -- hashed "123456" using bcryptjs
     'Minh Tuấn',
     true,
     true,
