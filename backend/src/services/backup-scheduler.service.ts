@@ -80,9 +80,20 @@ export class BackupSchedulerService {
             const dbPassword = process.env.DB_PASSWORD || '';
 
             // Tạo command pg_dump
-            const pgBinPath = process.env.PG_BIN_PATH || 'C:\\Program Files\\PostgreSQL\\18\\bin';
-            const pgDumpExe = `${pgBinPath}\\pg_dump.exe`;
-            const command = `powershell -Command "$env:PGPASSWORD='${dbPassword}'; & '${pgDumpExe}' -h ${dbHost} -p ${dbPort} -U ${dbUser} -d ${dbName} -F p -f '${backupPath}'"`;
+            // Determine Platform and Command
+            const isWindows = process.platform === 'win32';
+            let command = '';
+
+            if (isWindows) {
+                const pgBinPath = process.env.PG_BIN_PATH || 'C:\\Program Files\\PostgreSQL\\18\\bin';
+                const pgDumpExe = `${pgBinPath}\\pg_dump.exe`;
+                command = `powershell -Command "$env:PGPASSWORD='${dbPassword}'; & '${pgDumpExe}' -h ${dbHost} -p ${dbPort} -U ${dbUser} -d ${dbName} -F p -f '${backupPath}'"`;
+            } else {
+                // Linux/Unix Logic
+                // Use PGPASSWORD environment variable inline
+                // Assuming pg_dump is in GLOBAL PATH on Linux (standard install)
+                command = `PGPASSWORD='${dbPassword}' pg_dump -h ${dbHost} -p ${dbPort} -U ${dbUser} -d ${dbName} -F p -f '${backupPath}'`;
+            }
 
             console.log(`📁 Backup path: ${backupPath}`);
 

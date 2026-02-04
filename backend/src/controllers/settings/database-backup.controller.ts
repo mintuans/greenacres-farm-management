@@ -79,16 +79,22 @@ export class DatabaseBackupController {
             const dbUser = process.env.DB_USER || 'postgres';
             const dbPassword = process.env.DB_PASSWORD || '';
 
-            // Tạo command pg_dump (Windows-compatible)
-            // Sử dụng đường dẫn đầy đủ vì PowerShell spawn từ Node không kế thừa PATH
-            const pgBinPath = process.env.PG_BIN_PATH || 'C:\\Program Files\\PostgreSQL\\18\\bin';
-            const pgDumpExe = `${pgBinPath}\\pg_dump.exe`;
-            const command = `powershell -Command "$env:PGPASSWORD='${dbPassword}'; & '${pgDumpExe}' -h ${dbHost} -p ${dbPort} -U ${dbUser} -d ${dbName} -F p -f '${backupPath}'"`;
+            // Determine Platform and Command
+            const isWindows = process.platform === 'win32';
+            let command = '';
+
+            if (isWindows) {
+                const pgBinPath = process.env.PG_BIN_PATH || 'C:\\Program Files\\PostgreSQL\\18\\bin';
+                const pgDumpExe = `${pgBinPath}\\pg_dump.exe`;
+                command = `powershell -Command "$env:PGPASSWORD='${dbPassword}'; & '${pgDumpExe}' -h ${dbHost} -p ${dbPort} -U ${dbUser} -d ${dbName} -F p -f '${backupPath}'"`;
+            } else {
+                command = `PGPASSWORD='${dbPassword}' pg_dump -h ${dbHost} -p ${dbPort} -U ${dbUser} -d ${dbName} -F p -f '${backupPath}'`;
+            }
 
             console.log('🔧 Executing backup command...');
             console.log('📁 Backup path:', backupPath);
             console.log('🗄️ Database:', `${dbUser}@${dbHost}:${dbPort}/${dbName}`);
-            console.log('🔨 pg_dump path:', pgDumpExe);
+            console.log('🔨 Platform:', process.platform);
 
             const { stdout, stderr } = await execAsync(command);
 
@@ -174,10 +180,17 @@ export class DatabaseBackupController {
             const dbUser = process.env.DB_USER || 'postgres';
             const dbPassword = process.env.DB_PASSWORD || '';
 
-            // Tạo command psql để restore (Windows-compatible)
-            const pgBinPath = process.env.PG_BIN_PATH || 'C:\\Program Files\\PostgreSQL\\18\\bin';
-            const psqlExe = `${pgBinPath}\\psql.exe`;
-            const command = `powershell -Command "$env:PGPASSWORD='${dbPassword}'; & '${psqlExe}' -h ${dbHost} -p ${dbPort} -U ${dbUser} -d ${dbName} -f '${backupPath}'"`;
+            // Determine Platform and Command
+            const isWindows = process.platform === 'win32';
+            let command = '';
+
+            if (isWindows) {
+                const pgBinPath = process.env.PG_BIN_PATH || 'C:\\Program Files\\PostgreSQL\\18\\bin';
+                const psqlExe = `${pgBinPath}\\psql.exe`;
+                command = `powershell -Command "$env:PGPASSWORD='${dbPassword}'; & '${psqlExe}' -h ${dbHost} -p ${dbPort} -U ${dbUser} -d ${dbName} -f '${backupPath}'"`;
+            } else {
+                command = `PGPASSWORD='${dbPassword}' psql -h ${dbHost} -p ${dbPort} -U ${dbUser} -d ${dbName} -f '${backupPath}'`;
+            }
 
             await execAsync(command);
 

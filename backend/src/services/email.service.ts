@@ -16,14 +16,18 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// Verify connection configuration
-transporter.verify(function (error, _success) {
-    if (error) {
-        console.error('SMTP Connection Error:', error);
-    } else {
-        console.log('SMTP Server is ready to take our messages');
-    }
-});
+// Verify connection configuration only if credentials are provided
+if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    transporter.verify(function (error, _success) {
+        if (error) {
+            console.error('SMTP Connection Error:', error);
+        } else {
+            console.log('SMTP Server is ready to take our messages');
+        }
+    });
+} else {
+    console.log('⚠️ SMTP credentials not found. Email service will be disabled.');
+}
 
 /**
  * Gửi email reset mật khẩu
