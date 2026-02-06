@@ -23,14 +23,19 @@ export interface UpdateJobTypeInput {
 
 // Tạo loại công việc mới
 export const createJobType = async (data: CreateJobTypeInput): Promise<JobType> => {
-    const query = `
-        INSERT INTO job_types (job_code, job_name, base_rate, description)
-        VALUES ($1, $2, $3, $4)
-        RETURNING *
-    `;
-    const values = [data.job_code, data.job_name, data.base_rate, data.description];
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    const client = await pool.connect();
+    try {
+        const query = `
+            INSERT INTO job_types (job_code, job_name, base_rate, description)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+        `;
+        const values = [data.job_code, data.job_name, data.base_rate, data.description];
+        const result = await client.query(query, values);
+        return result.rows[0];
+    } finally {
+        client.release();
+    }
 };
 
 // Lấy danh sách loại công việc
@@ -70,23 +75,33 @@ export const updateJobType = async (id: string, data: UpdateJobTypeInput): Promi
         return getJobTypeById(id);
     }
 
-    values.push(id);
-    const query = `
-        UPDATE job_types 
-        SET ${fields.join(', ')}
-        WHERE id = $${paramIndex}
-        RETURNING *
-    `;
+    const client = await pool.connect();
+    try {
+        values.push(id);
+        const query = `
+            UPDATE job_types 
+            SET ${fields.join(', ')}
+            WHERE id = $${paramIndex}
+            RETURNING *
+        `;
 
-    const result = await pool.query(query, values);
-    return result.rows[0] || null;
+        const result = await client.query(query, values);
+        return result.rows[0] || null;
+    } finally {
+        client.release();
+    }
 };
 
 // Xóa loại công việc
 export const deleteJobType = async (id: string): Promise<boolean> => {
-    const query = 'DELETE FROM job_types WHERE id = $1';
-    const result = await pool.query(query, [id]);
-    return (result.rowCount ?? 0) > 0;
+    const client = await pool.connect();
+    try {
+        const query = 'DELETE FROM job_types WHERE id = $1';
+        const result = await client.query(query, [id]);
+        return (result.rowCount ?? 0) > 0;
+    } finally {
+        client.release();
+    }
 };
 
 // Lấy thống kê

@@ -26,14 +26,19 @@ export interface UpdateProductionUnitInput {
 
 // Tạo đơn vị sản xuất mới
 export const createProductionUnit = async (data: CreateProductionUnitInput): Promise<ProductionUnit> => {
-    const query = `
-        INSERT INTO production_units (unit_code, unit_name, type, area_size, description)
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING *
-    `;
-    const values = [data.unit_code, data.unit_name, data.type, data.area_size, data.description];
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    const client = await pool.connect();
+    try {
+        const query = `
+            INSERT INTO production_units (unit_code, unit_name, type, area_size, description)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING *
+        `;
+        const values = [data.unit_code, data.unit_name, data.type, data.area_size, data.description];
+        const result = await client.query(query, values);
+        return result.rows[0];
+    } finally {
+        client.release();
+    }
 };
 
 // Lấy danh sách đơn vị sản xuất
@@ -86,23 +91,33 @@ export const updateProductionUnit = async (id: string, data: UpdateProductionUni
         return getProductionUnitById(id);
     }
 
-    values.push(id);
-    const query = `
-        UPDATE production_units 
-        SET ${fields.join(', ')}
-        WHERE id = $${paramIndex}
-        RETURNING *
-    `;
+    const client = await pool.connect();
+    try {
+        values.push(id);
+        const query = `
+            UPDATE production_units 
+            SET ${fields.join(', ')}
+            WHERE id = $${paramIndex}
+            RETURNING *
+        `;
 
-    const result = await pool.query(query, values);
-    return result.rows[0] || null;
+        const result = await client.query(query, values);
+        return result.rows[0] || null;
+    } finally {
+        client.release();
+    }
 };
 
 // Xóa đơn vị sản xuất
 export const deleteProductionUnit = async (id: string): Promise<boolean> => {
-    const query = 'DELETE FROM production_units WHERE id = $1';
-    const result = await pool.query(query, [id]);
-    return (result.rowCount ?? 0) > 0;
+    const client = await pool.connect();
+    try {
+        const query = 'DELETE FROM production_units WHERE id = $1';
+        const result = await client.query(query, [id]);
+        return (result.rowCount ?? 0) > 0;
+    } finally {
+        client.release();
+    }
 };
 
 // Lấy thống kê theo loại

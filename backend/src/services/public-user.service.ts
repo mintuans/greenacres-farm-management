@@ -38,21 +38,26 @@ export const createPublicUser = async (data: any): Promise<PublicUser> => {
         passwordHash = await hashPassword(data.password);
     }
 
-    const query = `
-        INSERT INTO public_users (email, phone, password_hash, full_name, avatar_id, is_active)
-        VALUES ($1, $2, $3, $4, $5, $6)
-        RETURNING id, email, phone, full_name, avatar_id, is_verified, is_active, created_at
-    `;
-    const values = [
-        data.email || null,
-        data.phone || null,
-        passwordHash,
-        data.full_name || null,
-        data.avatar_id || null,
-        data.is_active !== undefined ? data.is_active : true
-    ];
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    const client = await pool.connect();
+    try {
+        const query = `
+            INSERT INTO public_users (email, phone, password_hash, full_name, avatar_id, is_active)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING id, email, phone, full_name, avatar_id, is_verified, is_active, created_at
+        `;
+        const values = [
+            data.email || null,
+            data.phone || null,
+            passwordHash,
+            data.full_name || null,
+            data.avatar_id || null,
+            data.is_active !== undefined ? data.is_active : true
+        ];
+        const result = await client.query(query, values);
+        return result.rows[0];
+    } finally {
+        client.release();
+    }
 };
 
 export const updatePublicUser = async (id: string, data: any): Promise<PublicUser | null> => {
@@ -96,21 +101,31 @@ export const updatePublicUser = async (id: string, data: any): Promise<PublicUse
 
     if (fields.length === 0) return getPublicUserById(id);
 
-    values.push(id);
-    const query = `
-        UPDATE public_users 
-        SET ${fields.join(', ')} 
-        WHERE id = $${paramIndex} 
-        RETURNING id, email, phone, full_name, avatar_id, is_verified, is_active, created_at
-    `;
-    const result = await pool.query(query, values);
-    return result.rows[0] || null;
+    const client = await pool.connect();
+    try {
+        values.push(id);
+        const query = `
+            UPDATE public_users 
+            SET ${fields.join(', ')} 
+            WHERE id = $${paramIndex} 
+            RETURNING id, email, phone, full_name, avatar_id, is_verified, is_active, created_at
+        `;
+        const result = await client.query(query, values);
+        return result.rows[0] || null;
+    } finally {
+        client.release();
+    }
 };
 
 export const deletePublicUser = async (id: string): Promise<boolean> => {
-    const query = 'UPDATE public_users SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1';
-    const result = await pool.query(query, [id]);
-    return (result.rowCount ?? 0) > 0;
+    const client = await pool.connect();
+    try {
+        const query = 'UPDATE public_users SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1';
+        const result = await client.query(query, [id]);
+        return (result.rowCount ?? 0) > 0;
+    } finally {
+        client.release();
+    }
 };
 
 // User-Role assignment
@@ -125,11 +140,21 @@ export const getUserRoles = async (userId: string) => {
 };
 
 export const assignRoleToUser = async (userId: string, roleId: string) => {
-    const query = 'INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2) ON CONFLICT DO NOTHING';
-    await pool.query(query, [userId, roleId]);
+    const client = await pool.connect();
+    try {
+        const query = 'INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2) ON CONFLICT DO NOTHING';
+        await client.query(query, [userId, roleId]);
+    } finally {
+        client.release();
+    }
 };
 
 export const removeRoleFromUser = async (userId: string, roleId: string) => {
-    const query = 'DELETE FROM user_roles WHERE user_id = $1 AND role_id = $2';
-    await pool.query(query, [userId, roleId]);
+    const client = await pool.connect();
+    try {
+        const query = 'DELETE FROM user_roles WHERE user_id = $1 AND role_id = $2';
+        await client.query(query, [userId, roleId]);
+    } finally {
+        client.release();
+    }
 };

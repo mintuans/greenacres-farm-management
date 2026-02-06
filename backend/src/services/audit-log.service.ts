@@ -27,23 +27,28 @@ export const getAuditLogs = async (limit: number = 100): Promise<AuditLog[]> => 
 };
 
 export const createAuditLog = async (data: Partial<AuditLog>): Promise<AuditLog> => {
-    const query = `
-        INSERT INTO audit_logs (user_id, action, entity_table, entity_id, old_values, new_values, ip_address, user_agent)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        RETURNING *
-    `;
-    const values = [
-        data.user_id,
-        data.action,
-        data.entity_table,
-        data.entity_id,
-        data.old_values ? JSON.stringify(data.old_values) : null,
-        data.new_values ? JSON.stringify(data.new_values) : null,
-        data.ip_address,
-        data.user_agent
-    ];
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    const client = await pool.connect();
+    try {
+        const query = `
+            INSERT INTO audit_logs (user_id, action, entity_table, entity_id, old_values, new_values, ip_address, user_agent)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            RETURNING *
+        `;
+        const values = [
+            data.user_id,
+            data.action,
+            data.entity_table,
+            data.entity_id,
+            data.old_values ? JSON.stringify(data.old_values) : null,
+            data.new_values ? JSON.stringify(data.new_values) : null,
+            data.ip_address,
+            data.user_agent
+        ];
+        const result = await client.query(query, values);
+        return result.rows[0];
+    } finally {
+        client.release();
+    }
 };
 
 /**

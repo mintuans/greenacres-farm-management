@@ -56,28 +56,33 @@ export const getInventoryItemById = async (id: string): Promise<InventoryItem | 
 
 // Tạo vật tư mới
 export const createInventoryItem = async (data: any): Promise<InventoryItem> => {
-    const query = `
-        INSERT INTO inventory (
-            inventory_code, inventory_name, category_id, 
-            unit_of_measure, stock_quantity, min_stock_level, 
-            last_import_price, import_date, thumbnail_id, note
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-        RETURNING *
-    `;
-    const values = [
-        data.inventory_code,
-        data.inventory_name,
-        data.category_id && data.category_id.trim() !== '' ? data.category_id : null,
-        data.unit_of_measure,
-        data.stock_quantity || 0,
-        data.min_stock_level || 0,
-        data.last_import_price || 0,
-        data.import_date || new Date().toISOString(),
-        data.thumbnail_id || null,
-        data.note
-    ];
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    const client = await pool.connect();
+    try {
+        const query = `
+            INSERT INTO inventory (
+                inventory_code, inventory_name, category_id, 
+                unit_of_measure, stock_quantity, min_stock_level, 
+                last_import_price, import_date, thumbnail_id, note
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            RETURNING *
+        `;
+        const values = [
+            data.inventory_code,
+            data.inventory_name,
+            data.category_id && data.category_id.trim() !== '' ? data.category_id : null,
+            data.unit_of_measure,
+            data.stock_quantity || 0,
+            data.min_stock_level || 0,
+            data.last_import_price || 0,
+            data.import_date || new Date().toISOString(),
+            data.thumbnail_id || null,
+            data.note
+        ];
+        const result = await client.query(query, values);
+        return result.rows[0];
+    } finally {
+        client.release();
+    }
 };
 
 // Cập nhật vật tư
@@ -106,21 +111,31 @@ export const updateInventoryItem = async (id: string, data: any): Promise<Invent
 
     if (setClauses.length === 0) return null;
 
-    values.push(id);
-    const query = `
-        UPDATE inventory 
-        SET ${setClauses.join(', ')} 
-        WHERE id = $${values.length} 
-        RETURNING *
-    `;
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    const client = await pool.connect();
+    try {
+        values.push(id);
+        const query = `
+            UPDATE inventory 
+            SET ${setClauses.join(', ')} 
+            WHERE id = $${values.length} 
+            RETURNING *
+        `;
+        const result = await client.query(query, values);
+        return result.rows[0];
+    } finally {
+        client.release();
+    }
 };
 
 // Xóa vật tư
 export const deleteInventoryItem = async (id: string): Promise<boolean> => {
-    const result = await pool.query('DELETE FROM inventory WHERE id = $1', [id]);
-    return (result.rowCount ?? 0) > 0;
+    const client = await pool.connect();
+    try {
+        const result = await client.query('DELETE FROM inventory WHERE id = $1', [id]);
+        return (result.rowCount ?? 0) > 0;
+    } finally {
+        client.release();
+    }
 };
 
 // Lấy thống kê kho
@@ -138,10 +153,15 @@ export const getInventoryStats = async (): Promise<any> => {
 
 // Cập nhật số lượng tồn kho
 export const updateStockQuantity = async (id: string, change: number): Promise<void> => {
-    await pool.query(
-        'UPDATE inventory SET stock_quantity = stock_quantity + $1 WHERE id = $2',
-        [change, id]
-    );
+    const client = await pool.connect();
+    try {
+        await client.query(
+            'UPDATE inventory SET stock_quantity = stock_quantity + $1 WHERE id = $2',
+            [change, id]
+        );
+    } finally {
+        client.release();
+    }
 };
 
 // Nhập hàng loạt (Bulk Import)

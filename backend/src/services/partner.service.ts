@@ -28,14 +28,19 @@ export interface UpdatePartnerInput {
 
 // Tạo đối tác mới
 export const createPartner = async (data: CreatePartnerInput): Promise<Partner> => {
-    const query = `
-        INSERT INTO partners (partner_code, partner_name, type, phone, address)
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING *
-    `;
-    const values = [data.partner_code, data.partner_name, data.type, data.phone, data.address];
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    const client = await pool.connect();
+    try {
+        const query = `
+            INSERT INTO partners (partner_code, partner_name, type, phone, address)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING *
+        `;
+        const values = [data.partner_code, data.partner_name, data.type, data.phone, data.address];
+        const result = await client.query(query, values);
+        return result.rows[0];
+    } finally {
+        client.release();
+    }
 };
 
 // Lấy danh sách đối tác
@@ -88,23 +93,33 @@ export const updatePartner = async (id: string, data: UpdatePartnerInput): Promi
         return getPartnerById(id);
     }
 
-    values.push(id);
-    const query = `
-        UPDATE partners 
-        SET ${fields.join(', ')}
-        WHERE id = $${paramIndex}
-        RETURNING *
-    `;
+    const client = await pool.connect();
+    try {
+        values.push(id);
+        const query = `
+            UPDATE partners 
+            SET ${fields.join(', ')}
+            WHERE id = $${paramIndex}
+            RETURNING *
+        `;
 
-    const result = await pool.query(query, values);
-    return result.rows[0] || null;
+        const result = await client.query(query, values);
+        return result.rows[0] || null;
+    } finally {
+        client.release();
+    }
 };
 
 // Xóa đối tác
 export const deletePartner = async (id: string): Promise<boolean> => {
-    const query = 'DELETE FROM partners WHERE id = $1';
-    const result = await pool.query(query, [id]);
-    return (result.rowCount ?? 0) > 0;
+    const client = await pool.connect();
+    try {
+        const query = 'DELETE FROM partners WHERE id = $1';
+        const result = await client.query(query, [id]);
+        return (result.rowCount ?? 0) > 0;
+    } finally {
+        client.release();
+    }
 };
 
 // Lấy số dư hiện tại

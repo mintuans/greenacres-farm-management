@@ -22,14 +22,19 @@ export const getPermissionById = async (id: string): Promise<Permission | null> 
 };
 
 export const createPermission = async (data: Partial<Permission>): Promise<Permission> => {
-    const query = `
-        INSERT INTO permissions (module, action, code, description)
-        VALUES ($1, $2, $3, $4)
-        RETURNING *
-    `;
-    const values = [data.module, data.action, data.code, data.description];
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    const client = await pool.connect();
+    try {
+        const query = `
+            INSERT INTO permissions (module, action, code, description)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+        `;
+        const values = [data.module, data.action, data.code, data.description];
+        const result = await client.query(query, values);
+        return result.rows[0];
+    } finally {
+        client.release();
+    }
 };
 
 export const updatePermission = async (id: string, data: Partial<Permission>): Promise<Permission | null> => {
@@ -56,21 +61,31 @@ export const updatePermission = async (id: string, data: Partial<Permission>): P
 
     if (fields.length === 0) return null;
 
-    values.push(id);
-    const query = `
-        UPDATE permissions 
-        SET ${fields.join(', ')} 
-        WHERE id = $${paramIndex} 
-        RETURNING *
-    `;
-    const result = await pool.query(query, values);
-    return result.rows[0] || null;
+    const client = await pool.connect();
+    try {
+        values.push(id);
+        const query = `
+            UPDATE permissions 
+            SET ${fields.join(', ')} 
+            WHERE id = $${paramIndex} 
+            RETURNING *
+        `;
+        const result = await client.query(query, values);
+        return result.rows[0] || null;
+    } finally {
+        client.release();
+    }
 };
 
 export const deletePermission = async (id: string): Promise<boolean> => {
-    const query = 'DELETE FROM permissions WHERE id = $1';
-    const result = await pool.query(query, [id]);
-    return (result.rowCount ?? 0) > 0;
+    const client = await pool.connect();
+    try {
+        const query = 'DELETE FROM permissions WHERE id = $1';
+        const result = await client.query(query, [id]);
+        return (result.rowCount ?? 0) > 0;
+    } finally {
+        client.release();
+    }
 };
 
 export const getDatabaseTables = async (): Promise<string[]> => {

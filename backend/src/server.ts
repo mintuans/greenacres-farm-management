@@ -85,16 +85,18 @@ server.listen(PORT, async () => {
     console.log('');
 
     // Test database connection
-    try {
-        const pool = (await import('./config/database')).default;
-        const result = await pool.query('SELECT NOW()');
-        console.log('✅ Database connected successfully!');
-        console.log(`📅 Database time: ${result.rows[0].now}`);
-        console.log('');
-    } catch (error: any) {
-        console.error('❌ Database connection failed!');
-        console.error('Error:', error.message);
-    }
+    // Test database connection asynchronously to prevent startup hang
+    const testDbConnection = async () => {
+        try {
+            const pool = (await import('./config/database')).default;
+            const result = await pool.query('SELECT NOW()');
+            console.log('✅ Database connected successfully!');
+            console.log(`📅 Database time: ${result.rows[0].now}`);
+        } catch (error: any) {
+            console.error('⚠️ Database connection check failed (will retry automatically):', error.message);
+        }
+    };
+    testDbConnection();
 
     // Initialize backup scheduler
     try {

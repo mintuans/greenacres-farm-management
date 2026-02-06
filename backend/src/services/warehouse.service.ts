@@ -48,26 +48,31 @@ export const getItemById = async (id: string): Promise<WarehouseItem | null> => 
 };
 
 export const createItem = async (data: any): Promise<WarehouseItem> => {
-    const query = `
-        INSERT INTO warehouse_items (
-            warehouse_type_id, item_code, sku, item_name, quantity, unit, price, location, thumbnail_id, note
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-        RETURNING *
-    `;
-    const values = [
-        data.warehouse_type_id,
-        data.item_code,
-        data.sku,
-        data.item_name,
-        data.quantity || 0,
-        data.unit,
-        data.price || 0,
-        data.location,
-        data.thumbnail_id || null,
-        data.note
-    ];
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    const client = await pool.connect();
+    try {
+        const query = `
+            INSERT INTO warehouse_items (
+                warehouse_type_id, item_code, sku, item_name, quantity, unit, price, location, thumbnail_id, note
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            RETURNING *
+        `;
+        const values = [
+            data.warehouse_type_id,
+            data.item_code,
+            data.sku,
+            data.item_name,
+            data.quantity || 0,
+            data.unit,
+            data.price || 0,
+            data.location,
+            data.thumbnail_id || null,
+            data.note
+        ];
+        const result = await client.query(query, values);
+        return result.rows[0];
+    } finally {
+        client.release();
+    }
 };
 
 export const updateItem = async (id: string, data: any): Promise<WarehouseItem | null> => {
@@ -87,20 +92,30 @@ export const updateItem = async (id: string, data: any): Promise<WarehouseItem |
 
     if (setClauses.length === 0) return null;
 
-    values.push(id);
-    const query = `
-        UPDATE warehouse_items 
-        SET ${setClauses.join(', ')} 
-        WHERE id = $${values.length} 
-        RETURNING *
-    `;
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    const client = await pool.connect();
+    try {
+        values.push(id);
+        const query = `
+            UPDATE warehouse_items 
+            SET ${setClauses.join(', ')} 
+            WHERE id = $${values.length} 
+            RETURNING *
+        `;
+        const result = await client.query(query, values);
+        return result.rows[0];
+    } finally {
+        client.release();
+    }
 };
 
 export const deleteItem = async (id: string): Promise<boolean> => {
-    const result = await pool.query(`DELETE FROM warehouse_items WHERE id = $1`, [id]);
-    return (result.rowCount ?? 0) > 0;
+    const client = await pool.connect();
+    try {
+        const result = await client.query(`DELETE FROM warehouse_items WHERE id = $1`, [id]);
+        return (result.rowCount ?? 0) > 0;
+    } finally {
+        client.release();
+    }
 };
 
 export const getNextCode = async (typeId: string): Promise<string> => {

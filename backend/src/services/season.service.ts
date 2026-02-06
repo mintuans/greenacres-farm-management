@@ -32,21 +32,26 @@ export interface UpdateSeasonInput {
 
 // Tạo mùa vụ mới
 export const createSeason = async (data: CreateSeasonInput): Promise<Season> => {
-    const query = `
-        INSERT INTO seasons (unit_id, season_code, season_name, start_date, end_date, expected_revenue)
-        VALUES ($1, $2, $3, $4, $5, $6)
-        RETURNING *
-    `;
-    const values = [
-        data.unit_id,
-        data.season_code,
-        data.season_name,
-        data.start_date,
-        data.end_date || null,
-        data.expected_revenue || null
-    ];
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    const client = await pool.connect();
+    try {
+        const query = `
+            INSERT INTO seasons (unit_id, season_code, season_name, start_date, end_date, expected_revenue)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING *
+        `;
+        const values = [
+            data.unit_id,
+            data.season_code,
+            data.season_name,
+            data.start_date,
+            data.end_date || null,
+            data.expected_revenue || null
+        ];
+        const result = await client.query(query, values);
+        return result.rows[0];
+    } finally {
+        client.release();
+    }
 };
 
 // Lấy danh sách mùa vụ
@@ -129,35 +134,50 @@ export const updateSeason = async (id: string, data: UpdateSeasonInput): Promise
         return getSeasonById(id);
     }
 
-    values.push(id);
-    const query = `
-        UPDATE seasons 
-        SET ${fields.join(', ')}
-        WHERE id = $${paramIndex}
-        RETURNING *
-    `;
+    const client = await pool.connect();
+    try {
+        values.push(id);
+        const query = `
+            UPDATE seasons 
+            SET ${fields.join(', ')}
+            WHERE id = $${paramIndex}
+            RETURNING *
+        `;
 
-    const result = await pool.query(query, values);
-    return result.rows[0] || null;
+        const result = await client.query(query, values);
+        return result.rows[0] || null;
+    } finally {
+        client.release();
+    }
 };
 
 // Xóa mùa vụ
 export const deleteSeason = async (id: string): Promise<boolean> => {
-    const query = 'DELETE FROM seasons WHERE id = $1';
-    const result = await pool.query(query, [id]);
-    return (result.rowCount ?? 0) > 0;
+    const client = await pool.connect();
+    try {
+        const query = 'DELETE FROM seasons WHERE id = $1';
+        const result = await client.query(query, [id]);
+        return (result.rowCount ?? 0) > 0;
+    } finally {
+        client.release();
+    }
 };
 
 // Đóng mùa vụ
 export const closeSeason = async (id: string): Promise<Season | null> => {
-    const query = `
-        UPDATE seasons 
-        SET status = 'CLOSED', end_date = CURRENT_DATE
-        WHERE id = $1
-        RETURNING *
-    `;
-    const result = await pool.query(query, [id]);
-    return result.rows[0] || null;
+    const client = await pool.connect();
+    try {
+        const query = `
+            UPDATE seasons 
+            SET status = 'CLOSED', end_date = CURRENT_DATE
+            WHERE id = $1
+            RETURNING *
+        `;
+        const result = await client.query(query, [id]);
+        return result.rows[0] || null;
+    } finally {
+        client.release();
+    }
 };
 
 // Thống kê mùa vụ

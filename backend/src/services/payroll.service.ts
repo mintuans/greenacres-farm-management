@@ -69,25 +69,30 @@ export const getPayrollsByPartner = async (partnerId: string): Promise<Payroll[]
 
 // Tạo payroll mới
 export const createPayroll = async (data: any): Promise<Payroll> => {
-    const query = `
-        INSERT INTO payrolls (
-            payroll_code, partner_id, total_amount, bonus, 
-            deductions, final_amount, status, payment_date
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        RETURNING *
-    `;
-    const values = [
-        data.payroll_code,
-        data.partner_id,
-        data.total_amount || 0,
-        data.bonus || 0,
-        data.deductions || 0,
-        data.final_amount,
-        data.status || 'DRAFT',
-        data.payment_date || null
-    ];
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    const client = await pool.connect();
+    try {
+        const query = `
+            INSERT INTO payrolls (
+                payroll_code, partner_id, total_amount, bonus, 
+                deductions, final_amount, status, payment_date
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            RETURNING *
+        `;
+        const values = [
+            data.payroll_code,
+            data.partner_id,
+            data.total_amount || 0,
+            data.bonus || 0,
+            data.deductions || 0,
+            data.final_amount,
+            data.status || 'DRAFT',
+            data.payment_date || null
+        ];
+        const result = await client.query(query, values);
+        return result.rows[0];
+    } finally {
+        client.release();
+    }
 };
 
 // Cập nhật payroll
@@ -106,30 +111,40 @@ export const updatePayroll = async (id: string, data: any): Promise<Payroll | nu
 
     if (setClauses.length === 0) return null;
 
-    values.push(id);
-    const query = `
-        UPDATE payrolls 
-        SET ${setClauses.join(', ')}, updated_at = CURRENT_TIMESTAMP
-        WHERE id = $${values.length} 
-        RETURNING *
-    `;
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    const client = await pool.connect();
+    try {
+        values.push(id);
+        const query = `
+            UPDATE payrolls 
+            SET ${setClauses.join(', ')}, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $${values.length} 
+            RETURNING *
+        `;
+        const result = await client.query(query, values);
+        return result.rows[0];
+    } finally {
+        client.release();
+    }
 };
 
 // Cập nhật trạng thái payroll (Quan trọng: Trigger sẽ tự động tạo transaction khi chuyển sang PAID)
 export const updatePayrollStatus = async (id: string, status: string, paymentDate?: string): Promise<Payroll | null> => {
-    const query = `
-        UPDATE payrolls 
-        SET status = $1, 
-            payment_date = $2,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE id = $3 
-        RETURNING *
-    `;
-    const values = [status, paymentDate || new Date().toISOString(), id];
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    const client = await pool.connect();
+    try {
+        const query = `
+            UPDATE payrolls 
+            SET status = $1, 
+                payment_date = $2,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = $3 
+            RETURNING *
+        `;
+        const values = [status, paymentDate || new Date().toISOString(), id];
+        const result = await client.query(query, values);
+        return result.rows[0];
+    } finally {
+        client.release();
+    }
 };
 
 // Xóa payroll

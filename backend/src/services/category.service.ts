@@ -25,14 +25,19 @@ export interface UpdateCategoryInput {
 
 // Tạo danh mục mới
 export const createCategory = async (data: CreateCategoryInput): Promise<Category> => {
-    const query = `
-        INSERT INTO categories (category_code, category_name, parent_id, scope)
-        VALUES ($1, $2, $3, $4)
-        RETURNING *
-    `;
-    const values = [data.category_code, data.category_name, data.parent_id || null, data.scope];
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    const client = await pool.connect();
+    try {
+        const query = `
+            INSERT INTO categories (category_code, category_name, parent_id, scope)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+        `;
+        const values = [data.category_code, data.category_name, data.parent_id || null, data.scope];
+        const result = await client.query(query, values);
+        return result.rows[0];
+    } finally {
+        client.release();
+    }
 };
 
 // Lấy danh sách danh mục
@@ -118,31 +123,41 @@ export const updateCategory = async (id: string, data: UpdateCategoryInput): Pro
         return getCategoryById(id);
     }
 
-    values.push(id);
-    const query = `
-        UPDATE categories 
-        SET ${fields.join(', ')}
-        WHERE id = $${paramIndex}
-        RETURNING *
-    `;
+    const client = await pool.connect();
+    try {
+        values.push(id);
+        const query = `
+            UPDATE categories 
+            SET ${fields.join(', ')}
+            WHERE id = $${paramIndex}
+            RETURNING *
+        `;
 
-    const result = await pool.query(query, values);
-    return result.rows[0] || null;
+        const result = await client.query(query, values);
+        return result.rows[0] || null;
+    } finally {
+        client.release();
+    }
 };
 
 // Xóa danh mục
 export const deleteCategory = async (id: string): Promise<boolean> => {
-    // Kiểm tra xem có danh mục con không
-    const childrenQuery = 'SELECT COUNT(*) as count FROM categories WHERE parent_id = $1';
-    const childrenResult = await pool.query(childrenQuery, [id]);
+    const client = await pool.connect();
+    try {
+        // Kiểm tra xem có danh mục con không
+        const childrenQuery = 'SELECT COUNT(*) as count FROM categories WHERE parent_id = $1';
+        const childrenResult = await client.query(childrenQuery, [id]);
 
-    if (parseInt(childrenResult.rows[0].count) > 0) {
-        throw new Error('Cannot delete category with children');
+        if (parseInt(childrenResult.rows[0].count) > 0) {
+            throw new Error('Cannot delete category with children');
+        }
+
+        const query = 'DELETE FROM categories WHERE id = $1';
+        const result = await client.query(query, [id]);
+        return (result.rowCount ?? 0) > 0;
+    } finally {
+        client.release();
     }
-
-    const query = 'DELETE FROM categories WHERE id = $1';
-    const result = await pool.query(query, [id]);
-    return (result.rowCount ?? 0) > 0;
 };
 
 // Thống kê danh mục
