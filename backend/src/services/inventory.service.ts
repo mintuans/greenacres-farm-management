@@ -186,7 +186,11 @@ export const bulkCreateInventoryItems = async (items: any[]): Promise<any> => {
         await client.query('COMMIT');
         return results;
     } catch (error) {
-        await client.query('ROLLBACK');
+        try {
+            await client.query('ROLLBACK');
+        } catch (rollbackError) {
+            console.error('ROLLBACK failed:', rollbackError);
+        }
         throw error;
     } finally {
         client.release();

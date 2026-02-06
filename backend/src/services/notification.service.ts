@@ -71,7 +71,11 @@ export const sendNotification = async (input: SendNotificationInput): Promise<vo
         });
 
     } catch (error) {
-        await client.query('ROLLBACK');
+        try {
+            await client.query('ROLLBACK');
+        } catch (rollbackError) {
+            console.error('ROLLBACK failed:', rollbackError);
+        }
         console.error('Error sending notification:', error);
         throw error;
     } finally {

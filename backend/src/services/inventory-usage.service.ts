@@ -41,7 +41,11 @@ export const logUsage = async (data: any): Promise<InventoryUsage> => {
         await client.query('COMMIT');
         return result.rows[0];
     } catch (error) {
-        await client.query('ROLLBACK');
+        try {
+            await client.query('ROLLBACK');
+        } catch (rollbackError) {
+            console.error('ROLLBACK failed:', rollbackError);
+        }
         throw error;
     } finally {
         client.release();
