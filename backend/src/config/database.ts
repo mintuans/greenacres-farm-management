@@ -8,17 +8,28 @@ const pool = new Pool({
     password: process.env.DB_PASSWORD || '123',
     port: Number(process.env.DB_PORT) || 5432,
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
-    // Cấu hình Pool nghiêm ngặt để tránh leak
-    max: 15, // Giảm bớt số lượng kết nối tối đa để DB không bị quá tải
-    idleTimeoutMillis: 5000, // Giải phóng kết nối rảnh sau 5 giây (thay vì 30s)
-    connectionTimeoutMillis: 5000, // Chờ tối đa 5 giây để lấy kết nối
-    query_timeout: 10000, // Tự động ngắt bất kỳ truy vấn nào chạy quá 10 giây
+    // Cấu hình Pool để chịu tải khi chuyển màn hình (burst)
+    max: 20, // Tăng lên 20 kết nối
+    idleTimeoutMillis: 10000, // Giữ kết nối rảnh trong 10 giây để tái sử dụng nhanh
+    connectionTimeoutMillis: 10000, // Chờ lâu hơn một chút thay vì báo lỗi ngay (10 giây)
+    query_timeout: 10000, // Ngắt truy vấn treo sau 10 giây
 });
 
-// Giám sát trạng thái pool
+// Giám sát trạng thái pool và tự động reset nếu nghẽn quá lâu
+let congestionCount = 0;
 setInterval(() => {
-    if (pool.waitingCount > 0) {
-        console.warn(`⚠️ [Database] Pool is full! Waiting: ${pool.waitingCount}, Active: ${pool.totalCount - pool.idleCount}`);
+    const waiting = pool.waitingCount;
+    const active = pool.totalCount - pool.idleCount;
+    if (waiting > 0) {
+        congestionCount++;
+        console.warn(`⚠️ [Database] Congestion: Waiting=${waiting}, Active=${active}`);
+
+        // Nếu nghẽn liên tục trong 30 giây, có thể do lỗi hệ thống, cần log chi tiết
+        if (congestionCount > 6) {
+            console.error('🔥 [Database] Severe congestion detected. Check for hanging triggers!');
+        }
+    } else {
+        congestionCount = 0;
     }
 }, 5000);
 

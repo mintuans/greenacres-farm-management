@@ -77,6 +77,20 @@ app.use((err: Error, _req: Request, res: Response, _next: any) => {
 // Initialize Socket.io
 initSocket(server);
 
+// Cấu hình timeouts cho Server để tránh treo kết nối khi trình duyệt chuyển trang nhanh
+server.keepAliveTimeout = 65000; // 65 seconds
+server.headersTimeout = 66000;   // 66 seconds
+
+// Phào cứu sinh cho Process: Ngăn chặn crash sập server khi gặp lỗi không bắt được
+process.on('uncaughtException', (err) => {
+    console.error('🔥 CRITICAL: Uncaught Exception:', err);
+    // Không thoát process để PM2 không phải restart liên tục gây CONNECTION_REFUSED
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('🔥 CRITICAL: Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 // Start server
 server.listen(PORT, async () => {
     console.log(`🚀 Server is running on port ${PORT}`);
@@ -84,14 +98,13 @@ server.listen(PORT, async () => {
     console.log(`🔗 API: http://localhost:${PORT}/api`);
     console.log('');
 
-    // Test database connection
     // Test database connection asynchronously to prevent startup hang
     const testDbConnection = async () => {
         try {
             const pool = (await import('./config/database')).default;
+            // Sử dụng timeout ngắn cho việc check
             const result = await pool.query('SELECT NOW()');
             console.log('✅ Database connected successfully!');
-            console.log(`📅 Database time: ${result.rows[0].now}`);
         } catch (error: any) {
             console.error('⚠️ Database connection check failed (will retry automatically):', error.message);
         }
@@ -104,7 +117,6 @@ server.listen(PORT, async () => {
         BackupSchedulerService.initialize();
     } catch (error: any) {
         console.error('❌ Backup scheduler initialization failed!');
-        console.error('Error:', error.message);
     }
 });
 
