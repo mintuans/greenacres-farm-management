@@ -112,32 +112,47 @@ export const getUnreadCount = async (userId: string): Promise<number> => {
 
 // Mark notification as read
 export const markAsRead = async (userId: string, notificationId: string): Promise<void> => {
-    const query = `
-        UPDATE notification_recipients 
-        SET is_read = true, read_at = CURRENT_TIMESTAMP 
-        WHERE user_id = $1 AND notification_id = $2
-    `;
-    await pool.query(query, [userId, notificationId]);
+    const client = await pool.connect();
+    try {
+        const query = `
+            UPDATE notification_recipients 
+            SET is_read = true, read_at = CURRENT_TIMESTAMP 
+            WHERE user_id = $1 AND notification_id = $2
+        `;
+        await client.query(query, [userId, notificationId]);
+    } finally {
+        client.release();
+    }
 };
 
 // Mark all as read for a user
 export const markAllAsRead = async (userId: string): Promise<void> => {
-    const query = `
-        UPDATE notification_recipients 
-        SET is_read = true, read_at = CURRENT_TIMESTAMP 
-        WHERE user_id = $1 AND is_read = false
-    `;
-    await pool.query(query, [userId]);
+    const client = await pool.connect();
+    try {
+        const query = `
+            UPDATE notification_recipients 
+            SET is_read = true, read_at = CURRENT_TIMESTAMP 
+            WHERE user_id = $1 AND is_read = false
+        `;
+        await client.query(query, [userId]);
+    } finally {
+        client.release();
+    }
 };
 
 // Soft delete notification (for user)
 export const deleteNotification = async (userId: string, notificationId: string): Promise<void> => {
-    const query = `
-        UPDATE notification_recipients 
-        SET deleted_at = CURRENT_TIMESTAMP 
-        WHERE user_id = $1 AND notification_id = $2
-    `;
-    await pool.query(query, [userId, notificationId]);
+    const client = await pool.connect();
+    try {
+        const query = `
+            UPDATE notification_recipients 
+            SET deleted_at = CURRENT_TIMESTAMP 
+            WHERE user_id = $1 AND notification_id = $2
+        `;
+        await client.query(query, [userId, notificationId]);
+    } finally {
+        client.release();
+    }
 };
 
 // Get notifications sent by a user
@@ -158,13 +173,18 @@ export const getSentNotifications = async (senderId: string, limit = 50, offset 
 
 // Revoke/Delete notification globally
 export const revokeNotification = async (notificationId: string, senderId: string): Promise<boolean> => {
-    // Check if the user is the sender (or could check if Super Admin)
-    const checkQuery = `SELECT id FROM notifications WHERE id = $1 AND sender_id = $2`;
-    const checkResult = await pool.query(checkQuery, [notificationId, senderId]);
+    const client = await pool.connect();
+    try {
+        // Check if the user is the sender (or could check if Super Admin)
+        const checkQuery = `SELECT id FROM notifications WHERE id = $1 AND sender_id = $2`;
+        const checkResult = await client.query(checkQuery, [notificationId, senderId]);
 
-    if (checkResult.rows.length === 0) return false;
+        if (checkResult.rows.length === 0) return false;
 
-    const query = `DELETE FROM notifications WHERE id = $1`;
-    const result = await pool.query(query, [notificationId]);
-    return (result.rowCount ?? 0) > 0;
+        const query = `DELETE FROM notifications WHERE id = $1`;
+        const result = await client.query(query, [notificationId]);
+        return (result.rowCount ?? 0) > 0;
+    } finally {
+        client.release();
+    }
 };

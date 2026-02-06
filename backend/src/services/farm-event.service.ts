@@ -33,17 +33,22 @@ export const getFarmEventById = async (id: string): Promise<FarmEvent | null> =>
 };
 
 export const createFarmEvent = async (data: any): Promise<FarmEvent> => {
-    const query = `
-        INSERT INTO farm_events (title, event_type, start_time, end_time, is_all_day, description, season_id, unit_id)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        RETURNING *
-    `;
-    const values = [
-        data.title, data.event_type, data.start_time, data.end_time || null,
-        data.is_all_day ?? true, data.description, data.season_id || null, data.unit_id || null
-    ];
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    const client = await pool.connect();
+    try {
+        const query = `
+            INSERT INTO farm_events (title, event_type, start_time, end_time, is_all_day, description, season_id, unit_id)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            RETURNING *
+        `;
+        const values = [
+            data.title, data.event_type, data.start_time, data.end_time || null,
+            data.is_all_day ?? true, data.description, data.season_id || null, data.unit_id || null
+        ];
+        const result = await client.query(query, values);
+        return result.rows[0];
+    } finally {
+        client.release();
+    }
 };
 
 export const updateFarmEvent = async (id: string, data: any): Promise<FarmEvent | null> => {
@@ -61,19 +66,29 @@ export const updateFarmEvent = async (id: string, data: any): Promise<FarmEvent 
 
     if (fields.length === 0) return null;
 
-    values.push(id);
-    const query = `
-        UPDATE farm_events 
-        SET ${fields.join(', ')}
-        WHERE id = $${paramIndex}
-        RETURNING *
-    `;
-    const result = await pool.query(query, values);
-    return result.rows[0] || null;
+    const client = await pool.connect();
+    try {
+        values.push(id);
+        const query = `
+            UPDATE farm_events 
+            SET ${fields.join(', ')}
+            WHERE id = $${paramIndex}
+            RETURNING *
+        `;
+        const result = await client.query(query, values);
+        return result.rows[0] || null;
+    } finally {
+        client.release();
+    }
 };
 
 export const deleteFarmEvent = async (id: string): Promise<boolean> => {
-    const query = 'DELETE FROM farm_events WHERE id = $1';
-    const result = await pool.query(query, [id]);
-    return (result.rowCount ?? 0) > 0;
+    const client = await pool.connect();
+    try {
+        const query = 'DELETE FROM farm_events WHERE id = $1';
+        const result = await client.query(query, [id]);
+        return (result.rowCount ?? 0) > 0;
+    } finally {
+        client.release();
+    }
 };

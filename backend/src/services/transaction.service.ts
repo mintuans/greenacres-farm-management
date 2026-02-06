@@ -147,7 +147,12 @@ export const updateTransaction = async (id: string, data: any): Promise<Transact
 };
 
 export const deleteTransaction = async (id: string): Promise<boolean> => {
-    const query = 'DELETE FROM transactions WHERE id = $1';
-    const result = await pool.query(query, [id]);
-    return (result.rowCount ?? 0) > 0;
+    const client = await pool.connect();
+    try {
+        const query = 'DELETE FROM transactions WHERE id = $1';
+        const result = await client.query(query, [id]);
+        return (result.rowCount ?? 0) > 0;
+    } finally {
+        client.release();
+    }
 };

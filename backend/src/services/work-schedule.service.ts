@@ -41,17 +41,22 @@ export const getWorkScheduleById = async (id: string): Promise<WorkSchedule | nu
 };
 
 export const createWorkSchedule = async (data: any): Promise<WorkSchedule> => {
-    // Chuyển empty string thành null để tránh lỗi UUID trong Postgres
-    const seasonId = data.season_id && data.season_id !== '' ? data.season_id : null;
+    const client = await pool.connect();
+    try {
+        // Chuyển empty string thành null để tránh lỗi UUID trong Postgres
+        const seasonId = data.season_id && data.season_id !== '' ? data.season_id : null;
 
-    const query = `
-        INSERT INTO work_schedules (partner_id, shift_id, job_type_id, work_date, status, note, season_id)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
-        RETURNING *
-    `;
-    const values = [data.partner_id, data.shift_id, data.job_type_id, data.work_date, data.status, data.note, seasonId];
-    const result = await pool.query(query, values);
-    return result.rows[0];
+        const query = `
+            INSERT INTO work_schedules (partner_id, shift_id, job_type_id, work_date, status, note, season_id)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            RETURNING *
+        `;
+        const values = [data.partner_id, data.shift_id, data.job_type_id, data.work_date, data.status, data.note, seasonId];
+        const result = await client.query(query, values);
+        return result.rows[0];
+    } finally {
+        client.release();
+    }
 };
 
 export const updateWorkSchedule = async (id: string, data: any): Promise<WorkSchedule | null> => {
@@ -74,33 +79,42 @@ export const updateWorkSchedule = async (id: string, data: any): Promise<WorkSch
 
     if (fields.length === 0) return null;
 
-    values.push(id);
-    const query = `
-        UPDATE work_schedules 
-        SET ${fields.join(', ')}
-        WHERE id = $${paramIndex}
-        RETURNING *
-    `;
-    const result = await pool.query(query, values);
-    return result.rows[0] || null;
+    const client = await pool.connect();
+    try {
+        values.push(id);
+        const query = `
+            UPDATE work_schedules 
+            SET ${fields.join(', ')}
+            WHERE id = $${paramIndex}
+            RETURNING *
+        `;
+        const result = await client.query(query, values);
+        return result.rows[0] || null;
+    } finally {
+        client.release();
+    }
 };
 
 export const deleteWorkSchedule = async (id: string): Promise<boolean> => {
-    // Kiểm tra xem lịch này đã được dùng để tính lương chưa
-    // Lịch -> Nhật ký (logs) -> Phiếu lương (payroll_id)
-    const checkQuery = `
-        SELECT l.id 
-        FROM daily_work_logs l
-        WHERE l.schedule_id = $1 AND l.payroll_id IS NOT NULL
-        LIMIT 1
-    `;
-    const checkResult = await pool.query(checkQuery, [id]);
+    const client = await pool.connect();
+    try {
+        // Kiểm tra xem lịch này đã được dùng để tính lương chưa
+        const checkQuery = `
+            SELECT l.id 
+            FROM daily_work_logs l
+            WHERE l.schedule_id = $1 AND l.payroll_id IS NOT NULL
+            LIMIT 1
+        `;
+        const checkResult = await client.query(checkQuery, [id]);
 
-    if (checkResult.rows.length > 0) {
-        throw new Error('Không thể xóa lịch làm việc này vì đã được tính lương. Vui lòng xóa phiếu lương liên quan trước.');
+        if (checkResult.rows.length > 0) {
+            throw new Error('Không thể xóa lịch làm việc này vì đã được tính lương. Vui lòng xóa phiếu lương liên quan trước.');
+        }
+
+        const query = 'DELETE FROM work_schedules WHERE id = $1';
+        const result = await client.query(query, [id]);
+        return (result.rowCount ?? 0) > 0;
+    } finally {
+        client.release();
     }
-
-    const query = 'DELETE FROM work_schedules WHERE id = $1';
-    const result = await pool.query(query, [id]);
-    return (result.rowCount ?? 0) > 0;
 };

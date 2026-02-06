@@ -23,14 +23,19 @@ export interface UpdateWorkShiftInput {
 
 // Tạo ca làm việc mới
 export const createWorkShift = async (data: CreateWorkShiftInput): Promise<WorkShift> => {
-    const query = `
-        INSERT INTO work_shifts (shift_code, shift_name, start_time, end_time)
-        VALUES ($1, $2, $3, $4)
-        RETURNING *
-    `;
-    const values = [data.shift_code, data.shift_name, data.start_time, data.end_time];
-    const result = await pool.query(query, values);
-    return result.rows[0];
+    const client = await pool.connect();
+    try {
+        const query = `
+            INSERT INTO work_shifts (shift_code, shift_name, start_time, end_time)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+        `;
+        const values = [data.shift_code, data.shift_name, data.start_time, data.end_time];
+        const result = await client.query(query, values);
+        return result.rows[0];
+    } finally {
+        client.release();
+    }
 };
 
 // Lấy danh sách ca làm việc
@@ -70,21 +75,31 @@ export const updateWorkShift = async (id: string, data: UpdateWorkShiftInput): P
         return getWorkShiftById(id);
     }
 
-    values.push(id);
-    const query = `
-        UPDATE work_shifts 
-        SET ${fields.join(', ')}
-        WHERE id = $${paramIndex}
-        RETURNING *
-    `;
+    const client = await pool.connect();
+    try {
+        values.push(id);
+        const query = `
+            UPDATE work_shifts 
+            SET ${fields.join(', ')}
+            WHERE id = $${paramIndex}
+            RETURNING *
+        `;
 
-    const result = await pool.query(query, values);
-    return result.rows[0] || null;
+        const result = await client.query(query, values);
+        return result.rows[0] || null;
+    } finally {
+        client.release();
+    }
 };
 
 // Xóa ca làm việc
 export const deleteWorkShift = async (id: string): Promise<boolean> => {
-    const query = 'DELETE FROM work_shifts WHERE id = $1';
-    const result = await pool.query(query, [id]);
-    return (result.rowCount ?? 0) > 0;
+    const client = await pool.connect();
+    try {
+        const query = 'DELETE FROM work_shifts WHERE id = $1';
+        const result = await client.query(query, [id]);
+        return (result.rowCount ?? 0) > 0;
+    } finally {
+        client.release();
+    }
 };
