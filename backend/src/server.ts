@@ -103,7 +103,7 @@ server.listen(PORT, async () => {
         try {
             const pool = (await import('./config/database')).default;
             // Sử dụng timeout ngắn cho việc check
-            const result = await pool.query('SELECT NOW()');
+            await pool.query('SELECT NOW()');
             console.log('✅ Database connected successfully!');
         } catch (error: any) {
             console.error('⚠️ Database connection check failed (will retry automatically):', error.message);
