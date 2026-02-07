@@ -18,11 +18,12 @@ const transporter = nodemailer.createTransport({
 
 // Verify connection configuration only if credentials are provided
 if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    // Chỉ log lỗi vắn tắt, không văng stack trace làm bẩn log
     transporter.verify(function (error, _success) {
         if (error) {
-            console.error('SMTP Connection Error:', error);
+            console.warn('ℹ️ SMTP Service: Connection failed (likely DNS or Network issue). Email functionality may be unavailable.');
         } else {
-            console.log('SMTP Server is ready to take our messages');
+            console.log('✅ SMTP Server is ready');
         }
     });
 } else {

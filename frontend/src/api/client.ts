@@ -2,6 +2,8 @@
  * API Configuration và Helper Functions
  */
 
+// Tuyệt đối không hardcode IP tại đây. 
+// Nếu chạy trên server, để trống "" hoặc "/api" để trình duyệt tự hiểu theo Domain và Protocol hiện hành.
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 const API_TIMEOUT = import.meta.env.VITE_API_TIMEOUT || 30000;
 
