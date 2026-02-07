@@ -62,11 +62,11 @@ import passport from './config/passport';
 // Initialize Passport
 app.use(passport.initialize());
 
-app.use('/api/showcase', showcaseRoutes);
-app.use('/api/management', managementRoutes);
-app.use('/api/auth', oauthRoutes);
-app.use('/api/payroll', payrollRoutes);
-app.use('/api/notifications', notificationRoutes);
+app.use('/showcase', showcaseRoutes);
+app.use('/management', managementRoutes);
+app.use('/auth', oauthRoutes);
+app.use('/payroll', payrollRoutes);
+app.use('/notifications', notificationRoutes);
 
 
 // 404 handler
