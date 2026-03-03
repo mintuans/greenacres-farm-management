@@ -8,6 +8,13 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       host: '0.0.0.0',
+      proxy: {
+        '/api': {
+          target: 'http://localhost:5000',
+          changeOrigin: true,
+          secure: false,
+        }
+      }
     },
     plugins: [react()],
     define: {
@@ -18,6 +25,30 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@': path.resolve(__dirname, '.'),
       }
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('react')) {
+                return 'vendor-react';
+              }
+              if (id.includes('exceljs')) {
+                return 'vendor-excel';
+              }
+              if (id.includes('axios')) {
+                return 'vendor-axios';
+              }
+              if (id.includes('socket.io-client')) {
+                return 'vendor-socket';
+              }
+              return 'vendor-others';
+            }
+          }
+        }
+      },
+      chunkSizeWarningLimit: 1200,
     }
   };
 });

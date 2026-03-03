@@ -607,13 +607,17 @@ const FarmShowcase: React.FC = () => {
             try {
                 // Fetch media - filter by 'gallery' for Hero
                 const mediaResponse = await getMediaFiles({ page: 1, limit: 10, category: 'gallery' });
-                setRecentMedia(mediaResponse.data);
-                setTotalMediaCount(mediaResponse.pagination.total);
+                if (mediaResponse?.data) {
+                    setRecentMedia(mediaResponse.data);
+                    setTotalMediaCount(mediaResponse.pagination?.total || 0);
+                }
 
                 // Fetch farm images specifically
                 const farmResponse = await getFarmImages(4);
-                setFarmImages(farmResponse.data);
-                setTotalFarmImagesCount(farmResponse.total);
+                if (farmResponse?.data) {
+                    setFarmImages(farmResponse.data);
+                    setTotalFarmImagesCount(farmResponse.total || 0);
+                }
 
                 // Fetch comments
                 fetchComments();
@@ -653,7 +657,7 @@ const FarmShowcase: React.FC = () => {
                                         <span className="bg-[#13ec49]/20 text-[#13ec49] text-xs font-bold px-2 py-1 rounded uppercase tracking-wider">Welcome</span>
                                         <span className="flex items-center gap-1 bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-1 rounded-full border border-gray-200 shadow-sm animate-pulse-slow">
                                             <span className="material-symbols-outlined text-[14px]">visibility</span>
-                                            {visitorCount.toLocaleString('vi-VN')}
+                                            {(visitorCount || 0).toLocaleString('vi-VN')}
                                         </span>
                                     </div>
                                     <h1 className="text-[#111813] text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em]">Vườn Nhà Mình</h1>
