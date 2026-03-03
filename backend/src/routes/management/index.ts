@@ -46,6 +46,7 @@ console.log('📦 Partner routes:', typeof partnerRoutes);
 console.log('📦 Production Unit routes:', typeof productionUnitRoutes);
 console.log('📦 Season routes:', typeof seasonRoutes);
 console.log('📦 Category routes:', typeof categoryRoutes);
+console.log('📦 Inventory routes:', typeof inventoryRoutes);
 
 // Mount routes
 router.use('/products', productsRoutes);

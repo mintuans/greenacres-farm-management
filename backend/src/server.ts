@@ -3,13 +3,19 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import http from 'http';
 import { initSocket } from './config/socket';
+import showcaseRoutes from './routes/showcase';
+import managementRoutes from './routes/management';
+import oauthRoutes from './routes/auth/oauth.routes';
+import payrollRoutes from './routes/payroll.routes';
+import notificationRoutes from './routes/notification.routes';
+import passport from './config/passport';
 
 // Load environment variables
 dotenv.config();
 
 const app: Application = express();
 const server = http.createServer(app);
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 // Middlewares
 const allowedOrigins = process.env.CORS_ORIGIN
@@ -31,6 +37,16 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+// Initialize Passport
+app.use(passport.initialize());
+
+// API Routes
+app.use('/api/showcase', showcaseRoutes);
+app.use('/api/management', managementRoutes);
+app.use('/api/auth', oauthRoutes);
+app.use('/api/payroll', payrollRoutes);
+app.use('/api/notifications', notificationRoutes);
+
 // Health check endpoint
 app.get('/health', (_req: Request, res: Response) => {
     res.json({
@@ -40,7 +56,6 @@ app.get('/health', (_req: Request, res: Response) => {
     });
 });
 
-// API Routes
 app.get('/api', (_req: Request, res: Response) => {
     res.json({
         message: 'GreenAcres Farm Management API',
@@ -51,23 +66,6 @@ app.get('/api', (_req: Request, res: Response) => {
         },
     });
 });
-
-import showcaseRoutes from './routes/showcase';
-import managementRoutes from './routes/management';
-import oauthRoutes from './routes/auth/oauth.routes';
-import payrollRoutes from './routes/payroll.routes';
-import notificationRoutes from './routes/notification.routes';
-import passport from './config/passport';
-
-// Initialize Passport
-app.use(passport.initialize());
-
-app.use('/showcase', showcaseRoutes);
-app.use('/management', managementRoutes);
-app.use('/auth', oauthRoutes);
-app.use('/payroll', payrollRoutes);
-app.use('/notifications', notificationRoutes);
-
 
 // 404 handler
 app.use((req: Request, res: Response) => {
@@ -89,14 +87,13 @@ app.use((err: Error, _req: Request, res: Response, _next: any) => {
 // Initialize Socket.io
 initSocket(server);
 
-// Cấu hình timeouts cho Server để tránh treo kết nối khi trình duyệt chuyển trang nhanh
-server.keepAliveTimeout = 65000; // 65 seconds
-server.headersTimeout = 66000;   // 66 seconds
+// Cấu hình timeouts cho Server
+server.keepAliveTimeout = 65000;
+server.headersTimeout = 66000;
 
-// Phào cứu sinh cho Process: Ngăn chặn crash sập server khi gặp lỗi không bắt được
+// Phào cứu sinh cho Process
 process.on('uncaughtException', (err) => {
     console.error('🔥 CRITICAL: Uncaught Exception:', err);
-    // Không thoát process để PM2 không phải restart liên tục gây CONNECTION_REFUSED
 });
 
 process.on('unhandledRejection', (reason, promise) => {
@@ -110,20 +107,17 @@ server.listen(PORT, async () => {
     console.log(`🔗 API: http://localhost:${PORT}/api`);
     console.log('');
 
-    // Test database connection asynchronously to prevent startup hang
     const testDbConnection = async () => {
         try {
             const pool = (await import('./config/database')).default;
-            // Sử dụng timeout ngắn cho việc check
             await pool.query('SELECT NOW()');
             console.log('✅ Database connected successfully!');
         } catch (error: any) {
-            console.error('⚠️ Database connection check failed (will retry automatically):', error.message);
+            console.error('⚠️ Database connection check failed:', error.message);
         }
     };
     testDbConnection();
 
-    // Initialize backup scheduler
     try {
         const { BackupSchedulerService } = await import('./services/backup-scheduler.service');
         BackupSchedulerService.initialize();
