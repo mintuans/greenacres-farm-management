@@ -48,18 +48,20 @@ const ShowcaseProducts: React.FC = () => {
                 placeholder="Tìm sản phẩm..."
             />
 
-            <div className="max-w-7xl mx-auto px-4 py-8">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div className="max-w-7xl mx-auto px-3 md:px-4 py-4 md:py-8">
+                {/* Mobile: flex row (categories left | products right), Desktop: grid */}
+                <div className="flex gap-3 md:grid md:grid-cols-4 md:gap-8 items-start">
+
                     {/* Sidebar - Categories */}
-                    <div className="lg:col-span-1">
-                        <div className="bg-white rounded-xl p-6 shadow-sm">
-                            <h2 className="text-lg font-bold mb-4">Danh mục</h2>
-                            <div className="space-y-2">
+                    <div className="shrink-0 w-[90px] md:w-auto md:col-span-1">
+                        <div className="bg-white rounded-xl p-2 md:p-6 shadow-sm sticky top-[52px] md:top-[68px]">
+                            <h2 className="text-xs md:text-lg font-bold mb-2 md:mb-4 text-center md:text-left">Danh mục</h2>
+                            <div className="flex flex-col gap-1">
                                 <button
                                     onClick={() => setSelectedCategory('')}
-                                    className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${selectedCategory === ''
+                                    className={`w-full text-left px-2 md:px-4 py-1.5 md:py-2 rounded-lg transition-colors text-xs md:text-sm ${selectedCategory === ''
                                         ? 'bg-[#13ec49] text-[#102215] font-bold'
-                                        : 'hover:bg-gray-100'
+                                        : 'hover:bg-gray-100 text-gray-700'
                                         }`}
                                 >
                                     Tất cả
@@ -68,9 +70,9 @@ const ShowcaseProducts: React.FC = () => {
                                     <button
                                         key={category.id}
                                         onClick={() => setSelectedCategory(category.id)}
-                                        className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${selectedCategory === category.id
+                                        className={`w-full text-left px-2 md:px-4 py-1.5 md:py-2 rounded-lg transition-colors text-xs md:text-sm leading-tight ${selectedCategory === category.id
                                             ? 'bg-[#13ec49] text-[#102215] font-bold'
-                                            : 'hover:bg-gray-100'
+                                            : 'hover:bg-gray-100 text-gray-700'
                                             }`}
                                     >
                                         {category.category_name}
@@ -81,32 +83,32 @@ const ShowcaseProducts: React.FC = () => {
                     </div>
 
                     {/* Products Grid */}
-                    <div className="lg:col-span-3">
+                    <div className="flex-1 min-w-0 md:col-span-3">
                         {loading ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {[1, 2, 3, 4, 5, 6].map((i) => (
+                            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+                                {[1, 2, 3, 4].map((i) => (
                                     <div key={i} className="bg-white rounded-xl overflow-hidden shadow-sm animate-pulse">
-                                        <div className="w-full h-64 bg-gray-200"></div>
-                                        <div className="p-4 space-y-3">
-                                            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                                            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                                        <div className="w-full h-32 md:h-64 bg-gray-200"></div>
+                                        <div className="p-3 md:p-4 space-y-2">
+                                            <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                                            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         ) : products.length === 0 ? (
-                            <div className="bg-white rounded-xl p-12 text-center">
-                                <p className="text-gray-500 text-lg">Không tìm thấy sản phẩm nào</p>
+                            <div className="bg-white rounded-xl p-8 text-center">
+                                <p className="text-gray-500 text-sm md:text-lg">Không tìm thấy sản phẩm nào</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                                 {products.map((product) => (
                                     <div
                                         key={product.id}
                                         className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow cursor-pointer group"
                                     >
                                         {/* Product Image */}
-                                        <div className="relative w-full h-64 bg-gray-100 overflow-hidden">
+                                        <div className="relative w-full h-32 md:h-64 bg-gray-100 overflow-hidden">
                                             {product.thumbnail_id ? (
                                                 <img
                                                     src={getMediaUrl(product.thumbnail_id)}
@@ -121,49 +123,48 @@ const ShowcaseProducts: React.FC = () => {
                                                 />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                                    <span className="material-symbols-outlined text-6xl">image</span>
+                                                    <span className="material-symbols-outlined text-4xl md:text-6xl">image</span>
                                                 </div>
                                             )}
 
                                             {/* Badge */}
                                             {product.is_featured && (
-                                                <span className="absolute top-3 left-3 bg-[#13ec49] text-[#102215] text-xs font-bold px-3 py-1 rounded-full">
+                                                <span className="absolute top-2 left-2 bg-[#13ec49] text-[#102215] text-[9px] md:text-xs font-bold px-1.5 md:px-3 py-0.5 md:py-1 rounded-full">
                                                     Nổi bật
                                                 </span>
                                             )}
                                         </div>
 
                                         {/* Product Info */}
-                                        <div className="p-4">
-                                            <h3 className="text-lg font-bold text-[#111813] mb-2 line-clamp-2 group-hover:text-[#13ec49] transition-colors">
+                                        <div className="p-2.5 md:p-4">
+                                            <h3 className="text-xs md:text-lg font-bold text-[#111813] mb-1 md:mb-2 line-clamp-2 group-hover:text-[#13ec49] transition-colors leading-tight">
                                                 {product.product_name}
                                             </h3>
 
-                                            <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                                            <p className="hidden md:block text-sm text-gray-600 mb-3 line-clamp-2">
                                                 {product.short_description}
                                             </p>
 
                                             {/* Price */}
-                                            <div className="flex items-center gap-2 mb-3">
-                                                <span className="text-2xl font-bold text-[#13ec49]">
+                                            <div className="flex items-center gap-1 md:gap-2 mb-1 md:mb-3 flex-wrap">
+                                                <span className="text-sm md:text-2xl font-bold text-[#13ec49]">
                                                     {Number(product.price).toLocaleString('vi-VN')}đ
                                                 </span>
                                                 {product.original_price && product.original_price > product.price && (
-                                                    <span className="text-sm text-gray-400 line-through">
+                                                    <span className="text-[10px] md:text-sm text-gray-400 line-through">
                                                         {Number(product.original_price).toLocaleString('vi-VN')}đ
                                                     </span>
                                                 )}
                                             </div>
 
                                             {/* Rating & Stock */}
-                                            <div className="flex items-center justify-between text-sm text-gray-600">
-                                                <div className="flex items-center gap-1">
-                                                    <span className="text-yellow-500">⭐</span>
+                                            <div className="flex items-center justify-between text-[10px] md:text-sm text-gray-600">
+                                                <div className="flex items-center gap-0.5">
+                                                    <span className="text-yellow-500 text-xs">⭐</span>
                                                     <span>{product.avg_rating ? Number(product.avg_rating).toFixed(1) : '0.0'}</span>
-                                                    <span>({product.review_count || 0})</span>
                                                 </div>
-                                                <span className={product.stock_quantity > 0 ? 'text-green-600' : 'text-red-600'}>
-                                                    {product.stock_quantity > 0 ? `Còn ${product.stock_quantity} ${product.unit_of_measure}` : 'Hết hàng'}
+                                                <span className={`text-[9px] md:text-sm ${product.stock_quantity > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                    {product.stock_quantity > 0 ? `Còn ${product.stock_quantity}` : 'Hết hàng'}
                                                 </span>
                                             </div>
                                         </div>
