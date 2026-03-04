@@ -4,12 +4,17 @@ import { Server as HttpServer } from 'http';
 let io: SocketServer;
 
 export const initSocket = (server: HttpServer) => {
+    const allowedOrigins = process.env.CORS_ORIGIN
+        ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+        : ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174'];
+
     io = new SocketServer(server, {
         cors: {
-            origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174', 'http://163.223.8.88', 'https://vuonnhaminhfarm.com', 'https://www.vuonnhaminhfarm.com'],
+            origin: allowedOrigins,
             methods: ['GET', 'POST'],
             credentials: true
-        }
+        },
+        transports: ['websocket', 'polling']
     });
 
     io.on('connection', (socket) => {

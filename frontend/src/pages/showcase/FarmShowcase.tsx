@@ -307,7 +307,11 @@ const FarmShowcase: React.FC = () => {
     // Socket.io initialization
     React.useEffect(() => {
         // Kết nối socket
-        const socket = io(import.meta.env.VITE_API_URL || undefined);
+        const socketUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api$/, '') : undefined;
+        const socket = io(socketUrl, {
+            transports: ['websocket', 'polling'],
+            withCredentials: true
+        });
         socketRef.current = socket;
 
         socket.on('connect', () => {
