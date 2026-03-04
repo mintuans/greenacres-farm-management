@@ -130,7 +130,10 @@ const ShowcaseHeader: React.FC<ShowcaseHeaderProps> = ({
                             alt={displayName}
                             className="w-full h-full object-cover rounded-full"
                             onError={(e) => {
-                                e.currentTarget.src = 'https://ui-avatars.com/api/?name=Du+Khach&background=13ec49&color=fff';
+                                const target = e.currentTarget;
+                                if (target.getAttribute('data-error-handled')) return;
+                                target.setAttribute('data-error-handled', 'true');
+                                target.src = 'https://ui-avatars.com/api/?name=Du+Khach&background=13ec49&color=fff';
                             }}
                         />
                     </div>

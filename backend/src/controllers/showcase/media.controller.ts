@@ -45,7 +45,7 @@ export const getFarmImages = async (req: Request, res: Response): Promise<any> =
  */
 export const getGalleryImages = async (req: Request, res: Response): Promise<any> => {
     try {
-        const { page = 1, limit = 20, search } = req.query;
+        const { page = 1, limit = 20, search, category } = req.query;
         const offset = (Number(page) - 1) * Number(limit);
 
         let query = `
@@ -57,11 +57,17 @@ export const getGalleryImages = async (req: Request, res: Response): Promise<any
                 category,
                 uploaded_at as created_at
             FROM media_files
-            WHERE deleted_at IS NULL AND category = 'gallery'
+            WHERE deleted_at IS NULL
         `;
 
         const params: any[] = [];
         let paramIndex = 1;
+
+        if (category) {
+            query += ` AND category = $${paramIndex}`;
+            params.push(category);
+            paramIndex++;
+        }
 
         if (search) {
             query += ` AND image_name ILIKE $${paramIndex}`;
@@ -69,16 +75,18 @@ export const getGalleryImages = async (req: Request, res: Response): Promise<any
             paramIndex++;
         }
 
+        const countParams = [...params];
+
         query += ` ORDER BY uploaded_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
         params.push(limit, offset);
 
         const result = await pool.query(query, params);
 
-        // Get total count
-        const countResult = await pool.query(`
-            SELECT COUNT(*) FROM media_files 
-            WHERE deleted_at IS NULL AND category = 'gallery'
-        `);
+        // Get total count using the same filters
+        const countResult = await pool.query(
+            `SELECT COUNT(*) FROM media_files WHERE deleted_at IS NULL ${category ? `AND category = $1` : ''} ${search ? `AND image_name ILIKE $${category ? 2 : 1}` : ''}`,
+            countParams
+        );
 
         return res.json({
             success: true,

@@ -74,5 +74,8 @@ export const getProductCategories = async () => {
  * Lấy URL hình ảnh từ media_id
  */
 export const getMediaUrl = (mediaId: string) => {
-    return `${import.meta.env.VITE_API_URL || '/api'}/showcase/media/raw/${mediaId}`;
+    const baseUrl = import.meta.env.VITE_API_URL || '';
+    // Đảm bảo luôn có /api trong URL cho ảnh raw
+    const apiPath = baseUrl.endsWith('/api') ? '' : (baseUrl ? '/api' : '/api');
+    return `${baseUrl}${apiPath}/showcase/media/raw/${mediaId}`;
 };
