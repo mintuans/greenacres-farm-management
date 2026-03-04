@@ -41,6 +41,61 @@ export const getFarmImages = async (req: Request, res: Response): Promise<any> =
 };
 
 /**
+ * Lấy danh sách ảnh Gallery (dùng cho Showcase)
+ */
+export const getGalleryImages = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { page = 1, limit = 20, search } = req.query;
+        const offset = (Number(page) - 1) * Number(limit);
+
+        let query = `
+            SELECT 
+                id, 
+                image_name, 
+                file_size,
+                image_type as mime_type,
+                category,
+                uploaded_at as created_at
+            FROM media_files
+            WHERE deleted_at IS NULL AND category = 'gallery'
+        `;
+
+        const params: any[] = [];
+        let paramIndex = 1;
+
+        if (search) {
+            query += ` AND image_name ILIKE $${paramIndex}`;
+            params.push(`%${search}%`);
+            paramIndex++;
+        }
+
+        query += ` ORDER BY uploaded_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+        params.push(limit, offset);
+
+        const result = await pool.query(query, params);
+
+        // Get total count
+        const countResult = await pool.query(`
+            SELECT COUNT(*) FROM media_files 
+            WHERE deleted_at IS NULL AND category = 'gallery'
+        `);
+
+        return res.json({
+            success: true,
+            data: result.rows,
+            pagination: {
+                page: Number(page),
+                limit: Number(limit),
+                total: parseInt(countResult.rows[0].count)
+            }
+        });
+    } catch (error: any) {
+        console.error('Error in getGalleryImages:', error);
+        return res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+/**
  * Phục vụ ảnh trực tiếp (Binary Stream)
  * Dùng cho <img src="/api/showcase/media/raw/ID" />
  */

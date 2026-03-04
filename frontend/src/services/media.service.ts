@@ -18,7 +18,8 @@ export const getMediaFiles = async (params?: {
     search?: string;
     category?: string;
 }) => {
-    const response = await api.get('/management/media', { params });
+    // Sử dụng API showcase công khai thay vì API quản lý (đòi hỏi login)
+    const response = await api.get('/showcase/media/gallery', { params });
     return response.data;
 };
 

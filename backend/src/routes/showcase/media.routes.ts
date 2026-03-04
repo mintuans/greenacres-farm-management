@@ -4,6 +4,7 @@ import * as mediaController from '../../controllers/showcase/media.controller';
 const router = Router();
 
 router.get('/farm', mediaController.getFarmImages);
+router.get('/gallery', mediaController.getGalleryImages);
 router.get('/raw/:id', mediaController.getMediaResource);
 
 export default router;
