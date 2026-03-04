@@ -34,7 +34,7 @@ export const getSeasons = async (req: Request, res: Response) => {
             data: seasons
         });
     } catch (error: any) {
-        console.error('Get seasons error:', error);
+        console.error('❌ Error in getSeasons:', error);
         res.status(500).json({
             success: false,
             message: error.message || 'Failed to get seasons'

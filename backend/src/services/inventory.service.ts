@@ -22,7 +22,7 @@ export const getInventory = async (categoryId?: string): Promise<InventoryItem[]
         SELECT 
             i.id, i.inventory_code, i.inventory_name, i.category_id, 
             i.unit_of_measure, i.stock_quantity, i.min_stock_level, 
-            i.last_import_price, i.import_date, i.thumbnail_id, i.note, i.created_at,
+            i.last_import_price, i.import_date, i.thumbnail_id, i.note,
             c.category_name 
         FROM inventory i
         LEFT JOIN categories c ON i.category_id = c.id
@@ -46,7 +46,7 @@ export const getInventoryItemById = async (id: string): Promise<InventoryItem | 
         SELECT 
             id, inventory_code, inventory_name, category_id, 
             unit_of_measure, stock_quantity, min_stock_level, 
-            last_import_price, import_date, thumbnail_id, note, created_at
+            last_import_price, import_date, thumbnail_id, note
         FROM inventory 
         WHERE id = $1
     `;

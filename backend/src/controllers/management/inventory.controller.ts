@@ -8,7 +8,8 @@ export const getInventory = async (req: Request, res: Response): Promise<any> =>
         const items = await inventoryService.getInventory(category_id as string);
         return res.json({ success: true, data: items });
     } catch (error: any) {
-        return res.status(500).json({ success: false, message: error.message });
+        console.error('❌ Error in getInventory:', error);
+        return res.status(500).json({ success: false, message: error.message || 'Failed to get inventory items' });
     }
 };
 
