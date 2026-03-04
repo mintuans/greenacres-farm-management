@@ -219,10 +219,10 @@ const EventDetail: React.FC = () => {
                                 <button
                                     onClick={handleJoin}
                                     disabled={joining || isUserJoined}
-                                    className={`${isUserJoined ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-[#13ec49] hover:bg-[#13ec49]/90 text-[#111813] shadow-[#13ec49]/20'} px-6 py-2.5 rounded-full font-bold shadow-lg transition-all flex items-center gap-2`}
+                                    className={`${isUserJoined ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-[#13ec49] hover:bg-[#13ec49]/90 text-[#111813] shadow-[#13ec49]/20'} px-3 md:px-6 py-2 md:py-2.5 rounded-full font-bold shadow-lg transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 text-sm md:text-base`}
                                 >
                                     {isUserJoined ? 'Đã tham gia' : joining ? 'Đang đăng ký...' : 'Tham gia ngay'}
-                                    <span className="material-symbols-outlined text-lg">{isUserJoined ? 'check_circle' : 'celebration'}</span>
+                                    <span className="material-symbols-outlined text-base md:text-lg">{isUserJoined ? 'check_circle' : 'celebration'}</span>
                                 </button>
                             </div>
 
