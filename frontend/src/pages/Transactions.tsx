@@ -394,12 +394,12 @@ const Transactions: React.FC = () => {
   };
 
   return (
-    <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="p-3 md:p-4 space-y-4 w-full">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-2">
-          <h1 className="text-4xl font-black tracking-tight text-slate-900">Sổ nhật ký giao dịch</h1>
-          <p className="text-slate-500 font-medium">Quản lý thu nhập và chi phí hàng ngày của trang trại.</p>
+        <div className="space-y-1">
+          <h1 className="text-2xl font-black tracking-tight text-slate-900">Sổ nhật ký giao dịch</h1>
+          <p className="text-slate-500 text-sm font-medium">Quản lý thu nhập và chi phí hàng ngày của trang trại.</p>
         </div>
         <div className="flex items-center bg-white border border-slate-200 rounded-xl p-1 shadow-sm shrink-0 relative" ref={monthPickerRef}>
           <button onClick={handlePrevMonth} className="p-2 hover:bg-slate-50 rounded-lg text-slate-400 transition-colors">
@@ -444,46 +444,45 @@ const Transactions: React.FC = () => {
           { l: 'Tổng chi', v: totalExpense.toLocaleString('vi-VN') + 'đ', c: 'bg-red-50 text-red-700', i: 'shopping_cart' },
           { l: 'Lợi nhuận', v: profit.toLocaleString('vi-VN') + 'đ', c: 'bg-blue-50 text-blue-700', i: 'savings' }
         ].map((s, i) => (
-          <div key={i} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
-            <div className="flex items-center gap-3 mb-4">
-              <div className={`p-2 rounded-lg ${s.c}`}><span className="material-symbols-outlined text-[20px]">{s.i}</span></div>
-              <p className="text-slate-400 text-xs font-black uppercase tracking-widest">{s.l}</p>
+          <div key={i} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
+            <div className="flex items-center gap-2 mb-2">
+              <div className={`p-1.5 rounded-lg ${s.c}`}><span className="material-symbols-outlined text-[16px]">{s.i}</span></div>
+              <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest">{s.l}</p>
             </div>
-            <h3 className="text-3xl font-black text-slate-900">{s.v}</h3>
-            <p className={`text-[10px] font-black uppercase tracking-widest mt-1 ${s.c.includes('green') ? 'text-green-600' : s.c.includes('red') ? 'text-red-600' : 'text-blue-600'}`}>Hệ thống tự động cập nhật</p>
+            <h3 className="text-lg font-black text-slate-900">{s.v}</h3>
           </div>
         ))}
       </div>
 
       {/* Main Content Table */}
-      <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden border-t-4 border-t-[#13ec49]">
-        <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <button className="bg-slate-50 text-slate-700 px-5 py-2.5 rounded-2xl text-[10px] font-black flex items-center gap-2 border border-slate-200 uppercase tracking-widest hover:bg-slate-100 transition-all"><span className="material-symbols-outlined text-[18px]">filter_list</span> Lọc</button>
-            <div className="flex bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden border-t-4 border-t-[#13ec49]">
+        <div className="p-4 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            <button className="bg-slate-50 text-slate-700 px-3 py-1.5 rounded-xl text-[9px] font-black flex items-center gap-1.5 border border-slate-200 uppercase tracking-widest hover:bg-slate-100 transition-all"><span className="material-symbols-outlined text-[16px]">filter_list</span> Lọc</button>
+            <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-100">
               {['ALL', 'INCOME', 'EXPENSE'].map(f => (
-                <button key={f} onClick={() => setFilter(f as any)} className={`${filter === f ? 'bg-white text-[#13ec49] shadow-sm' : 'text-slate-400'} text-[10px] font-black px-5 py-2 rounded-xl uppercase tracking-widest transition-all`}>{f === 'ALL' ? 'Tất cả' : f === 'INCOME' ? 'Thu' : 'Chi'}</button>
+                <button key={f} onClick={() => setFilter(f as any)} className={`${filter === f ? 'bg-white text-[#13ec49] shadow-sm' : 'text-slate-400'} text-[9px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest transition-all`}>{f === 'ALL' ? 'Tất cả' : f === 'INCOME' ? 'Thu' : 'Chi'}</button>
               ))}
             </div>
           </div>
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <button onClick={handleExport} className="flex-1 md:flex-none border border-slate-200 px-6 py-2.5 rounded-2xl text-xs font-black hover:bg-slate-50 transition-all uppercase tracking-widest flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[18px]">download</span> Xuất báo cáo</button>
-            <button onClick={() => fileInputRef.current?.click()} className="flex-1 md:flex-none border border-slate-200 px-6 py-2.5 rounded-2xl text-xs font-black hover:bg-slate-50 transition-all uppercase tracking-widest flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[18px]">upload_file</span> Nhập dữ liệu</button>
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            <button onClick={handleExport} className="flex-1 md:flex-none border border-slate-200 px-4 py-1.5 rounded-xl text-[11px] font-black hover:bg-slate-50 transition-all uppercase tracking-widest flex items-center justify-center gap-1.5"><span className="material-symbols-outlined text-[16px]">download</span> Xuất</button>
+            <button onClick={() => fileInputRef.current?.click()} className="flex-1 md:flex-none border border-slate-200 px-4 py-1.5 rounded-xl text-[11px] font-black hover:bg-slate-50 transition-all uppercase tracking-widest flex items-center justify-center gap-1.5"><span className="material-symbols-outlined text-[16px]">upload_file</span> Nhập</button>
             <input type="file" ref={fileInputRef} onChange={handleImport} className="hidden" accept=".xlsx" />
-            <button onClick={() => setShowModal(true)} className="flex-1 md:flex-none bg-[#13ec49] text-black px-8 py-2.5 rounded-2xl text-xs font-extrabold shadow-xl shadow-[#13ec49]/20 transition-all uppercase tracking-widest hover:scale-105 active:scale-95 flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[18px]">add_circle</span> Thêm mới</button>
+            <button onClick={() => setShowModal(true)} className="flex-1 md:flex-none bg-[#13ec49] text-black px-4 py-1.5 rounded-xl text-[11px] font-extrabold shadow-lg shadow-[#13ec49]/20 transition-all uppercase tracking-widest hover:scale-105 active:scale-95 flex items-center justify-center gap-1.5"><span className="material-symbols-outlined text-[16px]">add_circle</span> Thêm mới</button>
           </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-slate-50/50 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
-                <th className="px-8 py-5 w-12 text-center"><input type="checkbox" className="rounded-lg border-slate-200 text-[#13ec49] focus:ring-[#13ec49]" /></th>
-                <th className="px-8 py-5">Ngày giao dịch</th>
-                <th className="px-8 py-5">Nội dung / Chi tiết</th>
-                <th className="px-8 py-5">Phân loại</th>
-                <th className="px-8 py-5 text-right">Số tiền</th>
-                <th className="px-8 py-5 text-center">Trạng thái</th>
+              <tr className="bg-slate-50/50 text-[9px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+                <th className="px-4 py-3 w-10 text-center"><input type="checkbox" className="rounded border-slate-200 text-[#13ec49] focus:ring-[#13ec49]" /></th>
+                <th className="px-4 py-3 text-xs">Ngày</th>
+                <th className="px-4 py-3">Nội dung / Chi tiết</th>
+                <th className="px-4 py-3">Phân loại</th>
+                <th className="px-4 py-3 text-right">Số tiền</th>
+                <th className="px-4 py-3 text-center">Trạng thái</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 text-sm font-medium">
@@ -492,18 +491,15 @@ const Transactions: React.FC = () => {
               ) : filteredTransactions.length > 0 ? (
                 filteredTransactions.map((t) => (
                   <tr key={t.id} onClick={() => handleViewDetail(t)} className="hover:bg-slate-50/50 transition-all group cursor-pointer">
-                    <td className="px-8 py-5 text-center" onClick={(e) => e.stopPropagation()}><input type="checkbox" className="rounded-lg border-slate-200 text-[#13ec49] focus:ring-[#13ec49]" /></td>
-                    <td className="px-8 py-5 font-bold text-slate-400">{new Date(t.transaction_date).toLocaleDateString('vi-VN')}</td>
-                    <td className="px-8 py-5">
+                    <td className="px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}><input type="checkbox" className="rounded border-slate-200 text-[#13ec49] focus:ring-[#13ec49]" /></td>
+                    <td className="px-4 py-3 font-bold text-slate-400">{new Date(t.transaction_date).toLocaleDateString('vi-VN')}</td>
+                    <td className="px-4 py-3">
                       <div className="font-extrabold text-slate-900 group-hover:text-[#13ec49] transition-colors">{t.note || 'Không có tiêu đề'}</div>
-                      <div className="text-[10px] text-slate-400 uppercase tracking-widest mt-1">{t.season_name ? `⚡ ${t.season_name}` : '🏠 Chi tiêu chung'}{t.partner_name ? ` • 👤 ${t.partner_name}` : ''}</div>
-                      {t.quantity && t.unit_price ? (
-                        <div className="text-[10px] text-blue-500 font-bold uppercase tracking-widest mt-1 bg-blue-50 inline-block px-2 py-0.5 rounded-md">📦 {Number(t.quantity).toLocaleString('vi-VN')} {t.unit || 'kg'} x {Number(t.unit_price).toLocaleString('vi-VN')}đ</div>
-                      ) : null}
+                      <div className="text-[9px] text-slate-400 uppercase tracking-widest mt-0.5">{t.season_name ? `⚡ ${t.season_name}` : '🏠 Chi tiêu chung'}{t.partner_name ? ` • 👤 ${t.partner_name}` : ''}</div>
                     </td>
-                    <td className="px-8 py-5"><span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${t.type === 'INCOME' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{t.category_name || 'Khác'}</span></td>
-                    <td className={`px-8 py-5 text-right font-black text-base ${t.type === 'EXPENSE' ? 'text-red-500' : 'text-green-600'}`}>{t.type === 'EXPENSE' ? '-' : '+'}{Number(t.amount).toLocaleString('vi-VN')}đ</td>
-                    <td className="px-8 py-5 text-center"><div className="flex items-center justify-center gap-2 text-green-600"><span className="material-symbols-outlined text-[16px]">check_circle</span><span className="text-[10px] font-black uppercase tracking-widest">Hoàn tất</span></div></td>
+                    <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${t.type === 'INCOME' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{t.category_name || 'Khác'}</span></td>
+                    <td className={`px-4 py-3 text-right font-black text-sm ${t.type === 'EXPENSE' ? 'text-red-500' : 'text-green-600'}`}>{t.type === 'EXPENSE' ? '-' : '+'}{Number(t.amount).toLocaleString('vi-VN')}đ</td>
+                    <td className="px-4 py-3 text-center"><div className="flex items-center justify-center gap-1.5 text-green-600"><span className="material-symbols-outlined text-[14px]">check_circle</span><span className="text-[9px] font-black uppercase tracking-widest">OK</span></div></td>
                   </tr>
                 ))
               ) : (

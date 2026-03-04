@@ -10,18 +10,18 @@ const StatCard: React.FC<{
   icon: string;
   colorClass: string;
 }> = ({ label, value, trend, trendUp, icon, colorClass }) => (
-  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm transition-transform hover:-translate-y-1">
-    <div className="flex justify-between items-start mb-6">
-      <div className={`p-3 rounded-xl ${colorClass}`}>
-        <span className="material-symbols-outlined">{icon}</span>
+  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm transition-transform hover:-translate-y-1">
+    <div className="flex justify-between items-start mb-4">
+      <div className={`p-2 rounded-xl ${colorClass}`}>
+        <span className="material-symbols-outlined text-[20px]">{icon}</span>
       </div>
-      <div className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full ${trendUp ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
-        <span className="material-symbols-outlined text-[14px]">{trendUp ? 'trending_up' : 'trending_down'}</span>
+      <div className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${trendUp ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+        <span className="material-symbols-outlined text-[12px]">{trendUp ? 'trending_up' : 'trending_down'}</span>
         {trend}
       </div>
     </div>
-    <p className="text-slate-500 text-sm font-medium">{label}</p>
-    <h3 className="text-3xl font-black text-slate-900 mt-1">{value}</h3>
+    <p className="text-slate-500 text-[10px] font-medium leading-none mb-1 uppercase tracking-wider opacity-70">{label}</p>
+    <h3 className="text-lg font-black text-slate-900">{value}</h3>
   </div>
 );
 
@@ -155,10 +155,10 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="p-3 md:p-4 space-y-4 w-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Tổng quan trang trại</h2>
+          <h2 className="text-xl font-black text-slate-900 tracking-tight">Tổng quan trang trại</h2>
           <div className="flex items-center gap-2 mt-1 text-slate-500 text-sm">
             <span className="material-symbols-outlined text-[18px]">calendar_today</span>
             <span>Tháng hiện tại</span>
@@ -188,7 +188,7 @@ const Dashboard: React.FC = () => {
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm animate-pulse">
+            <div key={i} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm animate-pulse">
               <div className="h-12 bg-slate-200 rounded-xl mb-6"></div>
               <div className="h-4 bg-slate-200 rounded w-1/2 mb-2"></div>
               <div className="h-8 bg-slate-200 rounded w-3/4"></div>
@@ -237,8 +237,8 @@ const Dashboard: React.FC = () => {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
-          <div className="flex justify-between items-center mb-10">
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+          <div className="flex justify-between items-center mb-6">
             <div>
               <h3 className="text-lg font-black text-slate-900">Lịch sử dòng tiền</h3>
               <p className="text-sm text-slate-500">Thu nhập vs Chi phí (6 tháng qua)</p>

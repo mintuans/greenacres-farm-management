@@ -106,10 +106,10 @@ const ManagementMedia: React.FC = () => {
     };
 
     return (
-        <div className="p-6">
+        <div className="p-4">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold text-[#111813]">Quản lý Media</h1>
+            <div className="flex items-center justify-between mb-4">
+                <h1 className="text-xl font-bold text-[#111813]">Quản lý Media</h1>
                 <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
@@ -129,7 +129,7 @@ const ManagementMedia: React.FC = () => {
             </div>
 
             {/* Category Filter - Always Visible */}
-            <div className="mb-6 bg-white p-4 md:p-6 rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
+            <div className="mb-4 bg-white p-3 md:p-4 rounded-[24px] border border-slate-200 shadow-sm overflow-hidden">
                 <div className="flex items-center gap-4 overflow-x-auto no-scrollbar pb-2">
                     <button
                         onClick={() => setSelectedCategory(null)}
@@ -201,7 +201,7 @@ const ManagementMedia: React.FC = () => {
             </div>
 
             {/* Grid */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="bg-white rounded-xl shadow-sm p-4">
                 {loading ? (
                     <div className="text-center py-12 text-gray-500">Đang tải...</div>
                 ) : mediaFiles.length === 0 ? (
@@ -209,7 +209,7 @@ const ManagementMedia: React.FC = () => {
                         Chưa có ảnh nào. Click "Upload ảnh" để thêm!
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
                         {mediaFiles.map((media) => (
                             <div
                                 key={media.id}

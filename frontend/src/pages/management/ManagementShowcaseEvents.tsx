@@ -50,13 +50,13 @@ const ManagementShowcaseEvents: React.FC = () => {
     };
 
     return (
-        <div className="p-6 md:p-8 space-y-8 max-w-[1440px] mx-auto">
+        <div className="p-3 md:p-4 space-y-4 w-full">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
+                    <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
                         Quản lý Sự kiện
                     </h1>
-                    <p className="text-slate-500 mt-2">Quản lý các sự kiện quảng bá hiển thị trên trang chủ</p>
+                    <p className="text-slate-500 mt-1 text-xs">Quản lý các sự kiện quảng bá hiển thị trên trang chủ</p>
                 </div>
                 <div className="flex gap-3">
                     <button

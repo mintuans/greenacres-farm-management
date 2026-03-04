@@ -190,14 +190,14 @@ const Schedule: React.FC = () => {
     const monthYearDisplay = `${String(currentMonth + 1).padStart(2, '0')}/${currentYear}`;
 
     return (
-        <div className="p-6 md:p-8 space-y-8 max-w-[1440px] mx-auto bg-slate-50/20 min-h-screen">
+        <div className="p-3 md:p-4 space-y-4 w-full bg-slate-50/20 min-h-screen">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 drop-shadow-sm">
+                    <h1 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 drop-shadow-sm">
                         Lịch làm việc
                     </h1>
-                    <p className="text-slate-500 mt-1 font-medium">Quản lý ca làm việc và sự kiện trang trại hàng tháng</p>
+                    <p className="text-slate-400 mt-1 font-medium text-xs">Quản lý ca làm việc và sự kiện trang trại hàng tháng</p>
                 </div>
                 {/* 
                 <button
@@ -215,21 +215,21 @@ const Schedule: React.FC = () => {
                 {/* Filters and Controls */}
                 <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between p-6 border-b border-slate-100 gap-6">
                     {/* Legend */}
-                    <div className="flex flex-wrap items-center gap-5 text-[11px] font-black uppercase tracking-wider">
-                        <div className="flex items-center gap-2 text-blue-600/80">
-                            <div className="size-2.5 rounded-full bg-blue-500 shadow-sm ring-4 ring-blue-50"></div>
+                    <div className="flex flex-wrap items-center gap-4 text-[10px] font-black uppercase tracking-wider">
+                        <div className="flex items-center gap-1.5 text-blue-600/80">
+                            <div className="size-2 rounded-full bg-blue-500 shadow-sm ring-2 ring-blue-50"></div>
                             <span>Nhân viên</span>
                         </div>
-                        <div className="flex items-center gap-2 text-green-600/80">
-                            <div className="size-2.5 rounded-full bg-green-500 shadow-sm ring-4 ring-green-50"></div>
+                        <div className="flex items-center gap-1.5 text-green-600/80">
+                            <div className="size-2 rounded-full bg-green-500 shadow-sm ring-2 ring-green-50"></div>
                             <span>Công việc</span>
                         </div>
-                        <div className="flex items-center gap-2 text-yellow-600/80">
-                            <div className="size-2.5 rounded-full bg-yellow-500 shadow-sm ring-4 ring-yellow-50"></div>
+                        <div className="flex items-center gap-1.5 text-yellow-600/80">
+                            <div className="size-2 rounded-full bg-yellow-500 shadow-sm ring-2 ring-yellow-50"></div>
                             <span>Thu hoạch</span>
                         </div>
-                        <div className="flex items-center gap-2 text-red-600/80">
-                            <div className="size-2.5 rounded-full bg-red-500 shadow-sm ring-4 ring-red-50"></div>
+                        <div className="flex items-center gap-1.5 text-red-600/80">
+                            <div className="size-2 rounded-full bg-red-500 shadow-sm ring-2 ring-red-50"></div>
                             <span>Vấn đề</span>
                         </div>
                     </div>
@@ -343,7 +343,7 @@ const Schedule: React.FC = () => {
                                         setSelectedDay(day);
                                         setShowDayModal(true);
                                     }}
-                                    className={`min-h-[140px] p-3 border-b-2 border-r-2 border-slate-200 group transition-all relative flex flex-col justify-between cursor-pointer ${!day.isCurrentMonth
+                                    className={`min-h-[100px] p-2 border-b-2 border-r-2 border-slate-200 group transition-all relative flex flex-col justify-between cursor-pointer ${!day.isCurrentMonth
                                         ? 'bg-slate-50/40 opacity-40'
                                         : day.isToday
                                             ? 'bg-[#13ec49]/5 hover:bg-[#13ec49]/10'
@@ -352,7 +352,7 @@ const Schedule: React.FC = () => {
                                 >
                                     <div className="flex justify-between items-start">
                                         <span
-                                            className={`text-sm font-black p-1 rounded-xl size-8 flex items-center justify-center transition-all ${day.isToday
+                                            className={`text-[10px] font-black p-1 rounded-lg size-6 flex items-center justify-center transition-all ${day.isToday
                                                 ? 'bg-[#13ec49] text-black shadow-lg shadow-[#13ec49]/30'
                                                 : day.isCurrentMonth
                                                     ? 'text-slate-900 group-hover:scale-110'

@@ -244,14 +244,14 @@ const Inventory: React.FC = () => {
   );
 
   return (
-    <div className="p-6 md:p-8 space-y-8 max-w-[1440px] mx-auto bg-slate-50/50 min-h-screen">
+    <div className="p-3 md:p-4 space-y-4 w-full bg-slate-50/50 min-h-screen">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
             Quản lý kho vật tư
           </h1>
-          <p className="text-slate-500 mt-2">Theo dõi phân bón, thuốc bảo vệ thực vật và thức ăn chăn nuôi.</p>
+          <p className="text-slate-500 mt-1 text-sm">Theo dõi phân bón, thuốc bảo vệ thực vật và thức ăn chăn nuôi.</p>
         </div>
         <div className="flex gap-3">
           <input
@@ -286,9 +286,9 @@ const Inventory: React.FC = () => {
               });
               setShowModal(true);
             }}
-            className="flex items-center gap-2 px-5 py-2.5 bg-[#13ec49] text-black font-bold rounded-xl hover:bg-[#10d63f] transition-all shadow-lg shadow-[#13ec49]/20"
+            className="flex items-center gap-2 px-4 py-2 bg-[#13ec49] text-black font-bold rounded-xl hover:bg-[#10d63f] transition-all shadow-lg shadow-[#13ec49]/20 text-sm"
           >
-            <span className="material-symbols-outlined font-bold">add</span>
+            <span className="material-symbols-outlined font-bold text-[20px]">add</span>
             <span>Thêm vật tư</span>
           </button>
         </div>
@@ -301,15 +301,15 @@ const Inventory: React.FC = () => {
           { label: 'Cảnh báo hết hàng', value: stats.low_stock_items, icon: 'warning', color: 'text-orange-600', bg: 'bg-orange-50', sub: 'Cần xử lý' },
           { label: 'Tổng giá trị tồn kho', value: formatVND(stats.total_value), icon: 'payments', color: 'text-emerald-600', bg: 'bg-emerald-50' }
         ].map((s, i) => (
-          <div key={i} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-5 hover:shadow-md transition-all">
-            <div className={`${s.bg} ${s.color} p-4 rounded-xl`}>
-              <span className="material-symbols-outlined text-2xl">{s.icon}</span>
+          <div key={i} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4 hover:shadow-md transition-all">
+            <div className={`${s.bg} ${s.color} p-3 rounded-xl`}>
+              <span className="material-symbols-outlined text-xl">{s.icon}</span>
             </div>
             <div>
-              <p className="text-sm font-medium text-slate-500">{s.label}</p>
+              <p className="text-xs font-medium text-slate-500">{s.label}</p>
               <div className="flex items-baseline gap-2">
-                <h3 className="text-2xl font-black text-slate-900">{s.value}</h3>
-                {s.sub && <span className="text-xs font-bold text-orange-600">{s.sub}</span>}
+                <h3 className="text-lg font-black text-slate-900">{s.value}</h3>
+                {s.sub && <span className="text-[10px] font-bold text-orange-600">{s.sub}</span>}
               </div>
             </div>
           </div>
@@ -333,15 +333,15 @@ const Inventory: React.FC = () => {
 
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-slate-50/50 text-xs font-bold text-slate-500 uppercase tracking-wider">
+            <thead className="bg-slate-50/50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
               <tr>
-                <th className="px-6 py-4">Sản phẩm</th>
-                <th className="px-6 py-4">Danh mục</th>
-                <th className="px-6 py-4">Số lượng</th>
-                <th className="px-6 py-4">Giá nhập</th>
-                <th className="px-6 py-4">Ngày nhập</th>
-                <th className="px-6 py-4">Trạng thái</th>
-                <th className="px-6 py-4 text-right">Thao tác</th>
+                <th className="px-4 py-3">Sản phẩm</th>
+                <th className="px-4 py-3">Danh mục</th>
+                <th className="px-4 py-3">Số lượng</th>
+                <th className="px-4 py-3">Giá nhập</th>
+                <th className="px-4 py-3">Ngày nhập</th>
+                <th className="px-4 py-3">Trạng thái</th>
+                <th className="px-4 py-3 text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -350,9 +350,9 @@ const Inventory: React.FC = () => {
                 const progress = Math.min((item.stock_quantity / (Math.max(item.min_stock_level, 1) * 5)) * 100, 100);
                 return (
                   <tr key={item.id} className="group hover:bg-slate-50/80 transition-all">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-slate-100 rounded-lg overflow-hidden flex items-center justify-center border border-slate-200">
+                    <td className="px-4 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <div className="w-10 h-10 bg-slate-100 rounded-lg overflow-hidden flex items-center justify-center border border-slate-200">
                           {item.thumbnail_id ? (
                             <img
                               src={getMediaUrl(item.thumbnail_id)}
@@ -366,46 +366,46 @@ const Inventory: React.FC = () => {
                               }}
                             />
                           ) : (
-                            <span className="material-symbols-outlined text-slate-400">inventory_2</span>
+                            <span className="material-symbols-outlined text-slate-400 text-[20px]">inventory_2</span>
                           )}
                         </div>
                         <div>
-                          <p className="font-bold text-slate-900">{item.inventory_name}</p>
-                          <p className="text-xs text-slate-400 font-mono">{item.inventory_code}</p>
+                          <p className="font-bold text-slate-900 text-sm">{item.inventory_name}</p>
+                          <p className="text-[10px] text-slate-400 font-mono">{item.inventory_code}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold uppercase">
+                    <td className="px-4 py-2.5">
+                      <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-bold uppercase border border-blue-100">
                         {item.category_name || 'Khác'}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col gap-1">
+                    <td className="px-4 py-2.5">
+                      <div className="flex flex-col gap-0.5">
                         <div className="flex items-baseline gap-1">
-                          <span className="font-black text-slate-900">{item.stock_quantity}</span>
-                          <span className="text-[10px] text-slate-400 font-bold uppercase">{item.unit_of_measure || 'đv'}</span>
+                          <span className="font-black text-slate-900 text-sm">{item.stock_quantity}</span>
+                          <span className="text-[9px] text-slate-400 font-bold uppercase">{item.unit_of_measure || 'đv'}</span>
                         </div>
-                        <div className="h-1.5 w-24 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-1 w-20 bg-slate-100 rounded-full overflow-hidden">
                           <div className={`h-full transition-all ${getProgressColor(item)}`} style={{ width: `${progress}%` }} />
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <p className="font-bold text-slate-900">{formatVND(item.last_import_price)}</p>
+                    <td className="px-4 py-2.5">
+                      <p className="font-bold text-slate-900 text-sm">{formatVND(item.last_import_price)}</p>
                     </td>
-                    <td className="px-6 py-4">
-                      <p className="text-sm text-slate-600">
+                    <td className="px-4 py-2.5">
+                      <p className="text-[13px] text-slate-600">
                         {item.import_date ? new Date(item.import_date).toLocaleDateString('vi-VN') : '-'}
                       </p>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest ${status.color}`}>
+                    <td className="px-4 py-2.5">
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black tracking-widest ${status.color}`}>
                         {status.label}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                    <td className="px-4 py-2.5 text-right">
+                      <div className="flex justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-all">
                         <button
                           onClick={() => {
                             setEditingItem(item);
@@ -423,15 +423,15 @@ const Inventory: React.FC = () => {
                             });
                             setShowModal(true);
                           }}
-                          className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
+                          className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
                         >
-                          <span className="material-symbols-outlined text-sm">edit</span>
+                          <span className="material-symbols-outlined text-[18px]">edit</span>
                         </button>
                         <button
                           onClick={() => handleDelete(item.id)}
-                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
                         >
-                          <span className="material-symbols-outlined text-sm">delete</span>
+                          <span className="material-symbols-outlined text-[18px]">delete</span>
                         </button>
                       </div>
                     </td>

@@ -152,7 +152,7 @@ const ManagementProducts: React.FC = () => {
     };
 
     return (
-        <div className="p-6">
+        <div className="p-3 md:p-4 w-full">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <h1 className="text-2xl font-bold text-[#111813]">Quản lý Sản phẩm</h1>

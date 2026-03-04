@@ -170,13 +170,13 @@ const Workers: React.FC = () => {
     );
 
     return (
-        <div className="p-6 md:p-8 space-y-8 max-w-[1440px] mx-auto">
+        <div className="p-3 md:p-4 space-y-4 w-full">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
+                    <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
                         Quản lý Đối tác
                     </h1>
-                    <p className="text-slate-500 mt-2">Danh sách nhân viên, nhà cung cấp và người mua</p>
+                    <p className="text-slate-500 text-sm mt-1">Danh sách nhân viên, nhà cung cấp và người mua</p>
                 </div>
                 <button
                     onClick={() => {
@@ -212,15 +212,15 @@ const Workers: React.FC = () => {
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200">
+                            <thead className="bg-slate-50 text-[10px] font-bold text-slate-500 border-b border-slate-200 uppercase tracking-widest">
                                 <tr>
-                                    <th className="px-6 py-4">Mã đối tác</th>
-                                    <th className="px-6 py-4">Tên đối tác</th>
-                                    <th className="px-6 py-4">Loại</th>
-                                    <th className="px-6 py-4">Số điện thoại</th>
-                                    <th className="px-6 py-4">Địa chỉ</th>
-                                    <th className="px-6 py-4">Số dư</th>
-                                    <th className="px-6 py-4 text-right">Thao tác</th>
+                                    <th className="px-4 py-3">Mã đối tác</th>
+                                    <th className="px-4 py-3">Tên đối tác</th>
+                                    <th className="px-4 py-3">Loại</th>
+                                    <th className="px-4 py-3">Điện thoại</th>
+                                    <th className="px-4 py-3">Địa chỉ</th>
+                                    <th className="px-4 py-3">Số dư</th>
+                                    <th className="px-4 py-3 text-right">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 text-sm">
@@ -233,21 +233,21 @@ const Workers: React.FC = () => {
                                 ) : (
                                     filteredWorkers.map((worker) => (
                                         <tr key={worker.id} className="group hover:bg-slate-50 transition-colors">
-                                            <td className="px-6 py-4">
-                                                <span className="font-mono text-xs bg-slate-100 px-2 py-1 rounded">
+                                            <td className="px-4 py-3">
+                                                <span className="font-mono text-[10px] bg-slate-100 px-1.5 py-0.5 rounded">
                                                     {worker.partner_code}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="size-10 rounded-full bg-gradient-to-br from-[#13ec49] to-green-600 flex items-center justify-center text-white font-bold">
+                                            <td className="px-4 py-3">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="size-8 rounded-full bg-gradient-to-br from-[#13ec49] to-green-600 flex items-center justify-center text-white font-bold text-xs">
                                                         {worker.partner_name.charAt(0)}
                                                     </div>
-                                                    <span className="font-bold text-slate-900">{worker.partner_name}</span>
+                                                    <span className="font-bold text-slate-900 text-sm">{worker.partner_name}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${worker.type === 'SUPPLIER' ? 'bg-blue-100 text-blue-800' :
+                                            <td className="px-4 py-3">
+                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${worker.type === 'SUPPLIER' ? 'bg-blue-100 text-blue-800' :
                                                     worker.type === 'BUYER' ? 'bg-green-100 text-green-800' :
                                                         worker.type === 'FAMILY' ? 'bg-orange-100 text-orange-800' :
                                                             'bg-purple-100 text-purple-800'
@@ -257,10 +257,10 @@ const Workers: React.FC = () => {
                                                             worker.type === 'FAMILY' ? 'Gia đình' : 'Nhân viên'}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-slate-600">{worker.phone || '-'}</td>
-                                            <td className="px-6 py-4 text-slate-600">{worker.address || '-'}</td>
-                                            <td className="px-6 py-4">
-                                                <span className={`font-bold ${worker.current_balance > 0
+                                            <td className="px-4 py-3 text-slate-600 text-[13px]">{worker.phone || '-'}</td>
+                                            <td className="px-4 py-3 text-slate-600 text-[13px] truncate max-w-[150px]">{worker.address || '-'}</td>
+                                            <td className="px-4 py-3">
+                                                <span className={`font-bold text-sm ${worker.current_balance > 0
                                                     ? 'text-green-600'
                                                     : worker.current_balance < 0
                                                         ? 'text-red-600'

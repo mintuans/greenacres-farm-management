@@ -50,7 +50,7 @@ const AuditLogs: React.FC = () => {
     };
 
     return (
-        <div className="p-6 md:p-8 space-y-8 max-w-[1440px] mx-auto">
+        <div className="p-3 md:p-4 space-y-4 w-full">
             <div className="flex justify-between items-end">
                 <div>
                     <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">

@@ -62,6 +62,25 @@ const ForgotPassword = lazy(() => import('@/src/pages/auth/ForgotPassword'));
 const ResetPassword = lazy(() => import('@/src/pages/auth/ResetPassword'));
 
 import { useAuth } from '@/src/contexts/AuthContext';
+import { SidebarProvider, useSidebar } from '@/src/contexts/SidebarContext';
+
+// Admin Layout Wrapper to use Sidebar Context
+const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { isCollapsed } = useSidebar();
+    return (
+        <div className="flex h-screen w-full overflow-hidden bg-[#f6f8f6]">
+            <Sidebar />
+            <div className={`flex-1 flex flex-col h-full overflow-hidden relative transition-all duration-300`}>
+                <Header />
+                <main className="flex-1 overflow-y-auto scroll-smooth p-2 md:p-3">
+                    <Suspense fallback={<PageLoader />}>
+                        {children}
+                    </Suspense>
+                </main>
+            </div>
+        </div>
+    );
+};
 
 // Loading component
 const PageLoader = () => (
@@ -97,54 +116,48 @@ const App: React.FC = () => {
                     {/* Admin Routes - With Sidebar/Header */}
                     <Route path="/*" element={
                         isAuthenticated && user?.role === 'SUPER_ADMIN' ? (
-                            <div className="flex h-screen w-full overflow-hidden">
-                                <Sidebar />
-                                <div className="flex-1 flex flex-col h-full overflow-hidden relative">
-                                    <Header />
-                                    <main className="flex-1 overflow-y-auto bg-[#f6f8f6] scroll-smooth">
-                                        <Suspense fallback={<PageLoader />}>
-                                            <Routes>
-                                                <Route path="/dashboard" element={<Dashboard />} />
-                                                <Route path="/schedule" element={<Schedule />} />
-                                                <Route path="/inventory" element={<Inventory />} />
-                                                <Route path="/inventory/add" element={<AddInventory />} />
-                                                <Route path="/warehouse/management" element={<WarehouseManagement />} />
-                                                <Route path="/warehouse/types" element={<WarehouseTypes />} />
-                                                <Route path="/seasons" element={<Seasons />} />
-                                                <Route path="/transactions" element={<Transactions />} />
-                                                <Route path="/finance" element={<PersonalFinance />} />
-                                                <Route path="/master-data/categories" element={<Categories />} />
-                                                <Route path="/master-data/shifts" element={<WorkShifts />} />
-                                                <Route path="/master-data/jobs" element={<JobTypes />} />
-                                                <Route path="/master-data/workers" element={<Workers />} />
-                                                <Route path="/master-data/units" element={<ProductionUnits />} />
-                                                <Route path="/master-data/showcase-products" element={<ManagementProducts />} />
-                                                <Route path="/master-data/media" element={<ManagementMedia />} />
-                                                <Route path="/master-data/showcase-blog" element={<ManagementBlog />} />
-                                                <Route path="/master-data/showcase-blog/add" element={<AddBlog />} />
-                                                <Route path="/master-data/showcase-blog/edit/:id" element={<EditBlog />} />
-                                                <Route path="/master-data/showcase-events" element={<ManagementShowcaseEvents />} />
-                                                <Route path="/master-data/showcase-events/add" element={<EditShowcaseEvent />} />
-                                                <Route path="/master-data/showcase-events/edit/:id" element={<EditShowcaseEvent />} />
-                                                <Route path="/master-data/showcase-guests" element={<ManagementGuests />} />
-                                                <Route path="/master-data/farm-events" element={<FarmEvents />} />
-                                                <Route path="/master-data/work-schedules" element={<WorkSchedules />} />
-                                                <Route path="/master-data/daily-work-logs" element={<DailyWorkLogs />} />
-                                                <Route path="/master-data/payroll" element={<PayrollManagement />} />
-                                                <Route path="/master-data/notifications" element={<Notifications />} />
-                                                <Route path="/settings/users" element={<Users />} />
-                                                <Route path="/settings/roles" element={<Roles />} />
-                                                <Route path="/settings/permissions" element={<Permissions />} />
-                                                <Route path="/settings/role-permissions" element={<RolePermissions />} />
-                                                <Route path="/settings/audit-logs" element={<AuditLogs />} />
-                                                <Route path="/settings/database-backup" element={<DatabaseBackup />} />
-                                                <Route path="/settings" element={<MasterData />} />
-                                                <Route path="*" element={<Navigate to="/dashboard" replace />} />
-                                            </Routes>
-                                        </Suspense>
-                                    </main>
-                                </div>
-                            </div>
+                            <SidebarProvider>
+                                <AdminLayout>
+                                    <Routes>
+                                        <Route path="/dashboard" element={<Dashboard />} />
+                                        <Route path="/schedule" element={<Schedule />} />
+                                        <Route path="/inventory" element={<Inventory />} />
+                                        <Route path="/inventory/add" element={<AddInventory />} />
+                                        <Route path="/warehouse/management" element={<WarehouseManagement />} />
+                                        <Route path="/warehouse/types" element={<WarehouseTypes />} />
+                                        <Route path="/seasons" element={<Seasons />} />
+                                        <Route path="/transactions" element={<Transactions />} />
+                                        <Route path="/finance" element={<PersonalFinance />} />
+                                        <Route path="/master-data/categories" element={<Categories />} />
+                                        <Route path="/master-data/shifts" element={<WorkShifts />} />
+                                        <Route path="/master-data/jobs" element={<JobTypes />} />
+                                        <Route path="/master-data/workers" element={<Workers />} />
+                                        <Route path="/master-data/units" element={<ProductionUnits />} />
+                                        <Route path="/master-data/showcase-products" element={<ManagementProducts />} />
+                                        <Route path="/master-data/media" element={<ManagementMedia />} />
+                                        <Route path="/master-data/showcase-blog" element={<ManagementBlog />} />
+                                        <Route path="/master-data/showcase-blog/add" element={<AddBlog />} />
+                                        <Route path="/master-data/showcase-blog/edit/:id" element={<EditBlog />} />
+                                        <Route path="/master-data/showcase-events" element={<ManagementShowcaseEvents />} />
+                                        <Route path="/master-data/showcase-events/add" element={<EditShowcaseEvent />} />
+                                        <Route path="/master-data/showcase-events/edit/:id" element={<EditShowcaseEvent />} />
+                                        <Route path="/master-data/showcase-guests" element={<ManagementGuests />} />
+                                        <Route path="/master-data/farm-events" element={<FarmEvents />} />
+                                        <Route path="/master-data/work-schedules" element={<WorkSchedules />} />
+                                        <Route path="/master-data/daily-work-logs" element={<DailyWorkLogs />} />
+                                        <Route path="/master-data/payroll" element={<PayrollManagement />} />
+                                        <Route path="/master-data/notifications" element={<Notifications />} />
+                                        <Route path="/settings/users" element={<Users />} />
+                                        <Route path="/settings/roles" element={<Roles />} />
+                                        <Route path="/settings/permissions" element={<Permissions />} />
+                                        <Route path="/settings/role-permissions" element={<RolePermissions />} />
+                                        <Route path="/settings/audit-logs" element={<AuditLogs />} />
+                                        <Route path="/settings/database-backup" element={<DatabaseBackup />} />
+                                        <Route path="/settings" element={<MasterData />} />
+                                        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                                    </Routes>
+                                </AdminLayout>
+                            </SidebarProvider>
                         ) : (
                             <Navigate to="/showcase" replace />
                         )

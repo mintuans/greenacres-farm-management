@@ -261,16 +261,16 @@ const Seasons: React.FC = () => {
   };
 
   return (
-    <div className="p-6 md:p-10 space-y-10 max-w-6xl mx-auto bg-slate-50/30 min-h-screen">
+    <div className="p-3 md:p-4 space-y-4 w-full bg-slate-50/30 min-h-screen">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-end gap-6">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-[#13ec49] text-xs font-black uppercase tracking-widest">
-            <span className="material-symbols-outlined text-[18px]">home</span>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-[#13ec49] text-[10px] font-black uppercase tracking-widest">
+            <span className="material-symbols-outlined text-[14px]">home</span>
             Trang chủ / Mùa vụ
           </div>
-          <h1 className="text-5xl font-black text-slate-900 tracking-tighter">Quản lý mùa vụ</h1>
-          <p className="text-slate-500 text-lg max-w-xl">Theo dõi chu kỳ cây trồng, giám sát sức khỏe tài chính và truy cập báo cáo năng suất.</p>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tighter">Quản lý mùa vụ</h1>
+          <p className="text-slate-500 text-sm max-w-xl">Theo dõi chu kỳ cây trồng, giám sát sức khỏe tài chính và báo cáo năng suất.</p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
@@ -294,9 +294,9 @@ const Seasons: React.FC = () => {
               setFormData(prev => ({ ...prev, season_code: nextCode }));
               setShowModal(true);
             }}
-            className="w-full sm:w-auto bg-[#13ec49] text-black px-8 py-4 rounded-2xl text-base font-black shadow-xl shadow-[#13ec49]/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-3 h-[60px]"
+            className="w-full sm:w-auto bg-[#13ec49] text-black px-4 py-2 rounded-xl text-sm font-black shadow-lg shadow-[#13ec49]/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 h-10"
           >
-            <span className="material-symbols-outlined text-[24px]">add_circle</span>
+            <span className="material-symbols-outlined text-[20px]">add_circle</span>
             Bắt đầu vụ mới
           </button>
         </div>
@@ -310,14 +310,14 @@ const Seasons: React.FC = () => {
         <>
           {/* Active Season Highlight */}
           {currentSeason && (
-            <div className="bg-white rounded-[32px] border border-slate-200 shadow-2xl shadow-slate-200/50 overflow-hidden group transition-all hover:shadow-3xl">
-              <div className="p-8 border-b border-slate-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-gradient-to-r from-white to-slate-50/50">
-                <div className="flex items-center gap-6">
-                  <div className="size-20 rounded-3xl bg-[#13ec49]/10 flex items-center justify-center text-[#13ec49] group-hover:scale-110 transition-transform shadow-inner">
-                    <span className="material-symbols-outlined text-5xl">grass</span>
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden group transition-all hover:shadow-2xl">
+              <div className="p-4 border-b border-slate-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-white to-slate-50/50">
+                <div className="flex items-center gap-4">
+                  <div className="size-12 rounded-2xl bg-[#13ec49]/10 flex items-center justify-center text-[#13ec49] group-hover:scale-110 transition-transform shadow-inner">
+                    <span className="material-symbols-outlined text-2xl">grass</span>
                   </div>
                   <div>
-                    <h2 className="text-3xl font-black text-slate-900 tracking-tight">{currentSeason.season_name}</h2>
+                    <h2 className="text-xl font-black text-slate-900 tracking-tight">{currentSeason.season_name}</h2>
                     <div className="flex items-center gap-3 mt-2">
                       <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${currentSeason.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'
                         }`}>
@@ -330,54 +330,44 @@ const Seasons: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-4 w-full md:w-auto">
-                  {/* <button
-                    onClick={() => handleEditClick(currentSeason)}
-                    className="flex-1 md:flex-none bg-slate-900 text-white px-10 py-4 rounded-2xl font-black text-sm hover:bg-black transition-all shadow-xl shadow-slate-900/20 active:scale-95"
-                  >
-                    Chỉnh sửa vụ mùa
-                  </button> */}
+                <div className="flex gap-2 w-full md:w-auto">
                   <button
                     onClick={() => setShowUsageModal(true)}
-                    className="flex-1 md:flex-none bg-white border border-slate-200 text-slate-900 px-6 py-4 rounded-2xl font-black text-sm hover:bg-slate-50 transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2"
+                    className="flex-1 md:flex-none bg-white border border-slate-200 text-slate-900 px-4 py-2 rounded-xl font-black text-xs hover:bg-slate-50 transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2"
                   >
-                    <span className="material-symbols-outlined text-[20px]">vaccines</span>
-                    Ghi nhận dùng thuốc
+                    <span className="material-symbols-outlined text-[16px]">vaccines</span>
+                    Ghi dùng thuốc
                   </button>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-100">
-                <div className="p-8 hover:bg-slate-50/50 transition-colors">
-                  <div className="flex justify-between items-start mb-3">
-                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Dự kiến thu</p>
-                    <span className="material-symbols-outlined text-green-500 bg-green-50 p-2 rounded-xl text-[20px]">payments</span>
+              <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-100 font-bold">
+                <div className="p-4 hover:bg-slate-50/50 transition-colors">
+                  <div className="flex justify-between items-start mb-2">
+                    <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest">Dự kiến thu</p>
+                    <span className="material-symbols-outlined text-green-500 bg-green-50 p-1.5 rounded-lg text-[16px]">payments</span>
                   </div>
-                  <h3 className="text-3xl font-black text-slate-900">
+                  <h3 className="text-lg font-black text-slate-900">
                     {Number(currentSeason.expected_revenue || 0).toLocaleString('vi-VN')}đ
                   </h3>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3">Mục tiêu tài chính vụ này</p>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-2">Mục tiêu tài chính</p>
                 </div>
-                <div className="p-8 hover:bg-slate-50/50 transition-colors">
-                  <div className="flex justify-between items-start mb-3">
-                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Đơn vị canh tác</p>
-                    <span className="material-symbols-outlined text-blue-500 bg-blue-50 p-2 rounded-xl text-[20px]">agriculture</span>
+                <div className="p-4 hover:bg-slate-50/50 transition-colors">
+                  <div className="flex justify-between items-start mb-2">
+                    <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest">Đơn vị canh tác</p>
+                    <span className="material-symbols-outlined text-blue-500 bg-blue-50 p-1.5 rounded-lg text-[16px]">agriculture</span>
                   </div>
-                  <h3 className="text-3xl font-black text-slate-900">{currentSeason.unit_name || 'N/A'}</h3>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3">Khu vực sản xuất chính</p>
+                  <h3 className="text-lg font-black text-slate-900">{currentSeason.unit_name || 'N/A'}</h3>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-2">Khu vực sản xuất chính</p>
                 </div>
 
-                <div className="p-8 bg-[#13ec49]/5 relative overflow-hidden">
-                  <div className="absolute -top-4 -right-4 opacity-5">
-                    <span className="material-symbols-outlined text-[120px]">analytics</span>
-                  </div>
+                <div className="p-4 bg-[#13ec49]/5 relative overflow-hidden">
                   <div className="relative z-10">
-                    <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-3">Hiệu quả đầu tư</p>
-                    <h3 className="text-4xl font-black text-slate-900">Chưa có số liệu</h3>
-                    <div className="w-full bg-slate-200/50 rounded-full h-2.5 mt-5 overflow-hidden shadow-inner">
+                    <p className="text-slate-500 text-[9px] font-black uppercase tracking-widest mb-2">Hiệu quả đầu tư</p>
+                    <h3 className="text-xl font-black text-slate-900">Chưa có số liệu</h3>
+                    <div className="w-full bg-slate-200/50 rounded-full h-1.5 mt-3 overflow-hidden shadow-inner">
                       <div className="bg-[#13ec49] h-full rounded-full shadow-lg" style={{ width: '0%' }}></div>
                     </div>
-                    <p className="text-[10px] font-bold text-slate-400 text-right mt-2 uppercase tracking-widest italic">Cập nhật sau khi có giao dịch</p>
                   </div>
                 </div>
               </div>
@@ -385,54 +375,40 @@ const Seasons: React.FC = () => {
           )}
 
           {/* Secondary Sections */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column (Stack) */}
-            <div className="lg:col-span-2 space-y-10">
+            <div className="lg:col-span-2 space-y-6">
               {/* History List */}
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between px-2">
-                  <h3 className="text-2xl font-black text-slate-900 tracking-tight">Danh sách mùa vụ</h3>
-                  <div className="flex gap-2">
-                    <button className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><span className="material-symbols-outlined">filter_list</span></button>
-                  </div>
+                  <h3 className="text-lg font-black text-slate-900 tracking-tight">Danh sách mùa vụ</h3>
                 </div>
-                <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
+                <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
                   <table className="w-full text-left">
                     <thead>
-                      <tr className="bg-slate-50/50 border-b border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                        <th className="px-8 py-5">Tên mùa vụ</th>
-                        <th className="px-8 py-5">Đơn vị</th>
-                        <th className="px-8 py-5">Thời gian</th>
-                        <th className="px-8 py-5 text-right">Dự kiến thu</th>
+                      <tr className="bg-slate-50/50 border-b border-slate-100 text-[9px] font-black uppercase tracking-widest text-slate-400">
+                        <th className="px-4 py-3">Tên mùa vụ</th>
+                        <th className="px-4 py-3">Đơn vị</th>
+                        <th className="px-4 py-3">Thời gian</th>
+                        <th className="px-4 py-3 text-right">Dự kiến thu</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-50 text-sm font-bold text-slate-600">
+                    <tbody className="divide-y divide-slate-50 text-[13px] font-bold text-slate-600">
                       {seasons.map((s) => (
                         <tr key={s.id} className="hover:bg-slate-50/80 transition-all group cursor-pointer">
-                          <td className="px-8 py-5">
-                            <div className="flex items-center gap-3">
-                              <div className={`size-8 rounded-xl flex items-center justify-center text-[18px] ${s.status === 'ACTIVE' ? 'bg-[#13ec49]/10 text-[#13ec49]' : 'bg-slate-100 text-slate-400'
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <div className={`size-7 rounded-lg flex items-center justify-center text-[16px] ${s.status === 'ACTIVE' ? 'bg-[#13ec49]/10 text-[#13ec49]' : 'bg-slate-100 text-slate-400'
                                 }`}>
-                                <span className="material-symbols-outlined">grass</span>
+                                <span className="material-symbols-outlined text-[16px]">grass</span>
                               </div>
                               <span className="text-slate-900 font-extrabold">{s.season_name}</span>
                             </div>
                           </td>
-                          <td className="px-8 py-5 text-slate-500">{s.unit_name}</td>
-                          <td className="px-8 py-5">{new Date(s.start_date).toLocaleDateString('vi-VN')}</td>
-                          <td className="px-8 py-5 text-right font-black text-slate-900">
-                            <div className="flex items-center justify-end gap-3">
-                              <span>{Number(s.expected_revenue || 0).toLocaleString('vi-VN')}đ</span>
-                              {/* <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleEditClick(s);
-                                }}
-                                className="size-8 rounded-lg bg-slate-50 text-slate-400 hover:text-[#13ec49] hover:bg-[#13ec49]/10 transition-all flex items-center justify-center"
-                              >
-                                <span className="material-symbols-outlined text-[18px]">edit</span>
-                              </button> */}
-                            </div>
+                          <td className="px-4 py-3 text-slate-500">{s.unit_name}</td>
+                          <td className="px-4 py-3">{new Date(s.start_date).toLocaleDateString('vi-VN')}</td>
+                          <td className="px-4 py-3 text-right font-black text-slate-900">
+                            {Number(s.expected_revenue || 0).toLocaleString('vi-VN')}đ
                           </td>
                         </tr>
                       ))}

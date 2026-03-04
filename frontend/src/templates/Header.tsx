@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { getMediaUrl } from '../services/products.service';
 import NotificationDropdown from '../components/NotificationDropdown';
+import { useSidebar } from '@/src/contexts/SidebarContext';
 
 const Header: React.FC = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const { toggleCollapsed, toggleMobileMenu } = useSidebar();
 
     // Default values for Guest
     const displayName = user?.full_name || user?.name || 'Du khách';
@@ -22,12 +24,25 @@ const Header: React.FC = () => {
     const [unreadCount, setUnreadCount] = React.useState(0);
 
     return (
-        <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0 sticky top-0 z-20">
-            <div className="flex items-center gap-4">
-                <button className="md:hidden text-slate-500">
+        <header className="h-12 bg-white border-b border-slate-200 px-3 flex items-center justify-between shrink-0 sticky top-0 z-20 transition-all duration-300">
+            <div className="flex items-center gap-2">
+                {/* Mobile Toggle */}
+                <button
+                    onClick={toggleMobileMenu}
+                    className="md:hidden p-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors"
+                >
                     <span className="material-symbols-outlined">menu</span>
                 </button>
-                <div className="relative hidden md:block">
+
+                {/* Desktop Toggle */}
+                <button
+                    onClick={toggleCollapsed}
+                    className="hidden md:flex p-2 text-slate-400 hover:text-[#13ec49] hover:bg-slate-50 rounded-lg transition-colors"
+                >
+                    <span className="material-symbols-outlined">menu_open</span>
+                </button>
+
+                <div className="relative hidden lg:block">
                     <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
                     <input
                         type="text"

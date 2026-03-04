@@ -107,7 +107,7 @@ const MasterData: React.FC = () => {
   };
 
   return (
-    <div className="p-6 md:p-8 space-y-8 max-w-[1440px] mx-auto">
+    <div className="p-3 md:p-4 space-y-4 w-full">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
@@ -130,8 +130,8 @@ const MasterData: React.FC = () => {
               key={tab.id}
               onClick={() => setActiveTab(tab.id as TabType)}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-bold whitespace-nowrap transition-all border-b-2 ${activeTab === tab.id
-                  ? 'text-slate-900 border-[#13ec49]'
-                  : 'text-slate-400 border-transparent hover:text-slate-700'
+                ? 'text-slate-900 border-[#13ec49]'
+                : 'text-slate-400 border-transparent hover:text-slate-700'
                 }`}
             >
               <span className="material-symbols-outlined text-[20px]">{tab.icon}</span>
@@ -345,8 +345,8 @@ const MasterData: React.FC = () => {
                     <td className="px-6 py-4 font-bold text-slate-900">{unit.unit_name}</td>
                     <td className="px-6 py-4">
                       <span className={`px-3 py-1 rounded-lg text-xs font-bold ${unit.type === 'CROP'
-                          ? 'bg-green-50 text-green-700'
-                          : 'bg-orange-50 text-orange-700'
+                        ? 'bg-green-50 text-green-700'
+                        : 'bg-orange-50 text-orange-700'
                         }`}>
                         {getTypeLabel(unit.type)}
                       </span>

@@ -95,7 +95,7 @@ const AddInventory: React.FC = () => {
     };
 
     return (
-        <div className="p-6 md:p-8 space-y-8 max-w-5xl mx-auto">
+        <div className="p-4 md:p-6 space-y-6 w-full">
             {/* Header */}
             <div className="flex items-center gap-4">
                 <button
@@ -105,15 +105,15 @@ const AddInventory: React.FC = () => {
                     <span className="material-symbols-outlined">arrow_back</span>
                 </button>
                 <div>
-                    <h1 className="text-4xl font-black tracking-tight text-slate-900">Thêm vật tư mới</h1>
-                    <p className="text-slate-500 font-medium">Nhập thông tin vật tư vào kho</p>
+                    <h1 className="text-2xl font-black tracking-tight text-slate-900">Thêm vật tư mới</h1>
+                    <p className="text-slate-500 text-sm font-medium">Nhập thông tin vật tư vào kho</p>
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Thông tin cơ bản */}
                 <Card title="Thông tin cơ bản">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <Input
                             label="Tên vật tư"
                             name="name"
@@ -136,8 +136,8 @@ const AddInventory: React.FC = () => {
                             icon={<span className="material-symbols-outlined text-[20px]">qr_code</span>}
                         />
 
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-sm font-semibold text-slate-700">Danh mục</label>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Danh mục</label>
                             <div className="relative">
                                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">
                                     category
@@ -177,7 +177,7 @@ const AddInventory: React.FC = () => {
 
                 {/* Số lượng và giá */}
                 <Card title="Số lượng & Giá cả">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <Input
                             label="Số lượng"
                             name="quantity"
@@ -190,8 +190,8 @@ const AddInventory: React.FC = () => {
                             icon={<span className="material-symbols-outlined text-[20px]">numbers</span>}
                         />
 
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-sm font-semibold text-slate-700">Đơn vị</label>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Đơn vị</label>
                             <div className="relative">
                                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">
                                     straighten
@@ -245,8 +245,8 @@ const AddInventory: React.FC = () => {
 
                 {/* Mô tả */}
                 <Card title="Thông tin bổ sung">
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-sm font-semibold text-slate-700">Mô tả</label>
+                    <div className="flex flex-col gap-1">
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Mô tả</label>
                         <textarea
                             name="description"
                             value={formData.description}
@@ -263,7 +263,7 @@ const AddInventory: React.FC = () => {
                     <Button
                         type="button"
                         variant="outline"
-                        size="lg"
+                        size="md"
                         onClick={handleCancel}
                     >
                         Hủy bỏ
@@ -271,7 +271,7 @@ const AddInventory: React.FC = () => {
                     <Button
                         type="submit"
                         variant="primary"
-                        size="lg"
+                        size="md"
                         icon={<span className="material-symbols-outlined text-[20px]">check_circle</span>}
                     >
                         Lưu vật tư

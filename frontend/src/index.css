@@ -3,8 +3,14 @@
 @tailwind utilities;
 
 /* Custom styles */
+html {
+  font-size: 14px;
+}
+
 body {
   font-family: 'Inter', sans-serif;
+  line-height: 1.4;
+  @apply text-slate-900;
 }
 
 .no-scrollbar::-webkit-scrollbar {

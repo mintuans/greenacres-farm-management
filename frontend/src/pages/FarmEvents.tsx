@@ -135,11 +135,11 @@ const FarmEvents: React.FC = () => {
     };
 
     return (
-        <div className="p-6 md:p-8 space-y-8 max-w-[1440px] mx-auto bg-slate-50/50 min-h-screen">
+        <div className="p-3 md:p-4 space-y-4 w-full bg-slate-50/50 min-h-screen">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Sự kiện Nông trại</h1>
-                    <p className="text-slate-500 mt-2 font-medium">Theo dõi các sự kiện quan trọng, thu hoạch và vấn đề phát sinh.</p>
+                    <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">Sự kiện Nông trại</h1>
+                    <p className="text-slate-500 mt-1 font-medium text-xs">Theo dõi các sự kiện quan trọng, thu hoạch và vấn đề phát sinh.</p>
                 </div>
                 <button
                     onClick={() => {
@@ -157,8 +157,8 @@ const FarmEvents: React.FC = () => {
                 </button>
             </div>
 
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden min-h-[400px]">
-                <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden min-h-[400px]">
+                <div className="p-4 border-b border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-between">
                     <div className="relative w-full md:w-96">
                         <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
                         <input

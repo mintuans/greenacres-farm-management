@@ -3,7 +3,7 @@ import React from 'react';
 
 const PersonalFinance: React.FC = () => {
   return (
-    <div className="p-6 md:p-10 space-y-10 max-w-6xl mx-auto">
+    <div className="p-3 md:p-4 space-y-4 w-full">
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-[#13ec49] text-xs font-black uppercase tracking-[0.2em]">
