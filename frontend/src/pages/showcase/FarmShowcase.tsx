@@ -857,35 +857,35 @@ const FarmShowcase: React.FC = () => {
                                     </button>
                                 </div>
 
-                                {/* Stats Grid */}
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                    <div className="flex flex-col gap-3 rounded-xl border border-[#dbe6de] bg-white p-5 shadow-sm hover:border-[#13ec49]/50 transition-colors cursor-default group">
-                                        <div className="text-[#13ec49] bg-[#13ec49]/10 w-fit p-3 rounded-full mb-1 group-hover:bg-[#13ec49] group-hover:text-[#102215] transition-colors">
-                                            <span className="material-symbols-outlined text-[28px]">verified</span>
+                                {/* Stats Grid - horizontal scroll on mobile, grid on sm+ */}
+                                <div className="flex sm:grid sm:grid-cols-3 gap-3 overflow-x-auto pb-1 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+                                    <div className="flex flex-col gap-3 rounded-xl border border-[#dbe6de] bg-white p-4 shadow-sm hover:border-[#13ec49]/50 transition-colors cursor-default group min-w-[160px] sm:min-w-0 shrink-0 sm:shrink">
+                                        <div className="text-[#13ec49] bg-[#13ec49]/10 w-fit p-2.5 rounded-full mb-1 group-hover:bg-[#13ec49] group-hover:text-[#102215] transition-colors">
+                                            <span className="material-symbols-outlined text-[24px]">verified</span>
                                         </div>
                                         <div>
-                                            <h3 className="text-[#111813] text-lg font-bold">Đang cập nhật</h3>
-                                            <p className="text-[#61896b] text-sm">Chứng nhận VietGAP</p>
+                                            <h3 className="text-[#111813] text-base font-bold">Đang cập nhật</h3>
+                                            <p className="text-[#61896b] text-xs">Chứng nhận VietGAP</p>
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-col gap-3 rounded-xl border border-[#dbe6de] bg-white p-5 shadow-sm hover:border-[#13ec49]/50 transition-colors cursor-default group">
-                                        <div className="text-[#13ec49] bg-[#13ec49]/10 w-fit p-3 rounded-full mb-1 group-hover:bg-[#13ec49] group-hover:text-[#102215] transition-colors">
-                                            <span className="material-symbols-outlined text-[28px]">landscape</span>
+                                    <div className="flex flex-col gap-3 rounded-xl border border-[#dbe6de] bg-white p-4 shadow-sm hover:border-[#13ec49]/50 transition-colors cursor-default group min-w-[160px] sm:min-w-0 shrink-0 sm:shrink">
+                                        <div className="text-[#13ec49] bg-[#13ec49]/10 w-fit p-2.5 rounded-full mb-1 group-hover:bg-[#13ec49] group-hover:text-[#102215] transition-colors">
+                                            <span className="material-symbols-outlined text-[24px]">landscape</span>
                                         </div>
                                         <div>
-                                            <h3 className="text-[#111813] text-lg font-bold">2.5 Hecta</h3>
-                                            <p className="text-[#61896b] text-sm">Diện tích canh tác</p>
+                                            <h3 className="text-[#111813] text-base font-bold">2.5 Hecta</h3>
+                                            <p className="text-[#61896b] text-xs">Diện tích canh tác</p>
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-col gap-3 rounded-xl border border-[#dbe6de] bg-white p-5 shadow-sm hover:border-[#13ec49]/50 transition-colors cursor-default group">
-                                        <div className="text-[#13ec49] bg-[#13ec49]/10 w-fit p-3 rounded-full mb-1 group-hover:bg-[#13ec49] group-hover:text-[#102215] transition-colors">
-                                            <span className="material-symbols-outlined text-[28px]">history</span>
+                                    <div className="flex flex-col gap-3 rounded-xl border border-[#dbe6de] bg-white p-4 shadow-sm hover:border-[#13ec49]/50 transition-colors cursor-default group min-w-[160px] sm:min-w-0 shrink-0 sm:shrink">
+                                        <div className="text-[#13ec49] bg-[#13ec49]/10 w-fit p-2.5 rounded-full mb-1 group-hover:bg-[#13ec49] group-hover:text-[#102215] transition-colors">
+                                            <span className="material-symbols-outlined text-[24px]">history</span>
                                         </div>
                                         <div>
-                                            <h3 className="text-[#111813] text-lg font-bold">Thành lập 2003</h3>
-                                            <p className="text-[#61896b] text-sm">Hành trình 23 năm</p>
+                                            <h3 className="text-[#111813] text-base font-bold">Thành lập 2003</h3>
+                                            <p className="text-[#61896b] text-xs">Hành trình 23 năm</p>
                                         </div>
                                     </div>
                                 </div>
