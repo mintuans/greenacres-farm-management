@@ -26,9 +26,15 @@ app.use(cors({
     origin: (origin, callback) => {
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+
+        // Normalize origin for comparison (remove trailing slash)
+        const normalizedOrigin = origin.replace(/\/$/, '');
+        const isAllowed = allowedOrigins.some(ao => ao.replace(/\/$/, '') === normalizedOrigin);
+
+        if (isAllowed || process.env.NODE_ENV === 'development') {
             callback(null, true);
         } else {
+            console.warn(`🛑 CORS denied for origin: ${origin}. Allowed origins:`, allowedOrigins);
             callback(new Error('Not allowed by CORS'));
         }
     },

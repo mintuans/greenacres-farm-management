@@ -10,7 +10,18 @@ export const initSocket = (server: HttpServer) => {
 
     io = new SocketServer(server, {
         cors: {
-            origin: allowedOrigins,
+            origin: (origin, callback) => {
+                if (!origin) return callback(null, true);
+                const normalizedOrigin = origin.replace(/\/$/, '');
+                const isAllowed = allowedOrigins.some(ao => ao.replace(/\/$/, '') === normalizedOrigin);
+
+                if (isAllowed || process.env.NODE_ENV === 'development') {
+                    callback(null, true);
+                } else {
+                    console.warn(`🔌 Socket.io CORS denied: ${origin}`);
+                    callback(new Error('Not allowed by CORS'));
+                }
+            },
             methods: ['GET', 'POST'],
             credentials: true
         },
