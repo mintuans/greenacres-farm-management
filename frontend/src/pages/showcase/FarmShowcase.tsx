@@ -425,18 +425,31 @@ const FarmShowcase: React.FC = () => {
                 commentable_id: FARM_ID
             });
 
-            // Cập nhật UI ngay lập tức cho người gửi
-            const comment = response.data;
-            const formatted = {
-                ...comment,
-                user: user?.full_name || 'Tôi',
-                avatar: comment.avatar_id ? getMediaUrl(comment.avatar_id) : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.full_name || 'Tôi')}&background=13ec49&color=fff`,
-                time: 'Vừa xong',
-                likes: 0,
-                reactions: [],
-                replies: []
-            };
-            setComments(prev => [formatted, ...prev]);
+            // Cập nhật UI ngay lập tức cho người gửi (chỉ thêm nếu socket chưa thêm)
+            setComments(prev => {
+                const comment = response.data;
+                // Kiểm tra xem socket đã thêm bình luận này chưa (để tránh lặp)
+                const exists = (nodes: any[]): boolean => {
+                    for (const node of nodes) {
+                        if (node.id === comment.id) return true;
+                        if (node.replies?.length > 0 && exists(node.replies)) return true;
+                    }
+                    return false;
+                };
+
+                if (exists(prev)) return prev;
+
+                const formatted = {
+                    ...comment,
+                    user: user?.full_name || 'Tôi',
+                    avatar: comment.avatar_id ? getMediaUrl(comment.avatar_id) : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.full_name || 'Tôi')}&background=13ec49&color=fff`,
+                    time: 'Vừa xong',
+                    likes: 0,
+                    reactions: [],
+                    replies: []
+                };
+                return [formatted, ...prev];
+            });
             updateStats();
 
             setNewComment('');
@@ -469,30 +482,43 @@ const FarmShowcase: React.FC = () => {
                 rating: 5
             });
 
-            // Cập nhật UI ngay lập tức
-            const comment = response.data;
-            const formatted = {
-                ...comment,
-                user: user?.full_name || 'Tôi',
-                avatar: comment.avatar_id ? getMediaUrl(comment.avatar_id) : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.full_name || 'Tôi')}&background=13ec49&color=fff`,
-                time: 'Vừa xong',
-                likes: 0,
-                reactions: [],
-                replies: []
-            };
+            // Cập nhật UI ngay lập tức cho người gửi (chỉ thêm nếu socket chưa thêm)
+            setComments(prev => {
+                const comment = response.data;
+                const exists = (nodes: any[]): boolean => {
+                    for (const node of nodes) {
+                        if (node.id === comment.id) return true;
+                        if (node.replies?.length > 0 && exists(node.replies)) return true;
+                    }
+                    return false;
+                };
 
-            const updateTree = (nodes: any[]): any[] => {
-                return nodes.map(node => {
-                    if (node.id === parentId) {
-                        return { ...node, replies: [...(node.replies || []), formatted] };
-                    }
-                    if (node.replies?.length > 0) {
-                        return { ...node, replies: updateTree(node.replies) };
-                    }
-                    return node;
-                });
-            };
-            setComments(prev => updateTree(prev));
+                if (exists(prev)) return prev;
+
+                const formatted = {
+                    ...comment,
+                    user: user?.full_name || 'Tôi',
+                    avatar: comment.avatar_id ? getMediaUrl(comment.avatar_id) : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.full_name || 'Tôi')}&background=13ec49&color=fff`,
+                    time: 'Vừa xong',
+                    likes: 0,
+                    reactions: [],
+                    replies: []
+                };
+
+                const updateTree = (nodes: any[]): any[] => {
+                    return nodes.map(node => {
+                        if (node.id === parentId) {
+                            if (node.replies.some((r: any) => r.id === formatted.id)) return node;
+                            return { ...node, replies: [...(node.replies || []), formatted] };
+                        }
+                        if (node.replies?.length > 0) {
+                            return { ...node, replies: updateTree(node.replies) };
+                        }
+                        return node;
+                    });
+                };
+                return updateTree(prev);
+            });
             updateStats();
 
             setReplyContent('');

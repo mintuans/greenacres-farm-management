@@ -85,10 +85,11 @@ export const register = async (req: Request, res: Response) => {
             }
         });
     } catch (error: any) {
+        console.error('❌ Register error:', error);
         if (error.name === 'ZodError') {
             return res.status(400).json({ success: false, message: error.errors[0].message });
         }
-        return res.status(500).json({ success: false, error: error.message });
+        return res.status(500).json({ success: false, error: error.message || 'Lỗi server khi đăng ký' });
     }
 };
 
