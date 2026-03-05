@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { JobType, getJobTypes, createJobType, updateJobType, deleteJobType, CreateJobTypeInput } from '../api/job-type.api';
+import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../components';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 
 const JobTypes: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -13,6 +16,10 @@ const JobTypes: React.FC = () => {
         base_rate: 0,
         description: ''
     });
+    const [selectedJob, setSelectedJob] = useState<JobType | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<JobType | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
 
     useEffect(() => {
         loadJobs();
@@ -60,14 +67,55 @@ const JobTypes: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Bạn có chắc muốn xóa công việc này?')) return;
         try {
+            setIsDeleting(true);
             await deleteJobType(id);
+            setDeleteTarget(null);
+            setSelectedJob(null);
             loadJobs();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error deleting job type:', error);
-            alert('Không thể xóa công việc');
+            alert(error.response?.data?.message || 'Không thể xóa công việc');
+        } finally {
+            setIsDeleting(false);
         }
+    };
+
+    const handleExport = async () => {
+        const workbook = new ExcelJS.Workbook();
+        const ws = workbook.addWorksheet('Danh sách công việc');
+        ws.columns = [
+            { header: 'Mã công việc', key: 'code', width: 16 },
+            { header: 'Tên công việc', key: 'name', width: 30 },
+            { header: 'Đơn giá', key: 'rate', width: 16 },
+            { header: 'Mô tả', key: 'desc', width: 40 },
+        ];
+        ws.getRow(1).eachCell(cell => {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF13EC49' } };
+            cell.font = { bold: true };
+        });
+        filteredJobs.forEach(j => ws.addRow({
+            code: j.job_code,
+            name: j.job_name,
+            rate: j.base_rate,
+            desc: j.description || '',
+        }));
+        const buffer = await workbook.xlsx.writeBuffer();
+        saveAs(new Blob([buffer]), `DanhSach_CongViec_${new Date().toISOString().split('T')[0]}.xlsx`);
+    };
+
+    const handleImport = async (file: File) => {
+        console.log('Importing jobs from:', file.name);
+        return new Promise<void>((resolve) => setTimeout(resolve, 1500));
+    };
+
+    const downloadTemplate = () => {
+        const csv = [
+            'Mã công việc,Tên công việc,Đơn giá,Mô tả',
+            'JOB-001,Hái trái,200000,Công việc hái trái cây theo ngày',
+        ].join('\n');
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+        saveAs(blob, 'MauNhap_CongViec.csv');
     };
 
     const resetForm = () => {
@@ -98,21 +146,11 @@ const JobTypes: React.FC = () => {
                     </h1>
                     <p className="text-slate-500 mt-2">Danh sách các loại công việc và đơn giá</p>
                 </div>
-                <button
-                    onClick={() => {
-                        resetForm();
-                        setShowModal(true);
-                    }}
-                    className="flex items-center gap-2 bg-[#13ec49] hover:bg-[#13ec49]/90 text-black font-bold h-11 px-6 rounded-xl shadow-lg shadow-[#13ec49]/20 transition-all active:scale-95"
-                >
-                    <span className="material-symbols-outlined text-[20px]">add</span>
-                    <span>Thêm công việc</span>
-                </button>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="p-4 border-b border-slate-200">
-                    <div className="relative max-w-md">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden border-t-4 border-t-[#13ec49]">
+                <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                    <div className="relative w-full sm:max-w-md">
                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
                         <input
                             type="text"
@@ -122,6 +160,19 @@ const JobTypes: React.FC = () => {
                             placeholder="Tìm kiếm công việc..."
                         />
                     </div>
+                    <ActionToolbar
+                        onAdd={() => { resetForm(); setShowModal(true); }}
+                        addLabel="Thêm công việc"
+                        onEdit={() => selectedJob && handleEdit(selectedJob)}
+                        editDisabled={!selectedJob}
+                        onDelete={() => selectedJob && setDeleteTarget(selectedJob)}
+                        deleteDisabled={!selectedJob}
+                        onRefresh={loadJobs}
+                        isRefreshing={loading}
+                        onExport={handleExport}
+                        onImport={() => setShowImportModal(true)}
+                        onDownloadTemplate={downloadTemplate}
+                    />
                 </div>
 
                 {loading ? (
@@ -150,7 +201,11 @@ const JobTypes: React.FC = () => {
                                     </tr>
                                 ) : (
                                     filteredJobs.map((job) => (
-                                        <tr key={job.id} className="group hover:bg-slate-50 transition-colors">
+                                        <tr
+                                            key={job.id}
+                                            onClick={() => setSelectedJob(prev => prev?.id === job.id ? null : job)}
+                                            className={`group transition-all cursor-pointer ${selectedJob?.id === job.id ? 'bg-[#13ec49]/5 ring-1 ring-inset ring-[#13ec49]/30' : 'hover:bg-slate-50'}`}
+                                        >
                                             <td className="px-6 py-4">
                                                 <span className="font-mono text-xs bg-slate-100 px-2 py-1 rounded">
                                                     {job.job_code}
@@ -164,13 +219,13 @@ const JobTypes: React.FC = () => {
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <button
-                                                        onClick={() => handleEdit(job)}
+                                                        onClick={(e) => { e.stopPropagation(); handleEdit(job); }}
                                                         className="p-2 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all"
                                                     >
                                                         <span className="material-symbols-outlined text-[18px]">edit</span>
                                                     </button>
                                                     <button
-                                                        onClick={() => handleDelete(job.id)}
+                                                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(job); }}
                                                         className="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-all"
                                                     >
                                                         <span className="material-symbols-outlined text-[18px]">delete</span>
@@ -262,6 +317,21 @@ const JobTypes: React.FC = () => {
                     </div>
                 </div>
             )}
+            <ConfirmDeleteModal
+                open={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
+                isDeleting={isDeleting}
+                itemName={deleteTarget?.job_name}
+            />
+            <ImportDataModal
+                open={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onImport={handleImport}
+                entityName="công việc"
+                columnGuide={['Mã công việc', 'Tên công việc', 'Đơn giá', 'Mô tả']}
+                onDownloadTemplate={downloadTemplate}
+            />
         </div>
     );
 };

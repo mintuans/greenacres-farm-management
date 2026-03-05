@@ -73,16 +73,24 @@ const Sidebar: React.FC = () => {
                 />
             )}
 
-            <aside className={`
+            <aside
+                style={{ willChange: 'transform' }}
+                className={`
                 fixed md:relative inset-y-0 left-0 z-[50]
                 ${isCollapsed ? 'md:w-16' : 'md:w-56'} 
                 ${isMobileOpen ? 'translate-x-0 w-60' : '-translate-x-full md:translate-x-0'}
                 bg-white border-r border-slate-200 flex flex-col h-full shrink-0
-                transition-all duration-300 cubic-bezier(0.4, 0, 0.2, 1)
+                transition-transform duration-300 ease-in-out md:transition-all md:duration-300
             `}>
-                <div className={`p-3 flex flex-col items-center gap-1 text-center border-b border-slate-50 overflow-hidden`}>
+                <div
+                    onClick={() => {
+                        navigate('/dashboard');
+                        window.innerWidth < 768 && closeMobileMenu();
+                    }}
+                    className={`p-3 flex flex-col items-center gap-1 text-center border-b border-slate-50 overflow-hidden cursor-pointer hover:bg-slate-50/50 transition-colors group`}
+                >
                     <div className={`flex items-center gap-2 w-full ${isCollapsed ? 'md:justify-center' : 'justify-start'}`}>
-                        <img src={logoWeb} alt="Logo" className="size-8 object-contain shrink-0" />
+                        <img src={logoWeb} alt="Logo" className="size-8 object-contain shrink-0 group-hover:scale-110 transition-transform" />
                         <div className={`transition-all duration-300 ${isCollapsed ? 'md:opacity-0 md:w-0' : 'opacity-100'}`}>
                             <h1 className="text-slate-900 text-xs font-black tracking-tight whitespace-nowrap">Vườn Nhà Mình</h1>
                             <p className="text-slate-500 text-[7px] font-black uppercase tracking-wider leading-tight whitespace-nowrap">Nông trại số</p>
@@ -144,30 +152,32 @@ const Sidebar: React.FC = () => {
                             )}
                         </button>
 
-                        <div className={`overflow-hidden transition-all duration-300 ${isPayrollOpen && !isCollapsed ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-                            <div className="pl-6 mt-1 space-y-1">
-                                {payrollItems.map((item) => (
-                                    <NavLink
-                                        key={item.path}
-                                        to={item.path}
-                                        onClick={() => window.innerWidth < 768 && closeMobileMenu()}
-                                        className={({ isActive }) =>
-                                            `flex items-center gap-3 px-3 py-2 rounded-lg transition-all group ${isActive
-                                                ? 'bg-[#13ec49]/10 text-slate-900 font-bold'
-                                                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-                                            }`
-                                        }
-                                    >
-                                        {({ isActive }) => (
-                                            <>
-                                                <span className={`material-symbols-outlined text-[18px] transition-colors shrink-0 ${isActive ? 'text-[#13ec49]' : 'text-slate-400 group-hover:text-[#13ec49]'}`}>
-                                                    {item.icon}
-                                                </span>
-                                                <span className="text-xs">{item.label}</span>
-                                            </>
-                                        )}
-                                    </NavLink>
-                                ))}
+                        <div className="grid transition-all duration-300 ease-in-out" style={{ gridTemplateRows: isPayrollOpen && !isCollapsed ? '1fr' : '0fr' }}>
+                            <div className="overflow-hidden">
+                                <div className="pl-6 mt-1 space-y-1">
+                                    {payrollItems.map((item) => (
+                                        <NavLink
+                                            key={item.path}
+                                            to={item.path}
+                                            onClick={() => window.innerWidth < 768 && closeMobileMenu()}
+                                            className={({ isActive }) =>
+                                                `flex items-center gap-3 px-3 py-2 rounded-lg transition-all group ${isActive
+                                                    ? 'bg-[#13ec49]/10 text-slate-900 font-bold'
+                                                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                                                }`
+                                            }
+                                        >
+                                            {({ isActive }) => (
+                                                <>
+                                                    <span className={`material-symbols-outlined text-[18px] transition-colors shrink-0 ${isActive ? 'text-[#13ec49]' : 'text-slate-400 group-hover:text-[#13ec49]'}`}>
+                                                        {item.icon}
+                                                    </span>
+                                                    <span className="text-xs">{item.label}</span>
+                                                </>
+                                            )}
+                                        </NavLink>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -196,36 +206,38 @@ const Sidebar: React.FC = () => {
                             )}
                         </button>
 
-                        <div className={`overflow-hidden transition-all duration-300 ${isMasterDataOpen && !isCollapsed ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                            <div className="pl-6 mt-1 space-y-1">
-                                {masterDataItems.map((item) => (
-                                    item.disabled ? (
-                                        <div key={item.label} className="px-3 py-1 text-slate-300 text-[10px] uppercase font-bold tracking-widest">
-                                            {item.label}
-                                        </div>
-                                    ) : (
-                                        <NavLink
-                                            key={item.path}
-                                            to={item.path}
-                                            onClick={() => window.innerWidth < 768 && closeMobileMenu()}
-                                            className={({ isActive }) =>
-                                                `flex items-center gap-3 px-3 py-2 rounded-lg transition-all group ${isActive
-                                                    ? 'bg-[#13ec49]/10 text-slate-900 font-bold'
-                                                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-                                                }`
-                                            }
-                                        >
-                                            {({ isActive }) => (
-                                                <>
-                                                    <span className={`material-symbols-outlined text-[18px] transition-colors shrink-0 ${isActive ? 'text-[#13ec49]' : 'text-slate-400 group-hover:text-[#13ec49]'}`}>
-                                                        {item.icon}
-                                                    </span>
-                                                    <span className="text-xs">{item.label}</span>
-                                                </>
-                                            )}
-                                        </NavLink>
-                                    )
-                                ))}
+                        <div className="grid transition-all duration-300 ease-in-out" style={{ gridTemplateRows: isMasterDataOpen && !isCollapsed ? '1fr' : '0fr' }}>
+                            <div className="overflow-hidden">
+                                <div className="pl-6 mt-1 space-y-1">
+                                    {masterDataItems.map((item) => (
+                                        item.disabled ? (
+                                            <div key={item.label} className="px-3 py-1 text-slate-300 text-[10px] uppercase font-bold tracking-widest">
+                                                {item.label}
+                                            </div>
+                                        ) : (
+                                            <NavLink
+                                                key={item.path}
+                                                to={item.path}
+                                                onClick={() => window.innerWidth < 768 && closeMobileMenu()}
+                                                className={({ isActive }) =>
+                                                    `flex items-center gap-3 px-3 py-2 rounded-lg transition-all group ${isActive
+                                                        ? 'bg-[#13ec49]/10 text-slate-900 font-bold'
+                                                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                                                    }`
+                                                }
+                                            >
+                                                {({ isActive }) => (
+                                                    <>
+                                                        <span className={`material-symbols-outlined text-[18px] transition-colors shrink-0 ${isActive ? 'text-[#13ec49]' : 'text-slate-400 group-hover:text-[#13ec49]'}`}>
+                                                            {item.icon}
+                                                        </span>
+                                                        <span className="text-xs">{item.label}</span>
+                                                    </>
+                                                )}
+                                            </NavLink>
+                                        )
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -254,30 +266,32 @@ const Sidebar: React.FC = () => {
                             )}
                         </button>
 
-                        <div className={`overflow-hidden transition-all duration-300 ${isWarehouseOpen && !isCollapsed ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-                            <div className="pl-6 mt-1 space-y-1">
-                                {warehouseItems.map((item) => (
-                                    <NavLink
-                                        key={item.path}
-                                        to={item.path}
-                                        onClick={() => window.innerWidth < 768 && closeMobileMenu()}
-                                        className={({ isActive }) =>
-                                            `flex items-center gap-3 px-3 py-2 rounded-lg transition-all group ${isActive
-                                                ? 'bg-[#13ec49]/10 text-slate-900 font-bold'
-                                                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-                                            }`
-                                        }
-                                    >
-                                        {({ isActive }) => (
-                                            <>
-                                                <span className={`material-symbols-outlined text-[18px] transition-colors shrink-0 ${isActive ? 'text-[#13ec49]' : 'text-slate-400 group-hover:text-[#13ec49]'}`}>
-                                                    {item.icon}
-                                                </span>
-                                                <span className="text-xs">{item.label}</span>
-                                            </>
-                                        )}
-                                    </NavLink>
-                                ))}
+                        <div className="grid transition-all duration-300 ease-in-out" style={{ gridTemplateRows: isWarehouseOpen && !isCollapsed ? '1fr' : '0fr' }}>
+                            <div className="overflow-hidden">
+                                <div className="pl-6 mt-1 space-y-1">
+                                    {warehouseItems.map((item) => (
+                                        <NavLink
+                                            key={item.path}
+                                            to={item.path}
+                                            onClick={() => window.innerWidth < 768 && closeMobileMenu()}
+                                            className={({ isActive }) =>
+                                                `flex items-center gap-3 px-3 py-2 rounded-lg transition-all group ${isActive
+                                                    ? 'bg-[#13ec49]/10 text-slate-900 font-bold'
+                                                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                                                }`
+                                            }
+                                        >
+                                            {({ isActive }) => (
+                                                <>
+                                                    <span className={`material-symbols-outlined text-[18px] transition-colors shrink-0 ${isActive ? 'text-[#13ec49]' : 'text-slate-400 group-hover:text-[#13ec49]'}`}>
+                                                        {item.icon}
+                                                    </span>
+                                                    <span className="text-xs">{item.label}</span>
+                                                </>
+                                            )}
+                                        </NavLink>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -306,36 +320,56 @@ const Sidebar: React.FC = () => {
                             )}
                         </button>
 
-                        <div className={`overflow-hidden transition-all duration-300 ${isSettingsOpen && !isCollapsed ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-                            <div className="pl-6 mt-1 space-y-1">
-                                {settingsItems.map((item) => (
-                                    <NavLink
-                                        key={item.path}
-                                        to={item.path}
-                                        onClick={() => window.innerWidth < 768 && closeMobileMenu()}
-                                        className={({ isActive }) =>
-                                            `flex items-center gap-3 px-3 py-2 rounded-lg transition-all group ${isActive
-                                                ? 'bg-[#13ec49]/10 text-slate-900 font-bold'
-                                                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-                                            }`
-                                        }
-                                    >
-                                        {({ isActive }) => (
-                                            <>
-                                                <span className={`material-symbols-outlined text-[18px] transition-colors shrink-0 ${isActive ? 'text-[#13ec49]' : 'text-slate-400 group-hover:text-[#13ec49]'}`}>
-                                                    {item.icon}
-                                                </span>
-                                                <span className="text-xs">{item.label}</span>
-                                            </>
-                                        )}
-                                    </NavLink>
-                                ))}
+                        <div className="grid transition-all duration-300 ease-in-out" style={{ gridTemplateRows: isSettingsOpen && !isCollapsed ? '1fr' : '0fr' }}>
+                            <div className="overflow-hidden">
+                                <div className="pl-6 mt-1 space-y-1">
+                                    {settingsItems.map((item) => (
+                                        <NavLink
+                                            key={item.path}
+                                            to={item.path}
+                                            onClick={() => window.innerWidth < 768 && closeMobileMenu()}
+                                            className={({ isActive }) =>
+                                                `flex items-center gap-3 px-3 py-2 rounded-lg transition-all group ${isActive
+                                                    ? 'bg-[#13ec49]/10 text-slate-900 font-bold'
+                                                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                                                }`
+                                            }
+                                        >
+                                            {({ isActive }) => (
+                                                <>
+                                                    <span className={`material-symbols-outlined text-[18px] transition-colors shrink-0 ${isActive ? 'text-[#13ec49]' : 'text-slate-400 group-hover:text-[#13ec49]'}`}>
+                                                        {item.icon}
+                                                    </span>
+                                                    <span className="text-xs">{item.label}</span>
+                                                </>
+                                            )}
+                                        </NavLink>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </nav>
 
-                <div className="p-2 border-t border-slate-100 mt-auto">
+                <div className="p-2 border-t border-slate-100 flex flex-col gap-1 mt-auto">
+                    <button
+                        onClick={() => {
+                            navigate('/showcase');
+                            window.innerWidth < 768 && closeMobileMenu();
+                        }}
+                        className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl transition-all text-blue-600 hover:bg-blue-50 group relative"
+                    >
+                        <span className="material-symbols-outlined transition-colors shrink-0">
+                            visibility
+                        </span>
+                        <span className={`text-[13px] font-bold transition-all duration-300 origin-left ${isCollapsed ? 'md:opacity-0 md:scale-0 md:absolute' : 'opacity-100 scale-100'}`}>Xem Website</span>
+                        {isCollapsed && (
+                            <div className="hidden md:group-hover:block absolute left-full ml-4 px-2 py-1 bg-blue-600 text-white text-xs rounded shadow-lg whitespace-nowrap z-[100]">
+                                Xem Website
+                            </div>
+                        )}
+                    </button>
+
                     <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl transition-all text-slate-500 hover:bg-red-50 hover:text-red-600 group relative"

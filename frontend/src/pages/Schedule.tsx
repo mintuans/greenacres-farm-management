@@ -211,43 +211,43 @@ const Schedule: React.FC = () => {
             </div>
 
             {/* Calendar Card */}
-            <div className="bg-white border border-slate-200 rounded-[32px] shadow-2xl shadow-slate-200/50 overflow-hidden flex flex-col">
-                {/* Filters and Controls */}
-                <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between p-6 border-b border-slate-100 gap-6">
-                    {/* Legend */}
-                    <div className="flex flex-wrap items-center gap-4 text-[10px] font-black uppercase tracking-wider">
+            <div className="bg-white border border-slate-200 rounded-2xl md:rounded-[32px] shadow-2xl shadow-slate-200/50 overflow-hidden flex flex-col">
+                {/* Controls */}
+                <div className="flex items-center justify-between px-3 py-2.5 md:px-6 md:py-4 border-b border-slate-100 gap-2">
+                    {/* Legend - hidden on small mobile, shown on md+ */}
+                    <div className="hidden sm:flex flex-wrap items-center gap-3 text-[10px] font-black uppercase tracking-wider">
                         <div className="flex items-center gap-1.5 text-blue-600/80">
-                            <div className="size-2 rounded-full bg-blue-500 shadow-sm ring-2 ring-blue-50"></div>
+                            <div className="size-2 rounded-full bg-blue-500 ring-2 ring-blue-50"></div>
                             <span>Nhân viên</span>
                         </div>
                         <div className="flex items-center gap-1.5 text-green-600/80">
-                            <div className="size-2 rounded-full bg-green-500 shadow-sm ring-2 ring-green-50"></div>
+                            <div className="size-2 rounded-full bg-green-500 ring-2 ring-green-50"></div>
                             <span>Công việc</span>
                         </div>
                         <div className="flex items-center gap-1.5 text-yellow-600/80">
-                            <div className="size-2 rounded-full bg-yellow-500 shadow-sm ring-2 ring-yellow-50"></div>
+                            <div className="size-2 rounded-full bg-yellow-500 ring-2 ring-yellow-50"></div>
                             <span>Thu hoạch</span>
                         </div>
                         <div className="flex items-center gap-1.5 text-red-600/80">
-                            <div className="size-2 rounded-full bg-red-500 shadow-sm ring-2 ring-red-50"></div>
+                            <div className="size-2 rounded-full bg-red-500 ring-2 ring-red-50"></div>
                             <span>Vấn đề</span>
                         </div>
                     </div>
 
                     {/* Month Navigation */}
-                    <div className="flex items-center gap-6 w-full xl:w-auto justify-between xl:justify-end">
+                    <div className="flex items-center gap-2 md:gap-4 ml-auto">
                         <button
                             onClick={goToToday}
                             className="text-[10px] font-black uppercase tracking-widest text-[#13ec49] hover:text-[#10d63f] transition-colors whitespace-nowrap"
                         >
                             Hôm nay
                         </button>
-                        <div className="flex items-center bg-slate-50 rounded-2xl p-1.5 border border-slate-100 relative">
+                        <div className="flex items-center bg-slate-50 rounded-xl md:rounded-2xl p-1 md:p-1.5 border border-slate-100 relative">
                             <button
-                                className="size-9 flex items-center justify-center rounded-xl hover:bg-white hover:shadow-lg transition-all text-slate-900"
+                                className="size-7 md:size-9 flex items-center justify-center rounded-lg md:rounded-xl hover:bg-white hover:shadow-lg transition-all text-slate-900"
                                 onClick={goToPreviousMonth}
                             >
-                                <span className="material-symbols-outlined text-lg">chevron_left</span>
+                                <span className="material-symbols-outlined text-base md:text-lg">chevron_left</span>
                             </button>
 
                             <div className="relative">
@@ -256,13 +256,13 @@ const Schedule: React.FC = () => {
                                         setTempYear(currentYear);
                                         setIsYearPickerOpen(!isYearPickerOpen);
                                     }}
-                                    className="px-6 text-sm font-black text-slate-900 min-w-[120px] text-center hover:text-[#13ec49] transition-colors"
+                                    className="px-3 md:px-6 text-xs md:text-sm font-black text-slate-900 min-w-[90px] md:min-w-[120px] text-center hover:text-[#13ec49] transition-colors"
                                 >
                                     {monthYearDisplay}
                                 </button>
 
                                 {isYearPickerOpen && (
-                                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-64 bg-white border border-slate-100 rounded-[24px] shadow-2xl z-[120] p-4 animate-in fade-in zoom-in-95 duration-200">
+                                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-56 md:w-64 bg-white border border-slate-100 rounded-[20px] md:rounded-[24px] shadow-2xl z-[120] p-4 animate-in fade-in zoom-in-95 duration-200">
                                         <div className="flex items-center justify-between mb-4 px-2">
                                             <button
                                                 onClick={() => setTempYear(prev => prev - 1)}
@@ -308,23 +308,23 @@ const Schedule: React.FC = () => {
                             </div>
 
                             <button
-                                className="size-9 flex items-center justify-center rounded-xl hover:bg-white hover:shadow-lg transition-all text-slate-900"
+                                className="size-7 md:size-9 flex items-center justify-center rounded-lg md:rounded-xl hover:bg-white hover:shadow-lg transition-all text-slate-900"
                                 onClick={goToNextMonth}
                             >
-                                <span className="material-symbols-outlined text-lg">chevron_right</span>
+                                <span className="material-symbols-outlined text-base md:text-lg">chevron_right</span>
                             </button>
                         </div>
                     </div>
                 </div>
 
                 {/* Calendar Grid */}
-                <div className="w-full overflow-x-auto">
+                <div className="w-full">
                     {/* Day Headers */}
-                    <div className="min-w-[800px] grid grid-cols-7 border-b-2 border-slate-200 bg-slate-50/30">
+                    <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50/30">
                         {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'].map((day, idx) => (
                             <div
                                 key={idx}
-                                className="p-4 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest border-r-2 border-slate-200 last:border-r-0"
+                                className="py-2 md:p-4 text-center text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-wider md:tracking-widest border-r border-slate-200 last:border-r-0"
                             >
                                 {day}
                             </div>
@@ -332,7 +332,7 @@ const Schedule: React.FC = () => {
                     </div>
 
                     {/* Calendar Days */}
-                    <div className="min-w-[800px] grid grid-cols-7 bg-white">
+                    <div className="grid grid-cols-7 bg-white">
                         {calendarDays.map((day, idx) => {
                             const dayEvents = getEventsForDay(day);
 
@@ -343,7 +343,7 @@ const Schedule: React.FC = () => {
                                         setSelectedDay(day);
                                         setShowDayModal(true);
                                     }}
-                                    className={`min-h-[100px] p-2 border-b-2 border-r-2 border-slate-200 group transition-all relative flex flex-col justify-between cursor-pointer ${!day.isCurrentMonth
+                                    className={`min-h-[52px] md:min-h-[100px] p-1 md:p-2 border-b border-r border-slate-200 group transition-all relative flex flex-col justify-between cursor-pointer ${!day.isCurrentMonth
                                         ? 'bg-slate-50/40 opacity-40'
                                         : day.isToday
                                             ? 'bg-[#13ec49]/5 hover:bg-[#13ec49]/10'
@@ -352,10 +352,10 @@ const Schedule: React.FC = () => {
                                 >
                                     <div className="flex justify-between items-start">
                                         <span
-                                            className={`text-[10px] font-black p-1 rounded-lg size-6 flex items-center justify-center transition-all ${day.isToday
-                                                ? 'bg-[#13ec49] text-black shadow-lg shadow-[#13ec49]/30'
+                                            className={`text-[10px] md:text-[10px] font-black p-0.5 md:p-1 rounded-md md:rounded-lg size-5 md:size-6 flex items-center justify-center transition-all ${day.isToday
+                                                ? 'bg-[#13ec49] text-black shadow-md shadow-[#13ec49]/30'
                                                 : day.isCurrentMonth
-                                                    ? 'text-slate-900 group-hover:scale-110'
+                                                    ? 'text-slate-900'
                                                     : 'text-slate-300'
                                                 }`}
                                         >
@@ -363,18 +363,18 @@ const Schedule: React.FC = () => {
                                         </span>
                                     </div>
 
-                                    {/* Event Indicators */}
+                                    {/* Event Dots */}
                                     {dayEvents.length > 0 && (
-                                        <div className="flex gap-2 flex-wrap p-1">
-                                            {dayEvents.map((event, eventIdx) => (
+                                        <div className="flex gap-0.5 md:gap-1.5 flex-wrap p-0.5 md:p-1">
+                                            {dayEvents.slice(0, 3).map((event, eventIdx) => (
                                                 <div
                                                     key={eventIdx}
-                                                    className={`h-2.5 w-2.5 rounded-full shadow-sm ${getEventColor(event.type)} transition-all group-hover:scale-150 ring-2 ring-white`}
+                                                    className={`h-1.5 w-1.5 md:h-2.5 md:w-2.5 rounded-full ${getEventColor(event.type)} ring-1 md:ring-2 ring-white`}
                                                     title={event.title}
                                                 ></div>
                                             ))}
-                                            {dayEvents.length > 4 && (
-                                                <span className="text-[9px] font-black text-slate-400">+{dayEvents.length - 4}</span>
+                                            {dayEvents.length > 3 && (
+                                                <span className="text-[8px] md:text-[9px] font-black text-slate-400 leading-none">+{dayEvents.length - 3}</span>
                                             )}
                                         </div>
                                     )}
@@ -578,12 +578,12 @@ const Schedule: React.FC = () => {
             )}
 
             {/* Event Summary */}
-            <div className="bg-white border border-slate-200 rounded-[32px] shadow-xl shadow-slate-200/50 p-8">
-                <h3 className="text-xl font-black text-slate-900 mb-8 flex items-center gap-3">
-                    <span className="material-symbols-outlined text-[#13ec49] text-2xl">analytics</span>
-                    Thống kê tiến độ tháng {getMonthName(currentMonth)}
+            <div className="bg-white border border-slate-200 rounded-2xl md:rounded-[32px] shadow-xl shadow-slate-200/50 p-3 md:p-8">
+                <h3 className="text-sm md:text-xl font-black text-slate-900 mb-3 md:mb-8 flex items-center gap-2 md:gap-3">
+                    <span className="material-symbols-outlined text-[#13ec49] text-lg md:text-2xl">analytics</span>
+                    Thống kê tháng {getMonthName(currentMonth)}
                 </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-6">
                     {(['staff', 'task', 'harvest', 'issue'] as EventType[]).map((type) => {
                         const count = events.filter(e => e.type === type).length;
                         const label = getEventLabel(type);
@@ -593,14 +593,14 @@ const Schedule: React.FC = () => {
                                     'border-red-100 bg-red-50/50 text-red-600';
 
                         return (
-                            <div key={type} className={`p-6 rounded-[28px] border-2 transition-all hover:shadow-xl hover:bg-white ${colorClass} group`}>
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className={`size-3 rounded-full ${getEventColor(type)} shadow-sm ring-4 ring-white`}></div>
-                                    <span className="text-[10px] font-black uppercase tracking-widest opacity-70 group-hover:opacity-100">{label}</span>
+                            <div key={type} className={`p-2 md:p-6 rounded-xl md:rounded-[28px] border-2 transition-all hover:shadow-xl hover:bg-white ${colorClass} group flex items-center gap-2 md:flex-col md:items-start md:gap-0`}>
+                                <div className="flex items-center gap-1.5 md:gap-3 md:mb-4">
+                                    <div className={`size-2 rounded-full ${getEventColor(type)} ring-2 ring-white shrink-0`}></div>
+                                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-wide opacity-70 group-hover:opacity-100 whitespace-nowrap">{label}</span>
                                 </div>
-                                <div className="flex items-baseline gap-2">
-                                    <p className="text-4xl font-black text-slate-900">{count}</p>
-                                    <span className="text-[11px] font-black uppercase opacity-40">Sự kiện</span>
+                                <div className="flex items-baseline gap-1 md:gap-2 md:mt-2 ml-auto md:ml-0">
+                                    <p className="text-xl md:text-4xl font-black text-slate-900">{count}</p>
+                                    <span className="text-[9px] md:text-[11px] font-black uppercase opacity-40">SK</span>
                                 </div>
                             </div>
                         );

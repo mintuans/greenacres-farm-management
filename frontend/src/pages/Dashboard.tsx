@@ -10,18 +10,18 @@ const StatCard: React.FC<{
   icon: string;
   colorClass: string;
 }> = ({ label, value, trend, trendUp, icon, colorClass }) => (
-  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm transition-transform hover:-translate-y-1">
-    <div className="flex justify-between items-start mb-4">
-      <div className={`p-2 rounded-xl ${colorClass}`}>
-        <span className="material-symbols-outlined text-[20px]">{icon}</span>
+  <div className="bg-white p-3 md:p-4 rounded-2xl border border-slate-200 shadow-sm transition-transform hover:-translate-y-1">
+    <div className="flex justify-between items-start mb-2 md:mb-4">
+      <div className={`p-1.5 md:p-2 rounded-xl ${colorClass}`}>
+        <span className="material-symbols-outlined text-[18px] md:text-[20px]">{icon}</span>
       </div>
-      <div className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${trendUp ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
-        <span className="material-symbols-outlined text-[12px]">{trendUp ? 'trending_up' : 'trending_down'}</span>
+      <div className={`flex items-center gap-0.5 md:gap-1 text-[9px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded-full ${trendUp ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+        <span className="material-symbols-outlined text-[10px] md:text-[12px]">{trendUp ? 'trending_up' : 'trending_down'}</span>
         {trend}
       </div>
     </div>
-    <p className="text-slate-500 text-[10px] font-medium leading-none mb-1 uppercase tracking-wider opacity-70">{label}</p>
-    <h3 className="text-lg font-black text-slate-900">{value}</h3>
+    <p className="text-slate-500 text-[9px] md:text-[10px] font-medium leading-none mb-1 uppercase tracking-wider opacity-70">{label}</p>
+    <h3 className="text-sm md:text-lg font-black text-slate-900 leading-tight">{value}</h3>
   </div>
 );
 
@@ -186,17 +186,17 @@ const Dashboard: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm animate-pulse">
-              <div className="h-12 bg-slate-200 rounded-xl mb-6"></div>
-              <div className="h-4 bg-slate-200 rounded w-1/2 mb-2"></div>
-              <div className="h-8 bg-slate-200 rounded w-3/4"></div>
+            <div key={i} className="bg-white p-3 md:p-4 rounded-2xl border border-slate-200 shadow-sm animate-pulse">
+              <div className="h-10 md:h-12 bg-slate-200 rounded-xl mb-4 md:mb-6"></div>
+              <div className="h-3 md:h-4 bg-slate-200 rounded w-1/2 mb-2"></div>
+              <div className="h-6 md:h-8 bg-slate-200 rounded w-3/4"></div>
             </div>
           ))}
         </div>
       ) : stats ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <StatCard
             label="Tổng thu nhập"
             value={formatCurrency(stats.total_income)}
@@ -339,7 +339,7 @@ const Dashboard: React.FC = () => {
             )}
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex-1">
+          <div className="hidden md:block bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex-1">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-black text-slate-900">Nhân viên có số dư cao</h3>
             </div>

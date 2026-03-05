@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getManagementProducts, createManagementProduct, updateManagementProduct, deleteManagementProduct, ManagementProduct } from '../../services/management-products.service';
 import { getProductCategories, ProductCategory, getMediaUrl } from '../../services/products.service';
 import { getMediaFiles, MediaFile } from '../../services/media.service';
+import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../../components';
 
 const ManagementProducts: React.FC = () => {
     const [products, setProducts] = useState<ManagementProduct[]>([]);
@@ -10,6 +11,10 @@ const ManagementProducts: React.FC = () => {
     const [showModal, setShowModal] = useState(false);
     const [editingProduct, setEditingProduct] = useState<ManagementProduct | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedProduct, setSelectedProduct] = useState<ManagementProduct | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<ManagementProduct | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
 
     // States cho Media Picker
     const [showMediaPicker, setShowMediaPicker] = useState(false);
@@ -139,40 +144,72 @@ const ManagementProducts: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (confirm('Bạn có chắc muốn xóa sản phẩm này?')) {
-            try {
-                await deleteManagementProduct(id);
-                alert('Xóa sản phẩm thành công!');
-                loadProducts();
-            } catch (error) {
-                console.error('Error deleting product:', error);
-                alert('Có lỗi xảy ra!');
-            }
+        try {
+            setIsDeleting(true);
+            await deleteManagementProduct(id);
+            setDeleteTarget(null);
+            setSelectedProduct(null);
+            loadProducts();
+        } catch (error) {
+            console.error('Error deleting product:', error);
+            alert('Có lỗi xảy ra!');
+        } finally {
+            setIsDeleting(false);
         }
+    };
+
+    const handleImport = async (file: File) => {
+        console.log('Importing products from:', file.name);
+        return new Promise<void>((resolve) => setTimeout(resolve, 1500));
+    };
+
+    const handleExport = () => {
+        console.log('Exporting products...');
+        alert('Đang trích xuất danh sách sản phẩm ra file Excel...');
+    };
+
+    const handleDownloadTemplate = () => {
+        console.log('Downloading product template...');
+        alert('Đang tải tệp mẫu sản phẩm...');
     };
 
     return (
         <div className="p-3 md:p-4 w-full">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold text-[#111813]">Quản lý Sản phẩm</h1>
-                <button
-                    onClick={() => handleOpenModal()}
-                    className="px-4 py-2 bg-[#13ec49] text-[#102215] font-bold rounded-lg hover:bg-[#10d63f] transition-colors"
-                >
-                    + Thêm sản phẩm
-                </button>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-6">
+                <div>
+                    <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight">Quản lý Sản phẩm</h1>
+                    <p className="text-slate-500 mt-2 font-medium">Hệ thống quản lý thông tin sản phẩm trên cửa hàng</p>
+                </div>
             </div>
 
-            {/* Search */}
-            <div className="mb-4">
-                <input
-                    type="text"
-                    placeholder="Tìm kiếm sản phẩm..."
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13ec49] w-full max-w-md"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
+            {/* Toolbar */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+                <div className="p-3 md:p-4 border-b border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div className="relative w-full md:w-96">
+                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm sản phẩm..."
+                            className="w-full pl-12 pr-4 py-2.5 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-[#13ec49]/30 outline-none font-medium transition-all text-sm"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+                    <ActionToolbar
+                        onAdd={() => handleOpenModal()}
+                        addLabel="Thêm sản phẩm"
+                        onEdit={() => selectedProduct && handleOpenModal(selectedProduct)}
+                        editDisabled={!selectedProduct}
+                        onDelete={() => selectedProduct && setDeleteTarget(selectedProduct)}
+                        deleteDisabled={!selectedProduct}
+                        onRefresh={loadProducts}
+                        isRefreshing={loading}
+                        onImport={() => setShowImportModal(true)}
+                        onExport={handleExport}
+                        onDownloadTemplate={handleDownloadTemplate}
+                    />
+                </div>
             </div>
 
             {/* Table */}
@@ -204,7 +241,11 @@ const ManagementProducts: React.FC = () => {
                             </tr>
                         ) : (
                             products.map((product) => (
-                                <tr key={product.id} className="hover:bg-gray-50">
+                                <tr
+                                    key={product.id}
+                                    onClick={() => setSelectedProduct(prev => prev?.id === product.id ? null : product)}
+                                    className={`group transition-all cursor-pointer ${selectedProduct?.id === product.id ? 'bg-[#13ec49]/5 ring-1 ring-inset ring-[#13ec49]/30' : 'hover:bg-gray-50'}`}
+                                >
                                     <td className="px-6 py-4 text-sm text-gray-900">{product.product_code}</td>
                                     <td className="px-6 py-4 text-sm font-medium text-gray-900">
                                         <div className="flex items-center gap-3">
@@ -227,19 +268,21 @@ const ManagementProducts: React.FC = () => {
                                             {product.status}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-sm text-right space-x-2">
-                                        <button
-                                            onClick={() => handleOpenModal(product)}
-                                            className="text-blue-600 hover:text-blue-800 font-medium"
-                                        >
-                                            Sửa
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(product.id)}
-                                            className="text-red-600 hover:text-red-800 font-medium"
-                                        >
-                                            Xóa
-                                        </button>
+                                    <td className="px-6 py-4 text-sm text-right">
+                                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handleOpenModal(product); }}
+                                                className="p-2 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all font-medium"
+                                            >
+                                                Sửa
+                                            </button>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setDeleteTarget(product); }}
+                                                className="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-all font-medium"
+                                            >
+                                                Xóa
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))
@@ -481,6 +524,22 @@ const ManagementProducts: React.FC = () => {
                     </div>
                 </div>
             )}
+            {/* Confirm Delete Modal */}
+            <ConfirmDeleteModal
+                open={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
+                isDeleting={isDeleting}
+                itemName={deleteTarget?.product_name}
+            />
+            <ImportDataModal
+                open={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onImport={handleImport}
+                entityName="sản phẩm"
+                columnGuide={['Mã sản phẩm', 'Tên sản phẩm', 'Slug', 'Mã danh mục', 'Mô tả ngắn', 'Giá bán', 'Giá gốc', 'Tồn kho', 'Đơn vị', 'Trạng thái (DRAFT/PUBLISHED)']}
+                onDownloadTemplate={handleDownloadTemplate}
+            />
         </div>
     );
 };

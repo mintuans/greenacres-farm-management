@@ -279,6 +279,34 @@ const UserProfile: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* System Management for Admins */}
+                            {user?.role === 'SUPER_ADMIN' && (
+                                <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow border-t-4 border-t-orange-500 animate-in fade-in slide-in-from-right-4 duration-700">
+                                    <h2 className="text-slate-900 text-xl font-bold mb-6 flex items-center gap-2">
+                                        <span className="w-1.5 h-6 bg-orange-500 rounded-full"></span>
+                                        Quản trị hệ thống
+                                    </h2>
+                                    <div className="bg-orange-50 rounded-2xl p-6 border border-orange-100 flex flex-col md:flex-row items-center justify-between gap-6">
+                                        <div className="flex items-center gap-4 text-center md:text-left flex-col md:flex-row">
+                                            <div className="size-16 rounded-2xl bg-white shadow-sm flex items-center justify-center text-orange-600">
+                                                <span className="material-symbols-outlined text-[32px]">admin_panel_settings</span>
+                                            </div>
+                                            <div>
+                                                <h3 className="text-slate-900 font-bold text-lg">Bảng điều khiển quản trị</h3>
+                                                <p className="text-slate-500 text-sm">Quản lý mùa vụ, nhân sự, tài chính và cấu hình hệ thống chuyên sâu.</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => navigate('/dashboard')}
+                                            className="flex min-w-[160px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl h-12 px-6 bg-slate-900 text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-slate-800 hover:shadow-lg transition-all hover:scale-105 active:scale-95 shadow-xl shadow-slate-200"
+                                        >
+                                            <span className="material-symbols-outlined">dashboard</span>
+                                            <span className="truncate">Vào Trang Quản Lý</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

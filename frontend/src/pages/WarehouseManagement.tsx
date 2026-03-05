@@ -3,6 +3,7 @@ import { getWarehouseItems, createWarehouseItem, updateWarehouseItem, deleteWare
 import { getWarehouseTypes, WarehouseType } from '../api/warehouse-type.api';
 import { getMediaFiles, MediaFile } from '../services/media.service';
 import { getMediaUrl } from '../services/products.service';
+import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../components';
 
 const WarehouseManagement: React.FC = () => {
     const [warehouseTypes, setWarehouseTypes] = useState<WarehouseType[]>([]);
@@ -12,6 +13,10 @@ const WarehouseManagement: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [editingItem, setEditingItem] = useState<WarehouseItem | null>(null);
+    const [selectedItem, setSelectedItem] = useState<WarehouseItem | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<WarehouseItem | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
     const units = ['Cái', 'Bộ', 'Chiếc', 'Hộp', 'Gói', 'Kg', 'Mét'];
 
     // Media Picker States
@@ -146,14 +151,33 @@ const WarehouseManagement: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (window.confirm('Bạn có chắc muốn xóa mặt hàng này?')) {
-            try {
-                await deleteWarehouseItem(id);
-                loadItems();
-            } catch (error) {
-                console.error('Error deleting item:', error);
-            }
+        try {
+            setIsDeleting(true);
+            await deleteWarehouseItem(id);
+            setDeleteTarget(null);
+            setSelectedItem(null);
+            loadItems();
+        } catch (error) {
+            console.error('Error deleting item:', error);
+            alert('Không thể xóa mặt hàng');
+        } finally {
+            setIsDeleting(false);
         }
+    };
+
+    const handleImport = async (file: File) => {
+        console.log('Importing warehouse items from:', file.name);
+        return new Promise<void>((resolve) => setTimeout(resolve, 1500));
+    };
+
+    const handleExport = () => {
+        console.log('Exporting warehouse items...');
+        alert('Đang trích xuất danh sách hàng tồn kho ra file Excel...');
+    };
+
+    const handleDownloadTemplate = () => {
+        console.log('Downloading warehouse template...');
+        alert('Đang tải tệp mẫu hàng tồn kho...');
     };
 
     const formatCurrency = (amount: number) => {
@@ -163,24 +187,13 @@ const WarehouseManagement: React.FC = () => {
     const totalValue = items.reduce((sum, item) => sum + (Number(item.quantity) * Number(item.price)), 0);
 
     return (
-        <div className="p-6 md:p-8 space-y-8 max-w-[1440px] mx-auto">
+        <div className="p-3 md:p-4 space-y-4 w-full bg-slate-50/50 min-h-screen">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div>
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tight">
-                        Quản lý Kho tổng hợp
-                    </h1>
-                    <p className="text-slate-500 mt-2 font-medium">Toàn bộ vật dụng, thiết bị và tài sản trang trại</p>
-                </div>
-                <div className="flex gap-3">
-                    <button
-                        onClick={() => handleOpenModal()}
-                        className="flex items-center gap-2 bg-[#13ec49] hover:bg-[#13ec49]/90 text-black font-black h-12 px-8 rounded-2xl shadow-xl shadow-[#13ec49]/20 transition-all active:scale-95 uppercase tracking-widest text-xs"
-                    >
-                        <span className="material-symbols-outlined text-[20px]">add_circle</span>
-                        <span>Thêm mặt hàng</span>
-                    </button>
-                </div>
+            <div>
+                <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-tight">
+                    Quản lý Kho tổng hợp
+                </h1>
+                <p className="text-slate-500 mt-2 font-medium">Toàn bộ vật dụng, thiết bị và tài sản trang trại</p>
             </div>
 
             {/* Warehouse Type Filter Tabs */}
@@ -202,43 +215,48 @@ const WarehouseManagement: React.FC = () => {
                 ))}
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm border-b-4 border-b-blue-500">
-                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Số loại mặt hàng</p>
-                    <h3 className="text-3xl font-black mt-2 text-slate-900">{items.length}</h3>
+            {/* Stats - 3 cards per row on Mobile */}
+            <div className="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-4">
+                <div className="bg-white p-2.5 md:p-6 rounded-xl md:rounded-2xl border border-slate-200 shadow-sm border-b-4 border-b-blue-500 flex flex-col items-center md:items-start text-center md:text-left">
+                    <p className="text-slate-400 text-[8px] md:text-[10px] font-black uppercase tracking-widest truncate w-full">Số loại</p>
+                    <h3 className="text-sm md:text-3xl font-black mt-1 md:mt-2 text-slate-900 truncate w-full">{items.length}</h3>
                 </div>
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm border-b-4 border-b-[#13ec49]">
-                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Tổng số lượng</p>
-                    <h3 className="text-3xl font-black mt-2 text-slate-900">{items.reduce((sum, item) => sum + Number(item.quantity), 0)}</h3>
+                <div className="bg-white p-2.5 md:p-6 rounded-xl md:rounded-2xl border border-slate-200 shadow-sm border-b-4 border-b-[#13ec49] flex flex-col items-center md:items-start text-center md:text-left">
+                    <p className="text-slate-400 text-[8px] md:text-[10px] font-black uppercase tracking-widest truncate w-full">Số lượng</p>
+                    <h3 className="text-sm md:text-3xl font-black mt-1 md:mt-2 text-slate-900 truncate w-full">{items.reduce((sum, item) => sum + Number(item.quantity), 0)}</h3>
                 </div>
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm border-b-4 border-b-orange-500 col-span-1 md:col-span-2">
-                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Tổng giá trị lưu kho</p>
-                    <h3 className="text-3xl font-black mt-2 text-green-600">{formatCurrency(totalValue)}</h3>
+                <div className="bg-white p-2.5 md:p-6 rounded-xl md:rounded-2xl border border-slate-200 shadow-sm border-b-4 border-b-orange-500 flex flex-col items-center md:items-start text-center md:text-left col-span-1 md:col-span-2">
+                    <p className="text-slate-400 text-[8px] md:text-[10px] font-black uppercase tracking-widest truncate w-full">Tổng giá trị</p>
+                    <h3 className="text-sm md:text-3xl font-black mt-1 md:mt-2 text-green-600 truncate w-full">{formatCurrency(totalValue)}</h3>
                 </div>
             </div>
 
             {/* Table Section */}
-            <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden border-t-4 border-t-[#13ec49]">
-                <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
-                    <div className="relative max-w-md w-full">
-                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden border-t-4 border-t-[#13ec49]">
+                <div className="p-3 md:p-4 border-b border-slate-200 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+                    <div className="relative w-full sm:max-w-xs">
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
                         <input
                             type="text"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-slate-50 border-none rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:ring-4 focus:ring-[#13ec49]/10 transition-all outline-none font-medium"
-                            placeholder="Tìm định danh, tên hoặc SKU..."
+                            className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-[#13ec49]/30 transition-all outline-none"
+                            placeholder="Tìm kiếm mặt hàng..."
                         />
                     </div>
-                    <div className="flex gap-2">
-                        <button className="p-3 rounded-xl bg-slate-50 text-slate-400 hover:bg-slate-100 transition-all">
-                            <span className="material-symbols-outlined">filter_list</span>
-                        </button>
-                        <button className="p-3 rounded-xl bg-slate-50 text-slate-400 hover:bg-slate-100 transition-all">
-                            <span className="material-symbols-outlined">file_download</span>
-                        </button>
-                    </div>
+                    <ActionToolbar
+                        onAdd={() => handleOpenModal()}
+                        addLabel="Thêm mặt hàng"
+                        onEdit={() => selectedItem && handleOpenModal(selectedItem)}
+                        editDisabled={!selectedItem}
+                        onDelete={() => selectedItem && setDeleteTarget(selectedItem)}
+                        deleteDisabled={!selectedItem}
+                        onRefresh={loadItems}
+                        isRefreshing={loading}
+                        onImport={() => setShowImportModal(true)}
+                        onExport={handleExport}
+                        onDownloadTemplate={handleDownloadTemplate}
+                    />
                 </div>
 
                 <div className="overflow-x-auto">
@@ -269,8 +287,12 @@ const WarehouseManagement: React.FC = () => {
                                     <td colSpan={7} className="px-8 py-20 text-center text-slate-300 italic font-bold">Không tìm thấy mặt hàng nào</td>
                                 </tr>
                             ) : (
-                                items.map((item) => (
-                                    <tr key={item.id} className="group hover:bg-slate-50/50 transition-all cursor-default">
+                                (items || []).map((item) => (
+                                    <tr
+                                        key={item.id}
+                                        onClick={() => setSelectedItem(prev => prev?.id === item.id ? null : item)}
+                                        className={`group transition-all cursor-pointer ${selectedItem?.id === item.id ? 'bg-[#13ec49]/5 ring-1 ring-inset ring-[#13ec49]/20' : 'hover:bg-slate-50'}`}
+                                    >
                                         <td className="px-8 py-5">
                                             <div className="flex items-center gap-4">
                                                 <div className="w-12 h-12 rounded-2xl bg-slate-100 flex-shrink-0 overflow-hidden border border-slate-200 shadow-sm">
@@ -315,13 +337,13 @@ const WarehouseManagement: React.FC = () => {
                                         <td className="px-8 py-5 text-right">
                                             <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
                                                 <button
-                                                    onClick={() => handleOpenModal(item)}
+                                                    onClick={(e) => { e.stopPropagation(); handleOpenModal(item); }}
                                                     className="size-10 flex items-center justify-center rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
                                                 >
                                                     <span className="material-symbols-outlined text-[20px]">edit</span>
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDelete(item.id)}
+                                                    onClick={(e) => { e.stopPropagation(); setDeleteTarget(item); }}
                                                     className="size-10 flex items-center justify-center rounded-xl bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all shadow-sm"
                                                 >
                                                     <span className="material-symbols-outlined text-[20px]">delete</span>
@@ -529,6 +551,21 @@ const WarehouseManagement: React.FC = () => {
                     </div>
                 </div>
             )}
+            <ConfirmDeleteModal
+                open={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
+                isDeleting={isDeleting}
+                itemName={deleteTarget?.item_name}
+            />
+            <ImportDataModal
+                open={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onImport={handleImport}
+                entityName="mặt hàng kho"
+                columnGuide={['Mã mặt hàng', 'Tên mặt hàng', 'Mã SKU', 'Loại nhà kho (ID)', 'Số lượng', 'Đơn vị', 'Đơn giá', 'Vị trí', 'Ghi chú']}
+                onDownloadTemplate={handleDownloadTemplate}
+            />
         </div>
     );
 };

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { WarehouseType, getWarehouseTypes, createWarehouseType, updateWarehouseType, deleteWarehouseType } from '../api/warehouse-type.api';
+import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../components';
 
 const WarehouseTypes: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -12,6 +13,10 @@ const WarehouseTypes: React.FC = () => {
         warehouse_name: '',
         description: ''
     });
+    const [selectedType, setSelectedType] = useState<WarehouseType | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<WarehouseType | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -64,14 +69,33 @@ const WarehouseTypes: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Bạn có chắc muốn xóa loại kho này?')) return;
         try {
+            setIsDeleting(true);
             await deleteWarehouseType(id);
+            setDeleteTarget(null);
+            setSelectedType(null);
             loadData();
         } catch (error: any) {
             console.error('Error deleting warehouse type:', error);
             alert(error.response?.data?.message || 'Không thể xóa phân loại kho');
+        } finally {
+            setIsDeleting(false);
         }
+    };
+
+    const handleImport = async (file: File) => {
+        console.log('Importing warehouse types from:', file.name);
+        return new Promise<void>((resolve) => setTimeout(resolve, 1500));
+    };
+
+    const handleExport = () => {
+        console.log('Exporting warehouse types...');
+        alert('Đang trích xuất danh sách phân loại kho ra file Excel...');
+    };
+
+    const handleDownloadTemplate = () => {
+        console.log('Downloading warehouse type template...');
+        alert('Đang tải tệp mẫu phân loại kho...');
     };
 
     const resetForm = () => {
@@ -89,40 +113,58 @@ const WarehouseTypes: React.FC = () => {
     );
 
     return (
-        <div className="p-6 md:p-8 space-y-8 max-w-[1440px] mx-auto">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div className="space-y-2">
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tight">
-                        Phân loại Nhà kho
-                    </h1>
-                    <p className="text-slate-500 font-medium">Quản lý các loại kho vật lý trong trang trại</p>
-                </div>
-                <button
-                    onClick={() => {
-                        resetForm();
-                        setShowModal(true);
-                    }}
-                    className="flex items-center gap-2 bg-[#13ec49] hover:bg-[#13ec49]/90 text-black font-black h-12 px-8 rounded-2xl shadow-xl shadow-[#13ec49]/20 transition-all active:scale-95 uppercase tracking-widest text-xs"
-                >
-                    <span className="material-symbols-outlined text-[20px]">add_circle</span>
-                    <span>Thêm loại kho</span>
-                </button>
+        <div className="p-3 md:p-4 space-y-4 w-full bg-slate-50/50 min-h-screen">
+            <div>
+                <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
+                    Phân loại Nhà kho
+                </h1>
+                <p className="text-slate-500 text-sm mt-1">Quản lý các loại kho vật lý trong trang trại</p>
             </div>
 
-            <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden border-t-4 border-t-[#13ec49]">
-                <div className="p-6 border-b border-slate-100 italic">
-                    <div className="relative max-w-md">
-                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                            search
-                        </span>
+            {/* Stats Cards - 3 cards per row on Mobile */}
+            <div className="grid grid-cols-3 gap-2 md:gap-4">
+                {[
+                    { label: 'Tổng loại kho', value: warehouseTypes.length, icon: 'inventory', color: 'text-blue-600', bg: 'bg-blue-50' },
+                    { label: 'Đang dùng', value: warehouseTypes.length, icon: 'check_circle', color: 'text-[#13ec49]', bg: 'bg-[#13ec49]/10' },
+                    { label: 'Cơ sở', value: 'Chính', icon: 'location_on', color: 'text-orange-600', bg: 'bg-orange-50' }
+                ].map((s, i) => (
+                    <div key={i} className="bg-white p-2.5 md:p-4 rounded-xl md:rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center md:items-start gap-2 md:gap-4 text-center md:text-left">
+                        <div className={`${s.bg} ${s.color} p-1.5 md:p-3 rounded-lg md:rounded-xl shrink-0`}>
+                            <span className="material-symbols-outlined text-base md:text-2xl">{s.icon}</span>
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[8px] md:text-xs font-bold text-slate-400 uppercase tracking-widest truncate">{s.label}</p>
+                            <h3 className="text-sm md:text-xl font-black text-slate-900 truncate">{s.value}</h3>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden border-t-4 border-t-[#13ec49]">
+                <div className="p-3 md:p-4 border-b border-slate-200 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+                    <div className="relative w-full sm:max-w-xs">
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
                         <input
                             type="text"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-slate-50 border-none rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:ring-4 focus:ring-[#13ec49]/10 transition-all outline-none font-medium"
+                            className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-[#13ec49]/30 transition-all outline-none"
                             placeholder="Tìm kiếm loại kho..."
                         />
                     </div>
+                    <ActionToolbar
+                        onAdd={() => { resetForm(); setShowModal(true); }}
+                        addLabel="Thêm loại kho"
+                        onEdit={() => selectedType && handleEdit(selectedType)}
+                        editDisabled={!selectedType}
+                        onDelete={() => selectedType && setDeleteTarget(selectedType)}
+                        deleteDisabled={!selectedType}
+                        onRefresh={loadData}
+                        isRefreshing={loading}
+                        onImport={() => setShowImportModal(true)}
+                        onExport={handleExport}
+                        onDownloadTemplate={handleDownloadTemplate}
+                    />
                 </div>
 
                 {loading ? (
@@ -150,7 +192,11 @@ const WarehouseTypes: React.FC = () => {
                                     </tr>
                                 ) : (
                                     filteredTypes.map((type) => (
-                                        <tr key={type.id} className="group hover:bg-slate-50/50 transition-all cursor-default">
+                                        <tr
+                                            key={type.id}
+                                            onClick={() => setSelectedType(prev => prev?.id === type.id ? null : type)}
+                                            className={`group transition-all cursor-pointer ${selectedType?.id === type.id ? 'bg-[#13ec49]/5 ring-1 ring-inset ring-[#13ec49]/20' : 'hover:bg-slate-50'}`}
+                                        >
                                             <td className="px-8 py-5">
                                                 <span className="font-mono text-[11px] font-black bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg border border-slate-200 uppercase tracking-wider">
                                                     {type.warehouse_code}
@@ -165,14 +211,14 @@ const WarehouseTypes: React.FC = () => {
                                             <td className="px-8 py-5 text-right">
                                                 <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
                                                     <button
-                                                        onClick={() => handleEdit(type)}
+                                                        onClick={(e) => { e.stopPropagation(); handleEdit(type); }}
                                                         className="size-10 flex items-center justify-center rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
                                                         title="Chỉnh sửa"
                                                     >
                                                         <span className="material-symbols-outlined text-[20px]">edit</span>
                                                     </button>
                                                     <button
-                                                        onClick={() => handleDelete(type.id)}
+                                                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(type); }}
                                                         className="size-10 flex items-center justify-center rounded-xl bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all shadow-sm"
                                                         title="Xóa"
                                                     >
@@ -269,6 +315,21 @@ const WarehouseTypes: React.FC = () => {
                     </div>
                 </div>
             )}
+            <ConfirmDeleteModal
+                open={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
+                isDeleting={isDeleting}
+                itemName={deleteTarget?.warehouse_name}
+            />
+            <ImportDataModal
+                open={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onImport={handleImport}
+                entityName="loại kho"
+                columnGuide={['Mã loại kho', 'Tên loại kho', 'Mô tả chi tiết']}
+                onDownloadTemplate={handleDownloadTemplate}
+            />
         </div>
     );
 };

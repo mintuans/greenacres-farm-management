@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ProductionUnit, getProductionUnits, createProductionUnit, updateProductionUnit, deleteProductionUnit, CreateProductionUnitInput } from '../api/production-unit.api';
+import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../components';
 
 const ProductionUnits: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -14,6 +15,10 @@ const ProductionUnits: React.FC = () => {
         area_size: undefined,
         description: ''
     });
+    const [selectedUnit, setSelectedUnit] = useState<ProductionUnit | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<ProductionUnit | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
 
     useEffect(() => {
         loadUnits();
@@ -62,13 +67,17 @@ const ProductionUnits: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Bạn có chắc muốn xóa đơn vị sản xuất này?')) return;
         try {
+            setIsDeleting(true);
             await deleteProductionUnit(id);
+            setDeleteTarget(null);
+            setSelectedUnit(null);
             loadUnits();
         } catch (error) {
             console.error('Error deleting production unit:', error);
             alert('Không thể xóa đơn vị sản xuất');
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -81,6 +90,22 @@ const ProductionUnits: React.FC = () => {
             description: ''
         });
         setEditingUnit(null);
+    };
+
+    const handleImport = async (file: File) => {
+        // Mock implementation or real API call if exists
+        console.log('Importing file:', file.name);
+        return new Promise<void>((resolve) => setTimeout(resolve, 1500));
+    };
+
+    const handleExport = () => {
+        console.log('Exporting data...');
+        alert('Đang trích xuất dữ liệu ra file Excel...');
+    };
+
+    const handleDownloadTemplate = () => {
+        console.log('Downloading template...');
+        alert('Đang tải tệp mẫu...');
     };
 
     const getTypeLabel = (type: string) => {
@@ -106,37 +131,41 @@ const ProductionUnits: React.FC = () => {
 
     return (
         <div className="p-3 md:p-4 space-y-4 w-full">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div>
-                    <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
-                        Quản lý Đơn vị Sản xuất
-                    </h1>
-                    <p className="text-slate-500 mt-2">Danh sách các vườn, chuồng trại và khu vực sản xuất</p>
-                </div>
-                <button
-                    onClick={() => {
-                        resetForm();
-                        setShowModal(true);
-                    }}
-                    className="flex items-center gap-2 bg-[#13ec49] hover:bg-[#13ec49]/90 text-black font-bold h-11 px-6 rounded-xl shadow-lg shadow-[#13ec49]/20 transition-all active:scale-95"
-                >
-                    <span className="material-symbols-outlined text-[20px]">add</span>
-                    <span>Thêm đơn vị</span>
-                </button>
+            <div>
+                <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
+                    Quản lý Đơn vị Sản xuất
+                </h1>
+                <p className="text-slate-500 mt-2">Danh sách các vườn, chuồng trại và khu vực sản xuất</p>
             </div>
 
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="p-4 border-b border-slate-200">
-                    <div className="relative max-w-md">
+                <div className="p-3 md:p-4 border-b border-slate-200 flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div className="relative w-full md:w-96">
                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
                         <input
                             type="text"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-slate-50 border-none rounded-lg py-2.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-[#13ec49]/30 transition-all outline-none"
+                            className="w-full bg-slate-50 border-none rounded-lg py-2.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-[#13ec49]/30 transition-all outline-none font-medium"
                             placeholder="Tìm kiếm đơn vị sản xuất..."
                         />
                     </div>
+                    <ActionToolbar
+                        onAdd={() => {
+                            resetForm();
+                            setShowModal(true);
+                        }}
+                        addLabel="Thêm đơn vị"
+                        onEdit={() => selectedUnit && handleEdit(selectedUnit)}
+                        editDisabled={!selectedUnit}
+                        onDelete={() => selectedUnit && setDeleteTarget(selectedUnit)}
+                        deleteDisabled={!selectedUnit}
+                        onRefresh={loadUnits}
+                        isRefreshing={loading}
+                        onImport={() => setShowImportModal(true)}
+                        onExport={handleExport}
+                        onDownloadTemplate={handleDownloadTemplate}
+                    />
                 </div>
 
                 {loading ? (
@@ -166,7 +195,11 @@ const ProductionUnits: React.FC = () => {
                                     </tr>
                                 ) : (
                                     filteredUnits.map((unit) => (
-                                        <tr key={unit.id} className="group hover:bg-slate-50 transition-colors">
+                                        <tr
+                                            key={unit.id}
+                                            onClick={() => setSelectedUnit(prev => prev?.id === unit.id ? null : unit)}
+                                            className={`group transition-all cursor-pointer ${selectedUnit?.id === unit.id ? 'bg-[#13ec49]/5 ring-1 ring-inset ring-[#13ec49]/30' : 'hover:bg-slate-50'}`}
+                                        >
                                             <td className="px-6 py-4">
                                                 <span className="font-mono text-xs bg-slate-100 px-2 py-1 rounded">
                                                     {unit.unit_code}
@@ -190,13 +223,13 @@ const ProductionUnits: React.FC = () => {
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <button
-                                                        onClick={() => handleEdit(unit)}
+                                                        onClick={(e) => { e.stopPropagation(); handleEdit(unit); }}
                                                         className="p-2 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all"
                                                     >
                                                         <span className="material-symbols-outlined text-[18px]">edit</span>
                                                     </button>
                                                     <button
-                                                        onClick={() => handleDelete(unit.id)}
+                                                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(unit); }}
                                                         className="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-all"
                                                     >
                                                         <span className="material-symbols-outlined text-[18px]">delete</span>
@@ -298,6 +331,21 @@ const ProductionUnits: React.FC = () => {
                     </div>
                 </div>
             )}
+            <ConfirmDeleteModal
+                open={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
+                isDeleting={isDeleting}
+                itemName={deleteTarget?.unit_name}
+            />
+            <ImportDataModal
+                open={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onImport={handleImport}
+                entityName="đơn vị sản xuất"
+                columnGuide={['Mã đơn vị', 'Tên đơn vị', 'Loại hình (CROP/LIVESTOCK)', 'Diện tích', 'Mô tả']}
+                onDownloadTemplate={handleDownloadTemplate}
+            />
         </div>
     );
 };

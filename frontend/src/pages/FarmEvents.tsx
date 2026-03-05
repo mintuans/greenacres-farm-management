@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { getFarmEvents, createFarmEvent, updateFarmEvent, deleteFarmEvent, FarmEvent } from '../api/farm-event.api';
 import { getSeasons, Season } from '../api/season.api';
 import { getProductionUnits, ProductionUnit } from '../api/production-unit.api';
+import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../components';
 
 const FarmEvents: React.FC = () => {
     const [events, setEvents] = useState<FarmEvent[]>([]);
@@ -13,6 +14,10 @@ const FarmEvents: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const [selectedItem, setSelectedItem] = useState<FarmEvent | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<FarmEvent | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -71,10 +76,39 @@ const FarmEvents: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (confirm('Bạn có chắc muốn xóa sự kiện này?')) {
+        try {
+            setIsDeleting(true);
             await deleteFarmEvent(id);
+            setDeleteTarget(null);
+            setSelectedItem(null);
             fetchData();
+        } catch (error) {
+            console.error('Error deleting farm event:', error);
+            alert('Không thể xóa sự kiện này');
+        } finally {
+            setIsDeleting(false);
         }
+    };
+
+    const handleImport = async (file: File) => {
+        console.log('Importing farm events from:', file.name);
+        return new Promise<void>((resolve) => setTimeout(resolve, 1500));
+    };
+
+    const handleExport = () => {
+        console.log('Exporting farm events...');
+        alert('Đang trích xuất danh sách sự kiện ra file Excel...');
+    };
+
+    const handleDownloadTemplate = () => {
+        console.log('Downloading farm event template...');
+        alert('Đang tải tệp mẫu sự kiện...');
+    };
+
+    const handleEditItem = (item: FarmEvent) => {
+        setEditingItem(item);
+        setFormData({ ...item, start_time: new Date(item.start_time).toISOString().slice(0, 16) });
+        setShowModal(true);
     };
 
     const getEventTypeStyle = (type: string) => {
@@ -136,29 +170,13 @@ const FarmEvents: React.FC = () => {
 
     return (
         <div className="p-3 md:p-4 space-y-4 w-full bg-slate-50/50 min-h-screen">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div>
-                    <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">Sự kiện Nông trại</h1>
-                    <p className="text-slate-500 mt-1 font-medium text-xs">Theo dõi các sự kiện quan trọng, thu hoạch và vấn đề phát sinh.</p>
-                </div>
-                <button
-                    onClick={() => {
-                        setEditingItem(null);
-                        setFormData({
-                            title: '', event_type: 'TASK', start_time: new Date().toISOString().slice(0, 16),
-                            end_time: '', is_all_day: true, description: '', season_id: '', unit_id: ''
-                        });
-                        setShowModal(true);
-                    }}
-                    className="flex items-center gap-2 px-6 py-3 bg-[#13ec49] text-black font-black rounded-2xl hover:bg-[#10d63f] transition-all shadow-xl shadow-[#13ec49]/20 active:scale-95"
-                >
-                    <span className="material-symbols-outlined font-black">add</span>
-                    <span>Thêm sự kiện</span>
-                </button>
+            <div>
+                <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">Sự kiện Nông trại</h1>
+                <p className="text-slate-500 mt-1 font-medium text-xs">Theo dõi các sự kiện quan trọng, thu hoạch và vấn đề phát sinh.</p>
             </div>
 
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden min-h-[400px]">
-                <div className="p-4 border-b border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div className="p-3 md:p-4 border-b border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-between">
                     <div className="relative w-full md:w-96">
                         <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
                         <input
@@ -166,9 +184,29 @@ const FarmEvents: React.FC = () => {
                             placeholder="Tìm kiếm sự kiện..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-[#13ec49]/30 outline-none font-medium transition-all"
+                            className="w-full pl-12 pr-4 py-2.5 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-[#13ec49]/30 outline-none font-medium transition-all text-sm"
                         />
                     </div>
+                    <ActionToolbar
+                        onAdd={() => {
+                            setEditingItem(null);
+                            setFormData({
+                                title: '', event_type: 'TASK', start_time: new Date().toISOString().slice(0, 16),
+                                end_time: '', is_all_day: true, description: '', season_id: '', unit_id: ''
+                            });
+                            setShowModal(true);
+                        }}
+                        addLabel="Thêm sự kiện"
+                        onEdit={() => selectedItem && handleEditItem(selectedItem)}
+                        editDisabled={!selectedItem}
+                        onDelete={() => selectedItem && setDeleteTarget(selectedItem)}
+                        deleteDisabled={!selectedItem}
+                        onRefresh={fetchData}
+                        isRefreshing={loading}
+                        onImport={() => setShowImportModal(true)}
+                        onExport={handleExport}
+                        onDownloadTemplate={handleDownloadTemplate}
+                    />
                 </div>
 
                 {loading ? (
@@ -191,7 +229,11 @@ const FarmEvents: React.FC = () => {
                                 {filteredEvents.map((item) => {
                                     const style = getEventTypeStyle(item.event_type);
                                     return (
-                                        <tr key={item.id} className="group hover:bg-slate-50/80 transition-all">
+                                        <tr
+                                            key={item.id}
+                                            onClick={() => setSelectedItem(prev => prev?.id === item.id ? null : item)}
+                                            className={`group transition-all cursor-pointer ${selectedItem?.id === item.id ? 'bg-[#13ec49]/5 ring-1 ring-inset ring-[#13ec49]/30' : 'hover:bg-slate-50/80'}`}
+                                        >
                                             <td className="px-8 py-5">
                                                 <div className="flex items-center gap-4">
                                                     <div className={`p-3 rounded-2xl ${style.bg} ${style.color}`}>
@@ -230,17 +272,13 @@ const FarmEvents: React.FC = () => {
                                             <td className="px-8 py-5 text-right">
                                                 <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
                                                     <button
-                                                        onClick={() => {
-                                                            setEditingItem(item);
-                                                            setFormData({ ...item, start_time: new Date(item.start_time).toISOString().slice(0, 16) });
-                                                            setShowModal(true);
-                                                        }}
+                                                        onClick={(e) => { e.stopPropagation(); handleEditItem(item); }}
                                                         className="p-2.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
                                                     >
                                                         <span className="material-symbols-outlined">edit</span>
                                                     </button>
                                                     <button
-                                                        onClick={() => handleDelete(item.id)}
+                                                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(item); }}
                                                         className="p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
                                                     >
                                                         <span className="material-symbols-outlined">delete</span>
@@ -379,6 +417,21 @@ const FarmEvents: React.FC = () => {
                     </div>
                 </div>
             )}
+            <ConfirmDeleteModal
+                open={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
+                isDeleting={isDeleting}
+                itemName={deleteTarget?.title}
+            />
+            <ImportDataModal
+                open={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onImport={handleImport}
+                entityName="sự kiện"
+                columnGuide={['Tiêu đề', 'Loại (TASK/HARVEST/ISSUE/OTHER)', 'Bắt đầu (YYYY-MM-DD HH:mm)', 'Kết thúc (YYYY-MM-DD HH:mm)', 'Cả ngày (1/0)', 'Mô tả', 'ID vụ mùa', 'ID đơn vị sản xuất']}
+                onDownloadTemplate={handleDownloadTemplate}
+            />
         </div>
     );
 };

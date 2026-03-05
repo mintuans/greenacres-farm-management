@@ -123,3 +123,23 @@ export const getBlogCategoriesForManagement = async () => {
     const response = await api.get('/management/blog/categories');
     return response.data;
 };
+
+export interface ExternalNewsItem {
+    id: string;
+    title: string;
+    link: string;
+    pubDate: string;
+    content: string;
+    contentSnippet: string;
+    thumbnail?: string;
+    source: string;
+}
+
+/**
+ * Lấy tin tức từ nguồn bên ngoài (VNExpress)
+ */
+export const getExternalNews = async () => {
+    const response = await api.get('/showcase/news/external');
+    return response.data;
+};
+

@@ -3,6 +3,7 @@ import { getWorkSchedules, createWorkSchedule, updateWorkSchedule, deleteWorkSch
 import { getPartners, Partner } from '../api/partner.api';
 import { getWorkShifts, WorkShift } from '../api/work-shift.api';
 import { getJobTypes, JobType } from '../api/job-type.api';
+import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../components';
 import { getSeasons, Season } from '../api/season.api';
 
 const WorkSchedules: React.FC = () => {
@@ -17,6 +18,12 @@ const WorkSchedules: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // New states for ActionToolbar components
+    const [selectedSchedule, setSelectedSchedule] = useState<WorkSchedule | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<WorkSchedule | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
 
     const [formData, setFormData] = useState({
         partner_id: '',
@@ -78,15 +85,33 @@ const WorkSchedules: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (confirm('Bạn có chắc muốn xóa kế hoạch làm việc này?')) {
-            try {
-                await deleteWorkSchedule(id);
-                fetchData();
-            } catch (error: any) {
-                console.error('Error deleting schedule:', error);
-                alert(error.response?.data?.message || 'Không thể xóa kế hoạch này.');
-            }
+        try {
+            setIsDeleting(true);
+            await deleteWorkSchedule(id);
+            setDeleteTarget(null);
+            setSelectedSchedule(null);
+            fetchData();
+        } catch (error: any) {
+            console.error('Error deleting schedule:', error);
+            alert(error.response?.data?.message || 'Không thể xóa kế hoạch này.');
+        } finally {
+            setIsDeleting(false);
         }
+    };
+
+    const handleExport = () => {
+        console.log('Exporting schedules...');
+        alert('Đang trích xuất kế hoạch làm việc ra file Excel...');
+    };
+
+    const handleImport = async (file: File) => {
+        console.log('Importing schedules from:', file.name);
+        return new Promise<void>((resolve) => setTimeout(resolve, 1500));
+    };
+
+    const handleDownloadTemplate = () => {
+        console.log('Downloading schedule template...');
+        alert('Đang tải tệp mẫu kế hoạch làm việc...');
     };
 
     const getStatusStyle = (status: string) => {
@@ -158,8 +183,8 @@ const WorkSchedules: React.FC = () => {
                     <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Kế hoạch Làm việc</h1>
                     <p className="text-slate-500 mt-2 font-medium">Lập kế hoạch và bàn giao công việc cho nhân sự nông trại.</p>
                 </div>
-                <button
-                    onClick={() => {
+                <ActionToolbar
+                    onAdd={() => {
                         setEditingItem(null);
                         setFormData({
                             partner_id: '', shift_id: '', job_type_id: '',
@@ -168,11 +193,8 @@ const WorkSchedules: React.FC = () => {
                         });
                         setShowModal(true);
                     }}
-                    className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white font-black rounded-2xl hover:bg-black transition-all shadow-xl shadow-slate-900/20 active:scale-95"
-                >
-                    <span className="material-symbols-outlined font-black">event_note</span>
-                    <span>Lên lịch làm việc</span>
-                </button>
+                    addLabel="Lên lịch làm việc"
+                />
             </div>
 
             <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden min-h-[400px]">
@@ -187,6 +209,27 @@ const WorkSchedules: React.FC = () => {
                             className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-[#13ec49]/30 outline-none font-medium transition-all"
                         />
                     </div>
+                    <ActionToolbar
+                        onAdd={() => {
+                            setEditingItem(null);
+                            setFormData({
+                                partner_id: '', shift_id: '', job_type_id: '',
+                                work_date: new Date().toISOString().split('T')[0],
+                                status: 'PLANNED', note: '', season_id: ''
+                            });
+                            setShowModal(true);
+                        }}
+                        addLabel="Thêm lịch mới"
+                        onEdit={() => selectedSchedule && setEditingItem(selectedSchedule) && setShowModal(true)}
+                        editDisabled={!selectedSchedule || selectedSchedule.has_payroll}
+                        onDelete={() => selectedSchedule && setDeleteTarget(selectedSchedule)}
+                        deleteDisabled={!selectedSchedule || selectedSchedule.has_payroll}
+                        onRefresh={fetchData}
+                        isRefreshing={loading}
+                        onImport={() => setShowImportModal(true)}
+                        onExport={handleExport}
+                        onDownloadTemplate={handleDownloadTemplate}
+                    />
                 </div>
 
                 {loading ? (
@@ -207,7 +250,11 @@ const WorkSchedules: React.FC = () => {
                             </thead>
                             <tbody className="divide-y divide-slate-100">
                                 {filteredSchedules.map((item) => (
-                                    <tr key={item.id} className="group hover:bg-slate-50/80 transition-all">
+                                    <tr
+                                        key={item.id}
+                                        className={`group hover:bg-slate-50/80 transition-all cursor-pointer ${selectedSchedule?.id === item.id ? 'bg-[#13ec49]/5 ring-1 ring-inset ring-[#13ec49]/20' : ''}`}
+                                        onClick={() => setSelectedSchedule(prev => prev?.id === item.id ? null : item)}
+                                    >
                                         <td className="px-8 py-5">
                                             <div className="flex items-center gap-4">
                                                 <div className="size-11 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-black text-sm">
@@ -400,6 +447,21 @@ const WorkSchedules: React.FC = () => {
                     </div>
                 </div>
             )}
+            <ConfirmDeleteModal
+                open={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
+                isDeleting={isDeleting}
+                itemName={`Kế hoạch ngày ${deleteTarget ? new Date(deleteTarget.work_date).toLocaleDateString('vi-VN') : ''} cho ${deleteTarget?.partner_name}`}
+            />
+            <ImportDataModal
+                open={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onImport={handleImport}
+                entityName="kế hoạch làm việc"
+                columnGuide={['Nhân sự (ID/Tên)', 'Ca làm việc (ID/Tên)', 'Công việc (ID/Tên)', 'Vụ mùa (ID/Tên)', 'Ngày làm', 'Trạng thái', 'Ghi chú']}
+                onDownloadTemplate={handleDownloadTemplate}
+            />
         </div>
     );
 };

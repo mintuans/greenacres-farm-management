@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { WorkShift, getWorkShifts, createWorkShift, updateWorkShift, deleteWorkShift, CreateWorkShiftInput } from '../api/work-shift.api';
+import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../components';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 
 const WorkShifts: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -13,6 +16,10 @@ const WorkShifts: React.FC = () => {
         start_time: '',
         end_time: ''
     });
+    const [selectedShift, setSelectedShift] = useState<WorkShift | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<WorkShift | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
 
     useEffect(() => {
         loadShifts();
@@ -60,14 +67,55 @@ const WorkShifts: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Bạn có chắc muốn xóa ca làm việc này?')) return;
         try {
+            setIsDeleting(true);
             await deleteWorkShift(id);
+            setDeleteTarget(null);
+            setSelectedShift(null);
             loadShifts();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error deleting work shift:', error);
-            alert('Không thể xóa ca làm việc');
+            alert(error.response?.data?.message || 'Không thể xóa ca làm việc');
+        } finally {
+            setIsDeleting(false);
         }
+    };
+
+    const handleExport = async () => {
+        const workbook = new ExcelJS.Workbook();
+        const ws = workbook.addWorksheet('Danh sách ca làm việc');
+        ws.columns = [
+            { header: 'Mã ca', key: 'code', width: 16 },
+            { header: 'Tên ca', key: 'name', width: 30 },
+            { header: 'Bắt đầu', key: 'start', width: 16 },
+            { header: 'Kết thúc', key: 'end', width: 16 },
+        ];
+        ws.getRow(1).eachCell(cell => {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF13EC49' } };
+            cell.font = { bold: true };
+        });
+        filteredShifts.forEach(s => ws.addRow({
+            code: s.shift_code,
+            name: s.shift_name,
+            start: s.start_time || '',
+            end: s.end_time || '',
+        }));
+        const buffer = await workbook.xlsx.writeBuffer();
+        saveAs(new Blob([buffer]), `DanhSach_CaLamViec_${new Date().toISOString().split('T')[0]}.xlsx`);
+    };
+
+    const handleImport = async (file: File) => {
+        console.log('Importing shifts from:', file.name);
+        return new Promise<void>((resolve) => setTimeout(resolve, 1500));
+    };
+
+    const downloadTemplate = () => {
+        const csv = [
+            'Mã ca,Tên ca làm việc,Giờ bắt đầu,Giờ kết thúc',
+            'SHIFT-SANG,Ca sáng,07:00,11:00',
+        ].join('\n');
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+        saveAs(blob, 'MauNhap_CaLamViec.csv');
     };
 
     const resetForm = () => {
@@ -101,21 +149,11 @@ const WorkShifts: React.FC = () => {
                     </h1>
                     <p className="text-slate-500 mt-2">Danh sách các ca làm việc trong ngày</p>
                 </div>
-                <button
-                    onClick={() => {
-                        resetForm();
-                        setShowModal(true);
-                    }}
-                    className="flex items-center gap-2 bg-[#13ec49] hover:bg-[#13ec49]/90 text-black font-bold h-11 px-6 rounded-xl shadow-lg shadow-[#13ec49]/20 transition-all active:scale-95"
-                >
-                    <span className="material-symbols-outlined text-[20px]">add</span>
-                    <span>Thêm ca làm việc</span>
-                </button>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="p-4 border-b border-slate-200">
-                    <div className="relative max-w-md">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden border-t-4 border-t-[#13ec49]">
+                <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                    <div className="relative w-full sm:max-w-md">
                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
                         <input
                             type="text"
@@ -125,6 +163,19 @@ const WorkShifts: React.FC = () => {
                             placeholder="Tìm kiếm ca làm việc..."
                         />
                     </div>
+                    <ActionToolbar
+                        onAdd={() => { resetForm(); setShowModal(true); }}
+                        addLabel="Thêm ca làm việc"
+                        onEdit={() => selectedShift && handleEdit(selectedShift)}
+                        editDisabled={!selectedShift}
+                        onDelete={() => selectedShift && setDeleteTarget(selectedShift)}
+                        deleteDisabled={!selectedShift}
+                        onRefresh={loadShifts}
+                        isRefreshing={loading}
+                        onExport={handleExport}
+                        onImport={() => setShowImportModal(true)}
+                        onDownloadTemplate={downloadTemplate}
+                    />
                 </div>
 
                 {loading ? (
@@ -156,7 +207,11 @@ const WorkShifts: React.FC = () => {
                                     filteredShifts.map((shift) => {
                                         const duration = calculateDuration(shift.start_time, shift.end_time);
                                         return (
-                                            <tr key={shift.id} className="group hover:bg-slate-50 transition-colors">
+                                            <tr
+                                                key={shift.id}
+                                                onClick={() => setSelectedShift(prev => prev?.id === shift.id ? null : shift)}
+                                                className={`group transition-all cursor-pointer ${selectedShift?.id === shift.id ? 'bg-[#13ec49]/5 ring-1 ring-inset ring-[#13ec49]/30' : 'hover:bg-slate-50'}`}
+                                            >
                                                 <td className="px-6 py-4">
                                                     <span className="font-mono text-xs bg-slate-100 px-2 py-1 rounded">
                                                         {shift.shift_code}
@@ -175,13 +230,13 @@ const WorkShifts: React.FC = () => {
                                                 <td className="px-6 py-4 text-right">
                                                     <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                         <button
-                                                            onClick={() => handleEdit(shift)}
+                                                            onClick={(e) => { e.stopPropagation(); handleEdit(shift); }}
                                                             className="p-2 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all"
                                                         >
                                                             <span className="material-symbols-outlined text-[18px]">edit</span>
                                                         </button>
                                                         <button
-                                                            onClick={() => handleDelete(shift.id)}
+                                                            onClick={(e) => { e.stopPropagation(); setDeleteTarget(shift); }}
                                                             className="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-all"
                                                         >
                                                             <span className="material-symbols-outlined text-[18px]">delete</span>
@@ -269,6 +324,21 @@ const WorkShifts: React.FC = () => {
                     </div>
                 </div>
             )}
+            <ConfirmDeleteModal
+                open={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
+                isDeleting={isDeleting}
+                itemName={deleteTarget?.shift_name}
+            />
+            <ImportDataModal
+                open={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onImport={handleImport}
+                entityName="ca làm việc"
+                columnGuide={['Mã ca', 'Tên ca làm việc', 'Giờ bắt đầu', 'Giờ kết thúc']}
+                onDownloadTemplate={downloadTemplate}
+            />
         </div>
     );
 };

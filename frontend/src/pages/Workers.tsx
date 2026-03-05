@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Partner, getPartners, createPartner, updatePartner, deletePartner, CreatePartnerInput, getNextPartnerCode } from '../api/partner.api';
+import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../components';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 
 const Workers: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -17,6 +20,11 @@ const Workers: React.FC = () => {
 
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const [deleteTarget, setDeleteTarget] = useState<Partner | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [selectedWorker, setSelectedWorker] = useState<Partner | null>(null);
+    const [showImportModal, setShowImportModal] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         loadWorkers();
@@ -73,15 +81,74 @@ const Workers: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Bạn có chắc muốn xóa nhân viên này?')) return;
         try {
+            setIsDeleting(true);
             await deletePartner(id);
+            setDeleteTarget(null);
             loadWorkers();
         } catch (error: any) {
             console.error('Error deleting worker:', error);
-            const errorMessage = error.response?.data?.message || 'Không thể xóa nhân viên';
-            alert(errorMessage);
+            alert(error.response?.data?.message || 'Không thể xóa đối tác');
+        } finally {
+            setIsDeleting(false);
         }
+    };
+
+    const handleExport = async () => {
+        const workbook = new ExcelJS.Workbook();
+        const ws = workbook.addWorksheet('Danh sách đối tác');
+        ws.columns = [
+            { header: 'Mã đối tác', key: 'code', width: 16 },
+            { header: 'Tên đối tác', key: 'name', width: 30 },
+            { header: 'Loại', key: 'type', width: 16 },
+            { header: 'Điện thoại', key: 'phone', width: 16 },
+            { header: 'Địa chỉ', key: 'address', width: 36 },
+            { header: 'Số dư hiện tại', key: 'balance', width: 20 },
+        ];
+        const headerRow = ws.getRow(1);
+        headerRow.eachCell(cell => {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF13EC49' } };
+            cell.font = { bold: true, color: { argb: 'FF000000' } };
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        });
+        filteredWorkers.forEach(w => ws.addRow({
+            code: w.partner_code,
+            name: w.partner_name,
+            type: w.type === 'WORKER' ? 'Nhân viên' : w.type === 'SUPPLIER' ? 'Nhà cung cấp' : w.type === 'BUYER' ? 'Người mua' : 'Gia đình',
+            phone: w.phone || '',
+            address: w.address || '',
+            balance: Number(w.current_balance),
+        }));
+        const buffer = await workbook.xlsx.writeBuffer();
+        saveAs(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `DanhSach_DoiTac_${new Date().toISOString().split('T')[0]}.xlsx`);
+    };
+
+    const handleImport = async (file: File) => {
+        const text = await file.text();
+        const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+        if (lines.length <= 1) throw new Error('File không có dữ liệu');
+        const rows = lines.slice(1);
+        for (const line of rows) {
+            const cols = line.split(',').map(c => c.replace(/^"|"$/g, '').trim());
+            if (!cols[1]) continue;
+            await createPartner({
+                partner_code: cols[0] || '',
+                partner_name: cols[1],
+                type: (cols[2] as any) || 'WORKER',
+                phone: cols[3] || '',
+                address: cols[4] || '',
+            });
+        }
+        loadWorkers();
+    };
+
+    const downloadTemplate = () => {
+        const csv = [
+            'Mã đối tác,Tên đối tác,Loại (WORKER/SUPPLIER/BUYER/FAMILY),Điện thoại,Địa chỉ',
+            'NV-001,Nguyễn Văn A,WORKER,0901234567,Hà Nội',
+        ].join('\n');
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+        saveAs(blob, 'MauNhap_DoiTac.csv');
     };
 
     const handleTypeChange = async (type: 'SUPPLIER' | 'BUYER' | 'WORKER' | 'FAMILY') => {
@@ -171,28 +238,16 @@ const Workers: React.FC = () => {
 
     return (
         <div className="p-3 md:p-4 space-y-4 w-full">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div>
-                    <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
-                        Quản lý Đối tác
-                    </h1>
-                    <p className="text-slate-500 text-sm mt-1">Danh sách nhân viên, nhà cung cấp và người mua</p>
-                </div>
-                <button
-                    onClick={() => {
-                        resetForm();
-                        setShowModal(true);
-                    }}
-                    className="flex items-center gap-2 bg-[#13ec49] hover:bg-[#13ec49]/90 text-black font-bold h-11 px-6 rounded-xl shadow-lg shadow-[#13ec49]/20 transition-all active:scale-95"
-                >
-                    <span className="material-symbols-outlined text-[20px]">add</span>
-                    <span>Thêm đối tác</span>
-                </button>
+            <div>
+                <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
+                    Quản lý Đối tác
+                </h1>
+                <p className="text-slate-500 text-sm mt-1">Danh sách nhân viên, nhà cung cấp và người mua</p>
             </div>
 
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="p-4 border-b border-slate-200">
-                    <div className="relative max-w-md">
+                <div className="p-3 md:p-4 border-b border-slate-200 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+                    <div className="relative w-full sm:max-w-xs">
                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
                         <input
                             type="text"
@@ -202,6 +257,19 @@ const Workers: React.FC = () => {
                             placeholder="Tìm kiếm đối tác..."
                         />
                     </div>
+                    <ActionToolbar
+                        onAdd={() => { resetForm(); setShowModal(true); }}
+                        addLabel="Thêm đối tác"
+                        onEdit={() => selectedWorker && handleEdit(selectedWorker)}
+                        editDisabled={!selectedWorker}
+                        onDelete={() => selectedWorker && setDeleteTarget(selectedWorker)}
+                        deleteDisabled={!selectedWorker}
+                        onRefresh={loadWorkers}
+                        isRefreshing={loading}
+                        onExport={handleExport}
+                        onImport={() => setShowImportModal(true)}
+                        onDownloadTemplate={downloadTemplate}
+                    />
                 </div>
 
                 {loading ? (
@@ -232,7 +300,11 @@ const Workers: React.FC = () => {
                                     </tr>
                                 ) : (
                                     filteredWorkers.map((worker) => (
-                                        <tr key={worker.id} className="group hover:bg-slate-50 transition-colors">
+                                        <tr
+                                            key={worker.id}
+                                            onClick={() => setSelectedWorker(prev => prev?.id === worker.id ? null : worker)}
+                                            className={`group transition-colors cursor-pointer ${selectedWorker?.id === worker.id ? 'bg-[#13ec49]/5 ring-1 ring-inset ring-[#13ec49]/30' : 'hover:bg-slate-50'}`}
+                                        >
                                             <td className="px-4 py-3">
                                                 <span className="font-mono text-[10px] bg-slate-100 px-1.5 py-0.5 rounded">
                                                     {worker.partner_code}
@@ -270,16 +342,18 @@ const Workers: React.FC = () => {
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 text-right">
-                                                <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <button
                                                         onClick={() => handleEdit(worker)}
-                                                        className="p-2 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all"
+                                                        className="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all"
+                                                        title="Sửa"
                                                     >
                                                         <span className="material-symbols-outlined text-[18px]">edit</span>
                                                     </button>
                                                     <button
-                                                        onClick={() => handleDelete(worker.id)}
-                                                        className="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-all"
+                                                        onClick={() => setDeleteTarget(worker)}
+                                                        className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-all"
+                                                        title="Xóa"
                                                     >
                                                         <span className="material-symbols-outlined text-[18px]">delete</span>
                                                     </button>
@@ -382,6 +456,21 @@ const Workers: React.FC = () => {
                     </div>
                 </div>
             )}
+            <ConfirmDeleteModal
+                open={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
+                isDeleting={isDeleting}
+                itemName={deleteTarget?.partner_name}
+            />
+            <ImportDataModal
+                open={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onImport={handleImport}
+                entityName="tài khoản"
+                columnGuide={['Mã đối tác', 'Tên đối tác', 'Loại (WORKER/SUPPLIER/BUYER/FAMILY)', 'Điện thoại', 'Địa chỉ']}
+                onDownloadTemplate={downloadTemplate}
+            />
         </div>
     );
 };

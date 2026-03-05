@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PublicUser, getPublicUsers, createPublicUser, updatePublicUser, deletePublicUser, getUserRoles, assignRoleToUser, removeRoleFromUser } from '../../api/user.api';
 import { Role, getRoles } from '../../api/role.api';
+import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../../components';
 
 const Users: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -14,6 +15,10 @@ const Users: React.FC = () => {
         password: '',
         is_active: true
     });
+    const [selectedUserForAction, setSelectedUserForAction] = useState<PublicUser | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<PublicUser | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
 
     // Role Assignment State
     const [showRoleModal, setShowRoleModal] = useState(false);
@@ -99,14 +104,33 @@ const Users: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Bạn có chắc muốn xóa người dùng này?')) return;
         try {
+            setIsDeleting(true);
             await deletePublicUser(id);
+            setDeleteTarget(null);
+            setSelectedUserForAction(null);
             loadUsers();
         } catch (error: any) {
             console.error('Error deleting user:', error);
             alert(error.response?.data?.message || 'Không thể xóa người dùng');
+        } finally {
+            setIsDeleting(false);
         }
+    };
+
+    const handleImport = async (file: File) => {
+        console.log('Importing users from:', file.name);
+        return new Promise<void>((resolve) => setTimeout(resolve, 1500));
+    };
+
+    const handleExport = () => {
+        console.log('Exporting users...');
+        alert('Đang trích xuất danh sách tài khoản ra file Excel...');
+    };
+
+    const handleDownloadTemplate = () => {
+        console.log('Downloading user template...');
+        alert('Đang tải tệp mẫu tài khoản...');
     };
 
     const resetForm = () => {
@@ -125,40 +149,39 @@ const Users: React.FC = () => {
     );
 
     return (
-        <div className="p-6 md:p-8 space-y-8 max-w-[1440px] mx-auto">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div>
-                    <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
-                        Quản lý Tài khoản
-                    </h1>
-                    <p className="text-slate-500 mt-2">Danh sách người dùng đăng nhập vào hệ thống</p>
-                </div>
-                <button
-                    onClick={() => {
-                        resetForm();
-                        setShowModal(true);
-                    }}
-                    className="flex items-center gap-2 bg-[#13ec49] hover:bg-[#13ec49]/90 text-black font-bold h-11 px-6 rounded-xl shadow-lg shadow-[#13ec49]/20 transition-all active:scale-95"
-                >
-                    <span className="material-symbols-outlined text-[20px]">add</span>
-                    <span>Thêm tài khoản</span>
-                </button>
+        <div className="p-3 md:p-4 space-y-4 w-full bg-slate-50/50 min-h-screen">
+            <div>
+                <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-tight">
+                    Quản lý Tài khoản
+                </h1>
+                <p className="text-slate-500 text-sm mt-1">Danh sách người dùng đăng nhập vào hệ thống</p>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="p-4 border-b border-slate-200">
-                    <div className="relative max-w-md">
-                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                            search
-                        </span>
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden border-t-4 border-t-[#13ec49]">
+                <div className="p-3 md:p-4 border-b border-slate-200 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+                    <div className="relative w-full sm:max-w-xs">
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
                         <input
                             type="text"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-slate-50 border-none rounded-lg py-2.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-[#13ec49]/30 transition-all outline-none"
-                            placeholder="Tìm kiếm người dùng..."
+                            className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-[#13ec49]/30 transition-all outline-none"
+                            placeholder="Tìm kiếm tài khoản..."
                         />
                     </div>
+                    <ActionToolbar
+                        onAdd={() => { resetForm(); setShowModal(true); }}
+                        addLabel="Thêm tài khoản"
+                        onEdit={() => selectedUserForAction && handleEdit(selectedUserForAction)}
+                        editDisabled={!selectedUserForAction}
+                        onDelete={() => selectedUserForAction && setDeleteTarget(selectedUserForAction)}
+                        deleteDisabled={!selectedUserForAction}
+                        onRefresh={loadUsers}
+                        isRefreshing={loading}
+                        onImport={() => setShowImportModal(true)}
+                        onExport={handleExport}
+                        onDownloadTemplate={handleDownloadTemplate}
+                    />
                 </div>
 
                 {loading ? (
@@ -187,7 +210,11 @@ const Users: React.FC = () => {
                                     </tr>
                                 ) : (
                                     filteredUsers.map((user) => (
-                                        <tr key={user.id} className="group hover:bg-slate-50 transition-colors">
+                                        <tr
+                                            key={user.id}
+                                            onClick={() => setSelectedUserForAction(prev => prev?.id === user.id ? null : user)}
+                                            className={`group transition-all cursor-pointer ${selectedUserForAction?.id === user.id ? 'bg-[#13ec49]/5 ring-1 ring-inset ring-[#13ec49]/20' : 'hover:bg-slate-50'}`}
+                                        >
                                             <td className="px-6 py-4 font-bold text-slate-900">{user.full_name}</td>
                                             <td className="px-6 py-4 text-slate-600">{user.email || user.phone}</td>
                                             <td className="px-6 py-4">
@@ -201,21 +228,21 @@ const Users: React.FC = () => {
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <button
-                                                        onClick={() => handleManageRoles(user)}
+                                                        onClick={(e) => { e.stopPropagation(); handleManageRoles(user); }}
                                                         className="p-2 rounded-lg hover:bg-green-50 text-slate-400 hover:text-green-600 transition-all"
                                                         title="Phân vai trò"
                                                     >
                                                         <span className="material-symbols-outlined text-[18px]">shield_person</span>
                                                     </button>
                                                     <button
-                                                        onClick={() => handleEdit(user)}
+                                                        onClick={(e) => { e.stopPropagation(); handleEdit(user); }}
                                                         className="p-2 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all"
                                                         title="Sửa"
                                                     >
                                                         <span className="material-symbols-outlined text-[18px]">edit</span>
                                                     </button>
                                                     <button
-                                                        onClick={() => handleDelete(user.id)}
+                                                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(user); }}
                                                         className="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-all"
                                                         title="Xóa"
                                                     >
@@ -340,8 +367,8 @@ const Users: React.FC = () => {
                                             key={role.id}
                                             onClick={() => toggleRole(role)}
                                             className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${isAssigned
-                                                    ? 'border-[#13ec49] bg-green-50'
-                                                    : 'border-slate-100 hover:border-slate-200 bg-slate-50'
+                                                ? 'border-[#13ec49] bg-green-50'
+                                                : 'border-slate-100 hover:border-slate-200 bg-slate-50'
                                                 }`}
                                         >
                                             <div className="flex flex-col">
@@ -373,6 +400,21 @@ const Users: React.FC = () => {
                     </div>
                 </div>
             )}
+            <ConfirmDeleteModal
+                open={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
+                isDeleting={isDeleting}
+                itemName={deleteTarget?.full_name}
+            />
+            <ImportDataModal
+                open={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onImport={handleImport}
+                entityName="tài khoản"
+                columnGuide={['Email / SĐT', 'Họ và tên', 'Mật khẩu', 'Trạng thái (1: Kích hoạt, 0: Khóa)']}
+                onDownloadTemplate={handleDownloadTemplate}
+            />
         </div>
     );
 };

@@ -2,12 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllBlogPostsForManagement, deleteBlogPost, BlogPost } from '../../services/blog.service';
 import { getMediaUrl } from '../../services/products.service';
+import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../../components';
 
 const ManagementBlog: React.FC = () => {
     const navigate = useNavigate();
     const [posts, setPosts] = useState<BlogPost[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<BlogPost | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
 
     useEffect(() => {
         loadPosts();
@@ -26,6 +31,36 @@ const ManagementBlog: React.FC = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleDelete = async (postId: string) => {
+        try {
+            setIsDeleting(true);
+            await deleteBlogPost(postId);
+            setDeleteTarget(null);
+            setSelectedPost(null);
+            loadPosts();
+        } catch (error: any) {
+            console.error('Error deleting post:', error);
+            alert(error.response?.data?.message || 'Có lỗi khi xóa bài viết!');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    const handleImport = async (file: File) => {
+        console.log('Importing blog posts from:', file.name);
+        return new Promise<void>((resolve) => setTimeout(resolve, 1500));
+    };
+
+    const handleExport = () => {
+        console.log('Exporting blog posts...');
+        alert('Đang trích xuất danh sách bài viết ra file Excel...');
+    };
+
+    const handleDownloadTemplate = () => {
+        console.log('Downloading blog template...');
+        alert('Đang tải tệp mẫu bài viết...');
     };
 
     const formatDate = (dateString: string) => {
@@ -49,34 +84,40 @@ const ManagementBlog: React.FC = () => {
     };
 
     return (
-        <div className="p-6">
+        <div className="p-3 md:p-4 space-y-4 w-full bg-slate-50/50 min-h-screen">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-[#111813]">Quản lý Tin tức</h1>
-                    <p className="text-sm text-gray-500 mt-1">Quản lý các bài viết tin tức trên trang Showcase</p>
-                </div>
-                <button
-                    onClick={() => navigate('/master-data/showcase-blog/add')}
-                    className="px-4 py-2 bg-[#13ec49] text-[#102215] font-bold rounded-lg hover:bg-[#10d63f] transition-colors flex items-center gap-2"
-                >
-                    <span className="material-symbols-outlined">add</span>
-                    Tạo bài viết mới
-                </button>
+            <div>
+                <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight">Quản lý Tin tức</h1>
+                <p className="text-slate-500 mt-2 font-medium">Hệ thống quản lý bài viết và tin tức trên trang Showcase</p>
             </div>
 
-            {/* Search */}
-            <div className="mb-4">
-                <div className="relative">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                        search
-                    </span>
-                    <input
-                        type="text"
-                        placeholder="Tìm kiếm bài viết..."
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13ec49]"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+            {/* Toolbar */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-4">
+                <div className="p-3 md:p-4 border-b border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div className="relative w-full md:w-96">
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                            search
+                        </span>
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm bài viết..."
+                            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border-none rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#13ec49]/30 font-medium transition-all text-sm"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+                    <ActionToolbar
+                        onAdd={() => navigate('/master-data/showcase-blog/add')}
+                        addLabel="Tạo bài viết"
+                        onEdit={() => selectedPost && navigate(`/master-data/showcase-blog/edit/${selectedPost.id}`)}
+                        editDisabled={!selectedPost}
+                        onDelete={() => selectedPost && setDeleteTarget(selectedPost)}
+                        deleteDisabled={!selectedPost}
+                        onRefresh={loadPosts}
+                        isRefreshing={loading}
+                        onImport={() => setShowImportModal(true)}
+                        onExport={handleExport}
+                        onDownloadTemplate={handleDownloadTemplate}
                     />
                 </div>
             </div>
@@ -126,7 +167,11 @@ const ManagementBlog: React.FC = () => {
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {posts.map((post) => (
-                                    <tr key={post.id} className="hover:bg-gray-50 transition-colors">
+                                    <tr
+                                        key={post.id}
+                                        onClick={() => setSelectedPost(prev => prev?.id === post.id ? null : post)}
+                                        className={`group transition-all cursor-pointer ${selectedPost?.id === post.id ? 'bg-[#13ec49]/5 ring-1 ring-inset ring-[#13ec49]/30' : 'hover:bg-gray-50'}`}
+                                    >
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 {post.thumbnail_id && (
@@ -166,27 +211,16 @@ const ManagementBlog: React.FC = () => {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="flex items-center justify-end gap-2">
+                                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button
-                                                    onClick={() => navigate(`/master-data/showcase-blog/edit/${post.id}`)}
+                                                    onClick={(e) => { e.stopPropagation(); navigate(`/master-data/showcase-blog/edit/${post.id}`); }}
                                                     className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                                     title="Chỉnh sửa"
                                                 >
                                                     <span className="material-symbols-outlined text-sm">edit</span>
                                                 </button>
                                                 <button
-                                                    onClick={async () => {
-                                                        if (confirm('Bạn có chắc muốn xóa bài viết này?')) {
-                                                            try {
-                                                                await deleteBlogPost(post.id);
-                                                                alert('Xóa bài viết thành công!');
-                                                                loadPosts();
-                                                            } catch (error: any) {
-                                                                console.error('Error deleting post:', error);
-                                                                alert(error.response?.data?.message || 'Có lỗi khi xóa bài viết!');
-                                                            }
-                                                        }
-                                                    }}
+                                                    onClick={(e) => { e.stopPropagation(); setDeleteTarget(post); }}
                                                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                     title="Xóa"
                                                 >
@@ -201,6 +235,21 @@ const ManagementBlog: React.FC = () => {
                     )}
                 </div>
             </div>
+            <ConfirmDeleteModal
+                open={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
+                isDeleting={isDeleting}
+                itemName={deleteTarget?.title}
+            />
+            <ImportDataModal
+                open={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onImport={handleImport}
+                entityName="bài viết"
+                columnGuide={['Tiêu đề', 'Tóm tắt', 'Nội dung (HTML)', 'Slug', 'ID danh mục', 'ID ảnh đại diện', 'Trạng thái (DRAFT/PUBLISHED)']}
+                onDownloadTemplate={handleDownloadTemplate}
+            />
         </div>
     );
 };

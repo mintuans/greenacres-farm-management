@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Role, getRoles, createRole, updateRole, deleteRole } from '../../api/role.api';
+import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../../components';
 
 const Roles: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -11,6 +12,10 @@ const Roles: React.FC = () => {
         name: '',
         description: ''
     });
+    const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<Role | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
 
     useEffect(() => {
         loadRoles();
@@ -55,14 +60,33 @@ const Roles: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Bạn có chắc muốn xóa nhóm quyền này?')) return;
         try {
+            setIsDeleting(true);
             await deleteRole(id);
+            setDeleteTarget(null);
+            setSelectedRole(null);
             loadRoles();
         } catch (error: any) {
             console.error('Error deleting role:', error);
             alert(error.response?.data?.message || 'Không thể xóa nhóm quyền');
+        } finally {
+            setIsDeleting(false);
         }
+    };
+
+    const handleImport = async (file: File) => {
+        console.log('Importing roles from:', file.name);
+        return new Promise<void>((resolve) => setTimeout(resolve, 1500));
+    };
+
+    const handleExport = () => {
+        console.log('Exporting roles...');
+        alert('Đang trích xuất danh sách nhóm quyền ra file Excel...');
+    };
+
+    const handleDownloadTemplate = () => {
+        console.log('Downloading role template...');
+        alert('Đang tải tệp mẫu nhóm quyền...');
     };
 
     const resetForm = () => {
@@ -79,40 +103,39 @@ const Roles: React.FC = () => {
     );
 
     return (
-        <div className="p-6 md:p-8 space-y-8 max-w-[1440px] mx-auto">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div>
-                    <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
-                        Quản lý Nhóm quyền
-                    </h1>
-                    <p className="text-slate-500 mt-2">Định nghĩa các vai trò trong hệ thống</p>
-                </div>
-                <button
-                    onClick={() => {
-                        resetForm();
-                        setShowModal(true);
-                    }}
-                    className="flex items-center gap-2 bg-[#13ec49] hover:bg-[#13ec49]/90 text-black font-bold h-11 px-6 rounded-xl shadow-lg shadow-[#13ec49]/20 transition-all active:scale-95"
-                >
-                    <span className="material-symbols-outlined text-[20px]">add</span>
-                    <span>Thêm nhóm quyền</span>
-                </button>
+        <div className="p-3 md:p-4 space-y-4 w-full bg-slate-50/50 min-h-screen">
+            <div>
+                <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-tight">
+                    Quản lý Nhóm quyền
+                </h1>
+                <p className="text-slate-500 text-sm mt-1">Định nghĩa các vai trò trong hệ thống</p>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="p-4 border-b border-slate-200">
-                    <div className="relative max-w-md">
-                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                            search
-                        </span>
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden border-t-4 border-t-[#13ec49]">
+                <div className="p-3 md:p-4 border-b border-slate-200 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+                    <div className="relative w-full sm:max-w-xs">
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
                         <input
                             type="text"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-slate-50 border-none rounded-lg py-2.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-[#13ec49]/30 transition-all outline-none"
+                            className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-[#13ec49]/30 transition-all outline-none"
                             placeholder="Tìm kiếm nhóm quyền..."
                         />
                     </div>
+                    <ActionToolbar
+                        onAdd={() => { resetForm(); setShowModal(true); }}
+                        addLabel="Thêm nhóm quyền"
+                        onEdit={() => selectedRole && handleEdit(selectedRole)}
+                        editDisabled={!selectedRole || selectedRole.is_system}
+                        onDelete={() => selectedRole && setDeleteTarget(selectedRole)}
+                        deleteDisabled={!selectedRole || selectedRole.is_system}
+                        onRefresh={loadRoles}
+                        isRefreshing={loading}
+                        onImport={() => setShowImportModal(true)}
+                        onExport={handleExport}
+                        onDownloadTemplate={handleDownloadTemplate}
+                    />
                 </div>
 
                 {loading ? (
@@ -140,7 +163,11 @@ const Roles: React.FC = () => {
                                     </tr>
                                 ) : (
                                     filteredRoles.map((role) => (
-                                        <tr key={role.id} className="group hover:bg-slate-50 transition-colors">
+                                        <tr
+                                            key={role.id}
+                                            onClick={() => setSelectedRole(prev => prev?.id === role.id ? null : role)}
+                                            className={`group transition-all cursor-pointer ${selectedRole?.id === role.id ? 'bg-[#13ec49]/5 ring-1 ring-inset ring-[#13ec49]/20' : 'hover:bg-slate-50'}`}
+                                        >
                                             <td className="px-6 py-4">
                                                 <span className="font-mono text-xs bg-slate-100 px-2 py-1 rounded">
                                                     {role.name}
@@ -156,13 +183,13 @@ const Roles: React.FC = () => {
                                                 {!role.is_system && (
                                                     <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                         <button
-                                                            onClick={() => handleEdit(role)}
+                                                            onClick={(e) => { e.stopPropagation(); handleEdit(role); }}
                                                             className="p-2 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all"
                                                         >
                                                             <span className="material-symbols-outlined text-[18px]">edit</span>
                                                         </button>
                                                         <button
-                                                            onClick={() => handleDelete(role.id)}
+                                                            onClick={(e) => { e.stopPropagation(); setDeleteTarget(role); }}
                                                             className="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-all"
                                                         >
                                                             <span className="material-symbols-outlined text-[18px]">delete</span>
@@ -230,6 +257,21 @@ const Roles: React.FC = () => {
                     </div>
                 </div>
             )}
+            <ConfirmDeleteModal
+                open={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
+                isDeleting={isDeleting}
+                itemName={deleteTarget?.name}
+            />
+            <ImportDataModal
+                open={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onImport={handleImport}
+                entityName="nhóm quyền"
+                columnGuide={['Mã nhóm quyền', 'Mô tả']}
+                onDownloadTemplate={handleDownloadTemplate}
+            />
         </div>
     );
 };

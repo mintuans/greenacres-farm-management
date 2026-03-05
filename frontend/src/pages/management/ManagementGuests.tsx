@@ -8,14 +8,19 @@ import {
 } from '../../api/showcase-event.api';
 import { getMediaFiles, MediaFile } from '../../services/media.service';
 import { getMediaUrl } from '../../services/products.service';
+import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../../components';
 
 const ManagementGuests: React.FC = () => {
     const [guests, setGuests] = useState<Guest[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<Guest | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [showMediaPicker, setShowMediaPicker] = useState(false);
     const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [showImportModal, setShowImportModal] = useState(false);
     const [formData, setFormData] = useState<Partial<Guest>>({
         full_name: '',
         default_title: '',
@@ -80,35 +85,64 @@ const ManagementGuests: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!window.confirm('Bạn có chắc chắn muốn xóa khách mời này?')) return;
         try {
+            setIsDeleting(true);
             await deleteGuest(id);
+            setDeleteTarget(null);
+            setSelectedGuest(null);
             loadGuests();
         } catch (error) {
+            console.error('Error deleting guest:', error);
             alert('Không thể xóa khách mời');
+        } finally {
+            setIsDeleting(false);
         }
     };
 
+    const handleImport = async (file: File) => {
+        console.log('Importing guests from:', file.name);
+        return new Promise<void>((resolve) => setTimeout(resolve, 1500));
+    };
+
+    const handleExport = () => {
+        console.log('Exporting guests...');
+        alert('Đang trích xuất danh sách khách mời ra file Excel...');
+    };
+
+    const handleDownloadTemplate = () => {
+        console.log('Downloading guest template...');
+        alert('Đang tải tệp mẫu khách mời...');
+    };
+
     return (
-        <div className="p-3 md:p-4 space-y-4 w-full">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div>
-                    <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
-                        Quản lý Khách mời
-                    </h1>
-                    <p className="text-slate-500 mt-2">Danh sách chuyên gia và khách mời trên trang Showcase</p>
+        <div className="p-3 md:p-4 space-y-4 w-full bg-slate-50/50 min-h-screen">
+            <div>
+                <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight">
+                    Quản lý Khách mời
+                </h1>
+                <p className="text-slate-500 mt-2 font-medium">Danh sách chuyên gia và khách mời trên trang Showcase</p>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-4">
+                <div className="p-3 md:p-4 border-b border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-end">
+                    <ActionToolbar
+                        onAdd={() => {
+                            setEditingId(null);
+                            setFormData({ full_name: '', default_title: '', phone: '', email: '', avatar_id: '' });
+                            setShowModal(true);
+                        }}
+                        addLabel="Thêm khách mời"
+                        onEdit={() => selectedGuest && handleEdit(selectedGuest)}
+                        editDisabled={!selectedGuest}
+                        onDelete={() => selectedGuest && setDeleteTarget(selectedGuest)}
+                        deleteDisabled={!selectedGuest}
+                        onRefresh={loadGuests}
+                        isRefreshing={loading}
+                        onImport={() => setShowImportModal(true)}
+                        onExport={handleExport}
+                        onDownloadTemplate={handleDownloadTemplate}
+                    />
                 </div>
-                <button
-                    onClick={() => {
-                        setEditingId(null);
-                        setFormData({ full_name: '', default_title: '', phone: '', email: '', avatar_id: '' });
-                        setShowModal(true);
-                    }}
-                    className="flex items-center gap-2 bg-[#13ec49] hover:bg-[#13ec49]/90 text-black font-bold h-11 px-6 rounded-xl shadow-lg shadow-[#13ec49]/20 transition-all active:scale-95"
-                >
-                    <span className="material-symbols-outlined text-[20px]">person_add</span>
-                    <span>Thêm khách mời mới</span>
-                </button>
             </div>
 
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden text-sm">
@@ -133,7 +167,11 @@ const ManagementGuests: React.FC = () => {
                                     </tr>
                                 ) : (
                                     guests.map((guest) => (
-                                        <tr key={guest.id} className="group hover:bg-slate-50 transition-colors">
+                                        <tr
+                                            key={guest.id}
+                                            onClick={() => setSelectedGuest(prev => prev?.id === guest.id ? null : guest)}
+                                            className={`group transition-all cursor-pointer ${selectedGuest?.id === guest.id ? 'bg-[#13ec49]/5 ring-1 ring-inset ring-[#13ec49]/30' : 'hover:bg-slate-50'}`}
+                                        >
                                             <td className="px-6 py-4 uppercase">
                                                 <div className="flex items-center gap-3">
                                                     {guest.avatar_id ? (
@@ -152,14 +190,14 @@ const ManagementGuests: React.FC = () => {
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
                                                     <button
-                                                        onClick={() => handleEdit(guest)}
+                                                        onClick={(e) => { e.stopPropagation(); handleEdit(guest); }}
                                                         className="p-2 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all"
                                                         title="Chỉnh sửa"
                                                     >
                                                         <span className="material-symbols-outlined text-[20px]">edit</span>
                                                     </button>
                                                     <button
-                                                        onClick={() => handleDelete(guest.id)}
+                                                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(guest); }}
                                                         className="p-2 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all"
                                                         title="Xóa"
                                                     >
@@ -322,6 +360,21 @@ const ManagementGuests: React.FC = () => {
                     }
                 `}
             </style>
+            <ConfirmDeleteModal
+                open={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
+                isDeleting={isDeleting}
+                itemName={deleteTarget?.full_name}
+            />
+            <ImportDataModal
+                open={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onImport={handleImport}
+                entityName="khách mời"
+                columnGuide={['Họ và tên', 'Chức danh', 'Điện thoại', 'Email', 'ID ảnh đại diện']}
+                onDownloadTemplate={handleDownloadTemplate}
+            />
         </div>
     );
 };

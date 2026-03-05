@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getTransactions, Transaction, createTransaction, updateTransaction } from '../api/transaction.api';
+import { getTransactions, Transaction, createTransaction, updateTransaction, deleteTransaction } from '../api/transaction.api';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { getSeasons, Season } from '../api/season.api';
 import { getCategories, Category } from '../api/category.api';
 import { getPartners, Partner } from '../api/partner.api';
+import { ActionToolbar, ConfirmDeleteModal } from '../components';
 
 // --- CustomSelect Component (Premium Style) ---
 interface CustomSelectProps {
@@ -204,6 +205,39 @@ const Transactions: React.FC = () => {
     } catch (error) {
       console.error('Error saving transaction:', error);
     }
+  };
+
+  const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async (id: string) => {
+    try {
+      setIsDeleting(true);
+      await deleteTransaction(id);
+      setDeleteTarget(null);
+      setSelectedTransaction(null);
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+      alert('Không thể xóa giao dịch này');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const downloadTemplate = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Giao dịch mẫu');
+    worksheet.columns = [
+      { header: 'Ngày (YYYY-MM-DD)', key: 'date', width: 20 },
+      { header: 'Loại (INCOME/EXPENSE)', key: 'type', width: 25 },
+      { header: 'Số tiền', key: 'amount', width: 15 },
+      { header: 'Nội dung', key: 'note', width: 30 },
+      { header: 'Mã vụ mùa', key: 'season_code', width: 15 },
+    ];
+    worksheet.addRow({ date: '2024-03-05', type: 'INCOME', amount: 1000000, note: 'Bán nông sản', season_code: '' });
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), 'Mau_Nhap_Giao_Dich.xlsx');
   };
 
   const [isEditing, setIsEditing] = useState(false);
@@ -437,21 +471,23 @@ const Transactions: React.FC = () => {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[
-          { l: 'Tổng thu', v: totalIncome.toLocaleString('vi-VN') + 'đ', c: 'bg-green-50 text-green-700', i: 'payments' },
-          { l: 'Tổng chi', v: totalExpense.toLocaleString('vi-VN') + 'đ', c: 'bg-red-50 text-red-700', i: 'shopping_cart' },
-          { l: 'Lợi nhuận', v: profit.toLocaleString('vi-VN') + 'đ', c: 'bg-blue-50 text-blue-700', i: 'savings' }
-        ].map((s, i) => (
-          <div key={i} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
-            <div className="flex items-center gap-2 mb-2">
-              <div className={`p-1.5 rounded-lg ${s.c}`}><span className="material-symbols-outlined text-[16px]">{s.i}</span></div>
-              <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest">{s.l}</p>
+      {/* Stats Cards — horizontal scroll row */}
+      <div className="overflow-x-auto pb-1 -mx-3 px-3 md:mx-0 md:px-0 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+        <div className="flex gap-3 md:gap-4" style={{ WebkitOverflowScrolling: 'touch' }}>
+          {[
+            { l: 'Tổng thu', v: totalIncome.toLocaleString('vi-VN') + 'đ', c: 'bg-green-50 text-green-700', i: 'payments' },
+            { l: 'Tổng chi', v: totalExpense.toLocaleString('vi-VN') + 'đ', c: 'bg-red-50 text-red-700', i: 'shopping_cart' },
+            { l: 'Lợi nhuận', v: profit.toLocaleString('vi-VN') + 'đ', c: 'bg-blue-50 text-blue-700', i: 'savings' }
+          ].map((s, i) => (
+            <div key={i} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md flex-1 min-w-[200px]">
+              <div className="flex items-center gap-2 mb-2">
+                <div className={`p-1.5 rounded-lg ${s.c}`}><span className="material-symbols-outlined text-[16px]">{s.i}</span></div>
+                <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest whitespace-nowrap">{s.l}</p>
+              </div>
+              <h3 className="text-lg font-black text-slate-900 whitespace-nowrap">{s.v}</h3>
             </div>
-            <h3 className="text-lg font-black text-slate-900">{s.v}</h3>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Main Content Table */}
@@ -465,12 +501,26 @@ const Transactions: React.FC = () => {
               ))}
             </div>
           </div>
-          <div className="flex items-center gap-2 w-full md:w-auto">
-            <button onClick={handleExport} className="flex-1 md:flex-none border border-slate-200 px-4 py-1.5 rounded-xl text-[11px] font-black hover:bg-slate-50 transition-all uppercase tracking-widest flex items-center justify-center gap-1.5"><span className="material-symbols-outlined text-[16px]">download</span> Xuất</button>
-            <button onClick={() => fileInputRef.current?.click()} className="flex-1 md:flex-none border border-slate-200 px-4 py-1.5 rounded-xl text-[11px] font-black hover:bg-slate-50 transition-all uppercase tracking-widest flex items-center justify-center gap-1.5"><span className="material-symbols-outlined text-[16px]">upload_file</span> Nhập</button>
-            <input type="file" ref={fileInputRef} onChange={handleImport} className="hidden" accept=".xlsx" />
-            <button onClick={() => setShowModal(true)} className="flex-1 md:flex-none bg-[#13ec49] text-black px-4 py-1.5 rounded-xl text-[11px] font-extrabold shadow-lg shadow-[#13ec49]/20 transition-all uppercase tracking-widest hover:scale-105 active:scale-95 flex items-center justify-center gap-1.5"><span className="material-symbols-outlined text-[16px]">add_circle</span> Thêm mới</button>
-          </div>
+          <input type="file" ref={fileInputRef} onChange={handleImport} className="hidden" accept=".xlsx" />
+          <ActionToolbar
+            onAdd={() => { setIsEditing(false); setShowModal(true); }}
+            addLabel="Thêm mới"
+            onEdit={() => selectedTransaction && handleEdit(selectedTransaction)}
+            editDisabled={!selectedTransaction}
+            onDelete={() => selectedTransaction && setDeleteTarget(selectedTransaction)}
+            deleteDisabled={!selectedTransaction}
+            onRefresh={fetchData}
+            isRefreshing={loading}
+            onExport={handleExport}
+            onImport={async (file) => {
+              const dt = new DataTransfer();
+              dt.items.add(file);
+              const fakeEvent = { target: { files: dt.files, value: '' } } as any;
+              await handleImport(fakeEvent);
+            }}
+            importAccept=".xlsx"
+            onDownloadTemplate={downloadTemplate}
+          />
         </div>
 
         <div className="overflow-x-auto">
@@ -490,8 +540,19 @@ const Transactions: React.FC = () => {
                 <tr><td colSpan={6} className="px-8 py-20 text-center"><div className="flex flex-col items-center gap-3"><div className="w-10 h-10 border-4 border-[#13ec49] border-t-transparent rounded-full animate-spin"></div><p className="text-slate-400 text-xs font-black uppercase tracking-widest">Đang tải...</p></div></td></tr>
               ) : filteredTransactions.length > 0 ? (
                 filteredTransactions.map((t) => (
-                  <tr key={t.id} onClick={() => handleViewDetail(t)} className="hover:bg-slate-50/50 transition-all group cursor-pointer">
-                    <td className="px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}><input type="checkbox" className="rounded border-slate-200 text-[#13ec49] focus:ring-[#13ec49]" /></td>
+                  <tr
+                    key={t.id}
+                    onClick={() => setSelectedTransaction(prev => prev?.id === t.id ? null : t)}
+                    className={`hover:bg-slate-50/50 transition-all group cursor-pointer ${selectedTransaction?.id === t.id ? 'bg-[#13ec49]/5 ring-1 ring-inset ring-[#13ec49]/30' : ''}`}
+                  >
+                    <td className="px-4 py-3 text-center" onClick={(e) => { e.stopPropagation(); setSelectedTransaction(prev => prev?.id === t.id ? null : t); }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedTransaction?.id === t.id}
+                        onChange={() => { }}
+                        className="rounded border-slate-200 text-[#13ec49] focus:ring-[#13ec49]"
+                      />
+                    </td>
                     <td className="px-4 py-3 font-bold text-slate-400">{new Date(t.transaction_date).toLocaleDateString('vi-VN')}</td>
                     <td className="px-4 py-3">
                       <div className="font-extrabold text-slate-900 group-hover:text-[#13ec49] transition-colors">{t.note || 'Không có tiêu đề'}</div>
@@ -604,6 +665,14 @@ const Transactions: React.FC = () => {
           </div>
         </div>
       )}
+      <ConfirmDeleteModal
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
+        isDeleting={isDeleting}
+        itemName={deleteTarget?.note || 'Giao dịch này'}
+        description="Dữ liệu tài chính liên quan sẽ bị ảnh hưởng."
+      />
     </div>
   );
 };

@@ -62,22 +62,13 @@ const ShowcaseHeader: React.FC<ShowcaseHeaderProps> = ({
                             key={link.to}
                             to={link.to}
                             className={`shrink-0 text-xs md:text-sm px-2.5 py-1.5 rounded-lg transition-colors font-medium whitespace-nowrap ${isActive(link.to)
-                                    ? 'bg-[#13ec49]/10 text-[#13ec49] font-bold'
-                                    : 'text-[#111813] hover:bg-[#f0f4f1] hover:text-[#13ec49]'
+                                ? 'bg-[#13ec49]/10 text-[#13ec49] font-bold'
+                                : 'text-[#111813] hover:bg-[#f0f4f1] hover:text-[#13ec49]'
                                 }`}
                         >
                             {link.label}
                         </Link>
                     ))}
-                    {user?.role === 'SUPER_ADMIN' && (
-                        <Link
-                            to="/dashboard"
-                            className="shrink-0 flex items-center gap-1 text-xs md:text-sm px-2.5 py-1.5 rounded-lg font-bold text-orange-600 hover:bg-orange-50 transition-colors whitespace-nowrap"
-                        >
-                            <span className="material-symbols-outlined text-[16px]">admin_panel_settings</span>
-                            <span className="hidden sm:inline">Quản trị</span>
-                        </Link>
-                    )}
                 </nav>
 
                 {/* Right: Search (desktop) + Notif + Avatar */}

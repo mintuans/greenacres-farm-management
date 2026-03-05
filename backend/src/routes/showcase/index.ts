@@ -9,6 +9,7 @@ import mediaRoutes from './media.routes';
 import profileRoutes from './profile.routes';
 import eventsRoutes from './events.routes';
 import weatherRoutes from './weather.routes';
+import newsRoutes from './news.routes';
 
 const router = Router();
 
@@ -23,5 +24,6 @@ router.use('/media', mediaRoutes);
 router.use('/profile', profileRoutes);
 router.use('/events', eventsRoutes);
 router.use('/weather', weatherRoutes);
+router.use('/news', newsRoutes);
 
 export default router;

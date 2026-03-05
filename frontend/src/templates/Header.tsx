@@ -55,10 +55,10 @@ const Header: React.FC = () => {
             <div className="flex items-center gap-6">
                 <button
                     onClick={() => navigate('/showcase')}
-                    className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg hover:border-[#13ec49] hover:text-[#13ec49] transition-all text-xs font-semibold"
+                    className="flex items-center gap-2 px-2 md:px-3 py-1.5 md:py-2 bg-white border border-slate-200 text-slate-600 rounded-lg md:rounded-xl hover:border-[#13ec49] hover:text-[#13ec49] transition-all text-[10px] md:text-xs font-bold shrink-0"
                 >
-                    <span className="material-symbols-outlined text-[18px]">visibility</span>
-                    Trang Showcase
+                    <span className="material-symbols-outlined text-[18px] md:text-[20px]">visibility</span>
+                    <span className="hidden sm:inline">Trang Showcase</span>
                 </button>
                 <div className="relative">
                     <button

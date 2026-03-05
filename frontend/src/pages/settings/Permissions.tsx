@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Permission, getPermissions, createPermission, updatePermission, deletePermission, getDatabaseTables } from '../../api/permission.api';
+import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../../components';
 
 const Permissions: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -14,6 +15,10 @@ const Permissions: React.FC = () => {
         code: '',
         description: ''
     });
+    const [selectedPermission, setSelectedPermission] = useState<Permission | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<Permission | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
 
     useEffect(() => {
         loadPermissions();
@@ -77,14 +82,33 @@ const Permissions: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Bạn có chắc muốn xóa quyền này?')) return;
         try {
+            setIsDeleting(true);
             await deletePermission(id);
+            setDeleteTarget(null);
+            setSelectedPermission(null);
             loadPermissions();
         } catch (error: any) {
             console.error('Error deleting permission:', error);
             alert(error.response?.data?.message || 'Không thể xóa quyền');
+        } finally {
+            setIsDeleting(false);
         }
+    };
+
+    const handleImport = async (file: File) => {
+        console.log('Importing permissions from:', file.name);
+        return new Promise<void>((resolve) => setTimeout(resolve, 1500));
+    };
+
+    const handleExport = () => {
+        console.log('Exporting permissions...');
+        alert('Đang trích xuất danh sách quyền ra file Excel...');
+    };
+
+    const handleDownloadTemplate = () => {
+        console.log('Downloading permission template...');
+        alert('Đang tải tệp mẫu quyền hạn...');
     };
 
     const resetForm = () => {
@@ -104,40 +128,39 @@ const Permissions: React.FC = () => {
     );
 
     return (
-        <div className="p-6 md:p-8 space-y-8 max-w-[1440px] mx-auto">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div>
-                    <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
-                        Danh sách Quyền
-                    </h1>
-                    <p className="text-slate-500 mt-2">Các hành động được phép thực hiện trên hệ thống</p>
-                </div>
-                <button
-                    onClick={() => {
-                        resetForm();
-                        setShowModal(true);
-                    }}
-                    className="flex items-center gap-2 bg-[#13ec49] hover:bg-[#13ec49]/90 text-black font-bold h-11 px-6 rounded-xl shadow-lg shadow-[#13ec49]/20 transition-all active:scale-95"
-                >
-                    <span className="material-symbols-outlined text-[20px]">add</span>
-                    <span>Thêm quyền mới</span>
-                </button>
+        <div className="p-3 md:p-4 space-y-4 w-full bg-slate-50/50 min-h-screen">
+            <div>
+                <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-tight">
+                    Danh sách Quyền
+                </h1>
+                <p className="text-slate-500 text-sm mt-1">Các hành động được phép thực hiện trên hệ thống</p>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="p-4 border-b border-slate-200">
-                    <div className="relative max-w-md">
-                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                            search
-                        </span>
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden border-t-4 border-t-[#13ec49]">
+                <div className="p-3 md:p-4 border-b border-slate-200 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+                    <div className="relative w-full sm:max-w-xs">
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
                         <input
                             type="text"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-slate-50 border-none rounded-lg py-2.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-[#13ec49]/30 transition-all outline-none"
-                            placeholder="Tìm kiếm quyền..."
+                            className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-[#13ec49]/30 transition-all outline-none"
+                            placeholder="Tìm kiếm quyền hạn..."
                         />
                     </div>
+                    <ActionToolbar
+                        onAdd={() => { resetForm(); setShowModal(true); }}
+                        addLabel="Thêm quyền hạn"
+                        onEdit={() => selectedPermission && handleEdit(selectedPermission)}
+                        editDisabled={!selectedPermission}
+                        onDelete={() => selectedPermission && setDeleteTarget(selectedPermission)}
+                        deleteDisabled={!selectedPermission}
+                        onRefresh={loadPermissions}
+                        isRefreshing={loading}
+                        onImport={() => setShowImportModal(true)}
+                        onExport={handleExport}
+                        onDownloadTemplate={handleDownloadTemplate}
+                    />
                 </div>
 
                 {loading ? (
@@ -165,7 +188,11 @@ const Permissions: React.FC = () => {
                                     </tr>
                                 ) : (
                                     filteredPermissions.map((perm) => (
-                                        <tr key={perm.id} className="group hover:bg-slate-50 transition-colors">
+                                        <tr
+                                            key={perm.id}
+                                            onClick={() => setSelectedPermission(prev => prev?.id === perm.id ? null : perm)}
+                                            className={`group transition-all cursor-pointer ${selectedPermission?.id === perm.id ? 'bg-[#13ec49]/5 ring-1 ring-inset ring-[#13ec49]/20' : 'hover:bg-slate-50'}`}
+                                        >
                                             <td className="px-6 py-4">
                                                 <span className="bg-slate-100 px-2 py-1 rounded text-[11px] font-bold text-slate-600">
                                                     {perm.module}
@@ -178,13 +205,13 @@ const Permissions: React.FC = () => {
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <button
-                                                        onClick={() => handleEdit(perm)}
+                                                        onClick={(e) => { e.stopPropagation(); handleEdit(perm); }}
                                                         className="p-2 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all"
                                                     >
                                                         <span className="material-symbols-outlined text-[18px]">edit</span>
                                                     </button>
                                                     <button
-                                                        onClick={() => handleDelete(perm.id)}
+                                                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(perm); }}
                                                         className="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-all"
                                                     >
                                                         <span className="material-symbols-outlined text-[18px]">delete</span>
@@ -279,6 +306,21 @@ const Permissions: React.FC = () => {
                     </div>
                 </div>
             )}
+            <ConfirmDeleteModal
+                open={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
+                isDeleting={isDeleting}
+                itemName={deleteTarget?.code}
+            />
+            <ImportDataModal
+                open={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onImport={handleImport}
+                entityName="quyền hạn"
+                columnGuide={['Module', 'Action', 'Mã quyền', 'Mô tả']}
+                onDownloadTemplate={handleDownloadTemplate}
+            />
         </div>
     );
 };

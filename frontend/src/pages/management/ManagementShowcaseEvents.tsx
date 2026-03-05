@@ -6,11 +6,16 @@ import {
     ShowcaseEvent
 } from '../../api/showcase-event.api';
 import { getMediaUrl } from '../../services/products.service';
+import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../../components';
 
 const ManagementShowcaseEvents: React.FC = () => {
     const navigate = useNavigate();
     const [events, setEvents] = useState<ShowcaseEvent[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedEvent, setSelectedEvent] = useState<ShowcaseEvent | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<ShowcaseEvent | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -29,13 +34,33 @@ const ManagementShowcaseEvents: React.FC = () => {
     };
 
     const handleDeleteEvent = async (id: string) => {
-        if (!confirm('Bạn có chắc muốn xóa sự kiện này?')) return;
         try {
+            setIsDeleting(true);
             await deleteShowcaseEvent(id);
+            setDeleteTarget(null);
+            setSelectedEvent(null);
             loadData();
         } catch (error) {
+            console.error('Error deleting event:', error);
             alert('Không thể xóa sự kiện');
+        } finally {
+            setIsDeleting(false);
         }
+    };
+
+    const handleImport = async (file: File) => {
+        console.log('Importing events from:', file.name);
+        return new Promise<void>((resolve) => setTimeout(resolve, 1500));
+    };
+
+    const handleExport = () => {
+        console.log('Exporting events...');
+        alert('Đang trích xuất danh sách sự kiện ra file Excel...');
+    };
+
+    const handleDownloadTemplate = () => {
+        console.log('Downloading event template...');
+        alert('Đang tải tệp mẫu sự kiện...');
     };
 
 
@@ -50,22 +75,29 @@ const ManagementShowcaseEvents: React.FC = () => {
     };
 
     return (
-        <div className="p-3 md:p-4 space-y-4 w-full">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div>
-                    <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
-                        Quản lý Sự kiện
-                    </h1>
-                    <p className="text-slate-500 mt-1 text-xs">Quản lý các sự kiện quảng bá hiển thị trên trang chủ</p>
-                </div>
-                <div className="flex gap-3">
-                    <button
-                        onClick={() => navigate('/master-data/showcase-events/add')}
-                        className="flex items-center gap-2 bg-[#13ec49] hover:bg-[#13ec49]/90 text-black font-bold h-11 px-6 rounded-xl shadow-lg shadow-[#13ec49]/20 transition-all active:scale-95"
-                    >
-                        <span className="material-symbols-outlined text-[20px]">add</span>
-                        <span>Tạo sự kiện mới</span>
-                    </button>
+        <div className="p-3 md:p-4 space-y-4 w-full bg-slate-50/50 min-h-screen">
+            <div>
+                <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight">
+                    Quản lý Sự kiện
+                </h1>
+                <p className="text-slate-500 mt-2 font-medium">Quản lý các sự kiện quảng bá hiển thị trên trang chủ Showcase</p>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-4">
+                <div className="p-3 md:p-4 border-b border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-end">
+                    <ActionToolbar
+                        onAdd={() => navigate('/master-data/showcase-events/add')}
+                        addLabel="Tạo sự kiện"
+                        onEdit={() => selectedEvent && navigate(`/master-data/showcase-events/edit/${selectedEvent.id}`)}
+                        editDisabled={!selectedEvent}
+                        onDelete={() => selectedEvent && setDeleteTarget(selectedEvent)}
+                        deleteDisabled={!selectedEvent}
+                        onRefresh={loadData}
+                        isRefreshing={loading}
+                        onImport={() => setShowImportModal(true)}
+                        onExport={handleExport}
+                        onDownloadTemplate={handleDownloadTemplate}
+                    />
                 </div>
             </div>
 
@@ -95,7 +127,11 @@ const ManagementShowcaseEvents: React.FC = () => {
                                     </tr>
                                 ) : (
                                     events.map((event) => (
-                                        <tr key={event.id} className="group hover:bg-slate-50 transition-colors">
+                                        <tr
+                                            key={event.id}
+                                            onClick={() => setSelectedEvent(prev => prev?.id === event.id ? null : event)}
+                                            className={`group transition-all cursor-pointer ${selectedEvent?.id === event.id ? 'bg-[#13ec49]/5 ring-1 ring-inset ring-[#13ec49]/30' : 'hover:bg-slate-50'}`}
+                                        >
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-4">
                                                     {event.banner_id ? (
@@ -141,10 +177,16 @@ const ManagementShowcaseEvents: React.FC = () => {
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button onClick={() => navigate(`/master-data/showcase-events/edit/${event.id}`)} className="p-2 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all">
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); navigate(`/master-data/showcase-events/edit/${event.id}`); }}
+                                                        className="p-2 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all"
+                                                    >
                                                         <span className="material-symbols-outlined text-[20px]">edit</span>
                                                     </button>
-                                                    <button onClick={() => handleDeleteEvent(event.id)} className="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-all">
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(event); }}
+                                                        className="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-all"
+                                                    >
                                                         <span className="material-symbols-outlined text-[20px]">delete</span>
                                                     </button>
                                                 </div>
@@ -157,6 +199,21 @@ const ManagementShowcaseEvents: React.FC = () => {
                     </div>
                 )}
             </div>
+            <ConfirmDeleteModal
+                open={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => deleteTarget && handleDeleteEvent(deleteTarget.id)}
+                isDeleting={isDeleting}
+                itemName={deleteTarget?.title}
+            />
+            <ImportDataModal
+                open={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onImport={handleImport}
+                entityName="sự kiện"
+                columnGuide={['Tiêu đề', 'Mô tả', 'Ngày diễn ra', 'Địa điểm', 'Banner ID', 'Gallery IDs (cách nhau bởi dấu phẩy)', 'Trạng thái (DRAFT/PUBLISHED/ENDED)']}
+                onDownloadTemplate={handleDownloadTemplate}
+            />
         </div>
     );
 };

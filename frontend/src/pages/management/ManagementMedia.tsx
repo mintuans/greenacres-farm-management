@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { getMediaFiles, uploadMedia, deleteMedia, getMediaById, MediaFile } from '../../services/media.service';
 import { getMediaUrl } from '../../services/products.service';
+import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../../components';
 
 const ManagementMedia: React.FC = () => {
     const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
@@ -15,6 +16,9 @@ const ManagementMedia: React.FC = () => {
     const [uploadCategory, setUploadCategory] = useState('gallery');
     const [newCategoryName, setNewCategoryName] = useState('');
     const [showCategoryManager, setShowCategoryManager] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState<MediaFile | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -77,17 +81,33 @@ const ManagementMedia: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (confirm('Bạn có chắc muốn xóa ảnh này?')) {
-            try {
-                await deleteMedia(id);
-                alert('Xóa ảnh thành công!');
-                loadMedia();
-                setSelectedMedia(null);
-            } catch (error: any) {
-                console.error('Error deleting:', error);
-                alert(error.response?.data?.message || 'Có lỗi khi xóa ảnh!');
-            }
+        try {
+            setIsDeleting(true);
+            await deleteMedia(id);
+            setDeleteTarget(null);
+            setSelectedMedia(null);
+            loadMedia();
+        } catch (error: any) {
+            console.error('Error deleting:', error);
+            alert(error.response?.data?.message || 'Có lỗi khi xóa ảnh!');
+        } finally {
+            setIsDeleting(false);
         }
+    };
+
+    const handleImport = async (file: File) => {
+        console.log('Importing media metadata from:', file.name);
+        return new Promise<void>((resolve) => setTimeout(resolve, 1500));
+    };
+
+    const handleExport = () => {
+        console.log('Exporting media metadata...');
+        alert('Đang trích xuất danh sách media ra file Excel...');
+    };
+
+    const handleDownloadTemplate = () => {
+        console.log('Downloading media template...');
+        alert('Đang tải tệp mẫu thông tin media...');
     };
 
     const handleViewDetail = async (media: MediaFile) => {
@@ -106,27 +126,20 @@ const ManagementMedia: React.FC = () => {
     };
 
     return (
-        <div className="p-4">
+        <div className="p-3 md:p-4 space-y-4 w-full bg-slate-50/50 min-h-screen">
             {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-                <h1 className="text-xl font-bold text-[#111813]">Quản lý Media</h1>
-                <button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading}
-                    className="px-4 py-2 bg-[#13ec49] text-[#102215] font-bold rounded-lg hover:bg-[#10d63f] transition-colors disabled:opacity-50 flex items-center gap-2"
-                >
-                    <span className="material-symbols-outlined">cloud_upload</span>
-                    {uploading ? 'Đang upload...' : '+ Upload file'}
-                </button>
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    accept="image/*,video/*"
-                    className="hidden"
-                    onChange={handleFileSelect}
-                />
+            <div>
+                <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight">Quản lý Media</h1>
+                <p className="text-slate-500 mt-2 font-medium">Kho lưu trữ hình ảnh, video và tài liệu của trang trại</p>
             </div>
+            <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*,video/*"
+                className="hidden"
+                onChange={handleFileSelect}
+            />
 
             {/* Category Filter - Always Visible */}
             <div className="mb-4 bg-white p-3 md:p-4 rounded-[24px] border border-slate-200 shadow-sm overflow-hidden">
@@ -189,15 +202,31 @@ const ManagementMedia: React.FC = () => {
                 </div>
             </div>
 
-            {/* Search */}
-            <div className="mb-4">
-                <input
-                    type="text"
-                    placeholder="Tìm kiếm ảnh..."
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#13ec49] w-full max-w-md"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
+            {/* Toolbar */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-4">
+                <div className="p-3 md:p-4 border-b border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div className="relative w-full md:w-96">
+                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm ảnh..."
+                            className="w-full pl-12 pr-4 py-2.5 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-[#13ec49]/30 outline-none font-medium transition-all text-sm"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+                    <ActionToolbar
+                        onAdd={() => fileInputRef.current?.click()}
+                        addLabel="Upload tệp"
+                        onDelete={() => selectedMedia && setDeleteTarget(selectedMedia)}
+                        deleteDisabled={!selectedMedia}
+                        onRefresh={loadMedia}
+                        isRefreshing={loading}
+                        onImport={() => setShowImportModal(true)}
+                        onExport={handleExport}
+                        onDownloadTemplate={handleDownloadTemplate}
+                    />
+                </div>
             </div>
 
             {/* Grid */}
@@ -213,8 +242,9 @@ const ManagementMedia: React.FC = () => {
                         {mediaFiles.map((media) => (
                             <div
                                 key={media.id}
-                                className="group relative aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
-                                onClick={() => handleViewDetail(media)}
+                                className={`group relative aspect-square bg-white rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 border-2 ${selectedMedia?.id === media.id ? 'border-[#13ec49] shadow-lg shadow-[#13ec49]/10 ring-4 ring-[#13ec49]/10' : 'border-slate-100 hover:border-slate-200 hover:shadow-md'}`}
+                                onClick={() => setSelectedMedia(prev => prev?.id === media.id ? null : media)}
+                                onDoubleClick={() => handleViewDetail(media)}
                             >
                                 {media.mime_type?.startsWith('video/') ? (
                                     <div className="w-full h-full flex flex-col items-center justify-center bg-gray-800 text-white">
@@ -295,13 +325,13 @@ const ManagementMedia: React.FC = () => {
                                         navigator.clipboard.writeText(selectedMedia.id);
                                         alert('Đã copy ID!');
                                     }}
-                                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
                                 >
                                     Copy ID
                                 </button>
                                 <button
-                                    onClick={() => handleDelete(selectedMedia.id)}
-                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                                    onClick={() => setDeleteTarget(selectedMedia)}
+                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
                                 >
                                     Xóa ảnh
                                 </button>
@@ -365,6 +395,21 @@ const ManagementMedia: React.FC = () => {
                     </div>
                 </div>
             )}
+            <ConfirmDeleteModal
+                open={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
+                isDeleting={isDeleting}
+                itemName={deleteTarget?.image_name}
+            />
+            <ImportDataModal
+                open={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onImport={handleImport}
+                entityName="media"
+                columnGuide={['Tên tệp', 'Thể loại', 'Mô tả', 'Mime Type', 'URL (nếu có)']}
+                onDownloadTemplate={handleDownloadTemplate}
+            />
         </div>
     );
 };

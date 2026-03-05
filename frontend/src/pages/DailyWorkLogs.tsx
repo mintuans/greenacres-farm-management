@@ -1,8 +1,10 @@
-
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getDailyWorkLogs, calculatePayrollFromLog, calculatePayrollBulk, DailyWorkLog, deleteDailyWorkLog, confirmScheduleToLog } from '../api/daily-work-log.api';
 import { getWorkSchedules, WorkSchedule } from '../api/work-schedule.api';
 import logoWeb from '../assets/logo_web.png';
+import { ActionToolbar, ConfirmDeleteModal } from '../components';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 
 
 const DailyWorkLogs: React.FC = () => {
@@ -16,6 +18,9 @@ const DailyWorkLogs: React.FC = () => {
     const [selectedLogForPreview, setSelectedLogForPreview] = useState<DailyWorkLog | any>(null);
     const [mandaysValue, setMandaysValue] = useState(0);
     const [selectedLogIds, setSelectedLogIds] = useState<string[]>([]);
+    const [deleteTarget, setDeleteTarget] = useState<DailyWorkLog | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [selectedLog, setSelectedLog] = useState<DailyWorkLog | null>(null);
 
     useEffect(() => {
         fetchData();
@@ -29,7 +34,6 @@ const DailyWorkLogs: React.FC = () => {
                 getWorkSchedules()
             ]);
             setLogs(logsData || []);
-            // Chỉ lấy những lịch chưa chốt (PLANNED) để hiển thị trong mục chốt công
             setPendingSchedules((schedulesData || []).filter((s: WorkSchedule) => s.status === 'PLANNED'));
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -51,13 +55,12 @@ const DailyWorkLogs: React.FC = () => {
                     result = await calculatePayrollBulk(idsToCalculate);
                 }
 
-                // Lấy danh sách các logs vừa tính để hiện preview
                 const selectedLogs = logs.filter(l => idsToCalculate.includes(l.id));
                 if (selectedLogs.length > 0) {
                     setSelectedLogForPreview({
                         isBulk: idsToCalculate.length > 1,
                         logs: selectedLogs,
-                        payroll_code: result.payrollId ? 'PL-NEW' : 'N/A', // Temporary, will fetch real code
+                        payroll_code: result.payrollId ? 'PL-NEW' : 'N/A',
                         partner_name: selectedLogs[0].partner_name,
                         total_amount: selectedLogs.reduce((sum, l) => sum + Number(l.total_amount), 0)
                     });
@@ -100,10 +103,47 @@ const DailyWorkLogs: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (confirm('Bạn có chắc muốn xóa nhật ký này?')) {
+        try {
+            setIsDeleting(true);
             await deleteDailyWorkLog(id);
+            setDeleteTarget(null);
+            setSelectedLog(null);
             fetchData();
+        } catch (error) {
+            console.error('Error deleting daily work log:', error);
+            alert('Không thể xóa nhật ký làm việc');
+        } finally {
+            setIsDeleting(false);
         }
+    };
+
+    const handleExport = async () => {
+        const workbook = new ExcelJS.Workbook();
+        const ws = workbook.addWorksheet('Nhật ký làm việc');
+        ws.columns = [
+            { header: 'Ngày', key: 'date', width: 15 },
+            { header: 'Nhân viên', key: 'partner', width: 25 },
+            { header: 'Công việc', key: 'job', width: 25 },
+            { header: 'Ca', key: 'shift', width: 15 },
+            { header: 'Đơn giá', key: 'rate', width: 15 },
+            { header: 'Thành tiền', key: 'total', width: 15 },
+            { header: 'Vụ mùa', key: 'season', width: 20 },
+        ];
+        ws.getRow(1).eachCell(cell => {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF13EC49' } };
+            cell.font = { bold: true };
+        });
+        filteredLogs.forEach(l => ws.addRow({
+            date: new Date(l.work_date).toLocaleDateString('vi-VN'),
+            partner: l.partner_name,
+            job: l.job_name || 'Khác',
+            shift: l.shift_name,
+            rate: l.applied_rate,
+            total: l.total_amount,
+            season: l.season_name || '-',
+        }));
+        const buffer = await workbook.xlsx.writeBuffer();
+        saveAs(new Blob([buffer]), `NhatKy_LamViec_${new Date().toISOString().split('T')[0]}.xlsx`);
     };
 
     const filteredLogs = logs.filter(l =>
@@ -119,14 +159,6 @@ const DailyWorkLogs: React.FC = () => {
                 <div>
                     <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Nhật ký Làm việc</h1>
                     <p className="text-slate-500 mt-2 font-medium">Theo dõi và xác nhận công việc thực tế của nhân viên.</p>
-                </div>
-                <div className="flex gap-3">
-                    <button
-                        onClick={fetchData}
-                        className="p-3 bg-white border border-slate-200 text-slate-600 rounded-2xl hover:bg-slate-50 transition-all flex items-center justify-center shadow-sm"
-                    >
-                        <span className="material-symbols-outlined">refresh</span>
-                    </button>
                 </div>
             </div>
 
@@ -163,31 +195,42 @@ const DailyWorkLogs: React.FC = () => {
                 </div>
             )}
 
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden min-h-[400px]">
-                <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-between">
-                    <div className="relative w-full md:w-96">
-                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden border-t-4 border-t-[#13ec49]">
+                <div className="p-4 border-b border-slate-200 flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div className="relative w-full sm:max-w-md">
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
                         <input
                             type="text"
-                            placeholder="Tìm nhân viên, công việc..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-[#13ec49]/30 outline-none font-medium transition-all"
+                            className="w-full bg-slate-50 border-none rounded-lg py-2.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-[#13ec49]/30 transition-all outline-none"
+                            placeholder="Tìm nhân viên, công việc..."
                         />
                     </div>
-                    {selectedLogIds.length > 0 && (
-                        <div className="flex items-center gap-4 animate-in fade-in slide-in-from-right-4">
-                            <span className="text-sm font-bold text-[#13ec49]">Đã chọn {selectedLogIds.length} ngày công</span>
-                            <button
-                                onClick={() => handleCalculatePayroll()}
-                                className="px-6 py-2.5 bg-slate-900 text-white text-xs font-black rounded-xl hover:bg-black transition-all flex items-center gap-2 shadow-lg shadow-slate-900/20"
-                            >
-                                <span className="material-symbols-outlined text-sm">payments</span>
-                                Tính lương gộp
-                            </button>
-                        </div>
-                    )}
+                    <ActionToolbar
+                        hideAdd
+                        onEdit={() => selectedLog && setSelectedLogForPreview(selectedLog) && setShowPreviewModal(true)}
+                        editDisabled={!selectedLog}
+                        editLabel="Xem chi tiết"
+                        onDelete={() => selectedLog && setDeleteTarget(selectedLog)}
+                        deleteDisabled={!selectedLog}
+                        onRefresh={fetchData}
+                        isRefreshing={loading}
+                        onExport={handleExport}
+                    />
                 </div>
+                {selectedLogIds.length > 0 && (
+                    <div className="p-4 bg-slate-50 flex items-center gap-4 animate-in fade-in slide-in-from-right-4">
+                        <span className="text-sm font-bold text-[#13ec49]">Đã chọn {selectedLogIds.length} ngày công</span>
+                        <button
+                            onClick={() => handleCalculatePayroll()}
+                            className="px-6 py-2.5 bg-slate-900 text-white text-xs font-black rounded-xl hover:bg-black transition-all flex items-center gap-2 shadow-lg shadow-slate-900/20"
+                        >
+                            <span className="material-symbols-outlined text-sm">payments</span>
+                            Tính lương gộp
+                        </button>
+                    </div>
+                )}
 
                 {loading ? (
                     <div className="flex items-center justify-center py-20">
@@ -217,21 +260,25 @@ const DailyWorkLogs: React.FC = () => {
                             <tbody className="divide-y divide-slate-100">
                                 {filteredLogs.length === 0 ? (
                                     <tr>
-                                        <td colSpan={6} className="px-8 py-20 text-center">
+                                        <td colSpan={7} className="px-8 py-20 text-center">
                                             <span className="material-symbols-outlined text-slate-200 text-6xl block mb-4">analytics</span>
                                             <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Chưa có nhật ký làm việc</p>
                                         </td>
                                     </tr>
                                 ) : (
                                     filteredLogs.map((item) => (
-                                        <tr key={item.id} className={`group hover:bg-slate-50/80 transition-all ${selectedLogIds.includes(item.id) ? 'bg-[#13ec49]/5' : ''}`}>
+                                        <tr
+                                            key={item.id}
+                                            onClick={() => setSelectedLog(prev => prev?.id === item.id ? null : item)}
+                                            className={`group transition-all cursor-pointer ${selectedLog?.id === item.id ? 'bg-[#13ec49]/5 ring-1 ring-inset ring-[#13ec49]/30' : 'hover:bg-slate-50/80'}`}
+                                        >
                                             <td className="px-8 py-5">
                                                 {!item.payroll_id && item.status === 'DONE' ? (
                                                     <input
                                                         type="checkbox"
                                                         className="size-5 rounded-lg border-slate-200 accent-[#13ec49] cursor-pointer"
                                                         checked={selectedLogIds.includes(item.id)}
-                                                        onChange={() => toggleSelectLog(item.id)}
+                                                        onChange={(e) => { e.stopPropagation(); toggleSelectLog(item.id); }}
                                                     />
                                                 ) : item.payroll_id ? (
                                                     <span className="material-symbols-outlined text-slate-400 text-sm" title="Đã có phiếu lương">verified</span>
@@ -290,7 +337,8 @@ const DailyWorkLogs: React.FC = () => {
                                             <td className="px-8 py-5 text-center">
                                                 {item.payroll_id ? (
                                                     <button
-                                                        onClick={() => {
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
                                                             setSelectedLogForPreview(item);
                                                             setShowPreviewModal(true);
                                                         }}
@@ -305,7 +353,8 @@ const DailyWorkLogs: React.FC = () => {
                                             </td>
                                             <td className="px-8 py-5 text-right flex items-center justify-end gap-2">
                                                 <button
-                                                    onClick={() => {
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
                                                         if (item.payroll_id) {
                                                             setSelectedLogForPreview(item);
                                                             setShowPreviewModal(true);
@@ -319,7 +368,7 @@ const DailyWorkLogs: React.FC = () => {
                                                     <span className="material-symbols-outlined">info</span>
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDelete(item.id)}
+                                                    onClick={(e) => { e.stopPropagation(); setDeleteTarget(item); }}
                                                     className="p-2.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-0 group-hover:opacity-100"
                                                     title="Xóa nhật ký"
                                                 >
@@ -569,9 +618,15 @@ const DailyWorkLogs: React.FC = () => {
                     </div>
                 </div>
             )}
+            <ConfirmDeleteModal
+                open={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
+                isDeleting={isDeleting}
+                itemName={deleteTarget?.partner_name}
+            />
         </div>
     );
 };
-
 
 export default DailyWorkLogs;

@@ -3,6 +3,7 @@ import { getInventory, getInventoryStats, createItem, updateItem, deleteItem, In
 import { getCategoryTree, Category } from '../api/category.api';
 import { getMediaFiles, MediaFile } from '../services/media.service';
 import { getMediaUrl } from '../services/products.service';
+import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../components';
 
 const Inventory: React.FC = () => {
   const [items, setItems] = useState<InventoryItem[]>([]);
@@ -13,6 +14,10 @@ const Inventory: React.FC = () => {
   const [filterCategory, setFilterCategory] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<InventoryItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   // Media Selection State
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
@@ -108,9 +113,16 @@ const Inventory: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Bạn có chắc muốn xóa vật tư này?')) {
+    try {
+      setIsDeleting(true);
       await deleteItem(id);
+      setDeleteTarget(null);
       fetchData();
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      alert('Không thể xóa vật tư này');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -136,8 +148,79 @@ const Inventory: React.FC = () => {
     link.click();
   };
 
+  const downloadTemplate = () => {
+    const csv = [
+      'SKU,Tên vật tư,Danh mục,Đơn vị tính,Số lượng,Mức tối thiểu,Giá nhập,Ngày nhập,Ghi chú',
+      'VT-001,Phân bón NPK,Phân bón,Kg,100,20,50000,2024-01-01,Mẫu vật tư',
+    ].join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'MauNhap_VatTu.csv';
+    link.click();
+  };
+
+  const handleEditItem = (item: InventoryItem) => {
+    setEditingItem(item);
+    setFormData({
+      inventory_code: item.inventory_code,
+      inventory_name: item.inventory_name,
+      category_id: item.category_id || '',
+      unit_of_measure: item.unit_of_measure || '',
+      stock_quantity: item.stock_quantity,
+      min_stock_level: item.min_stock_level,
+      last_import_price: item.last_import_price || 0,
+      import_date: item.import_date ? new Date(item.import_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      thumbnail_id: item.thumbnail_id || '',
+      note: item.note || ''
+    });
+    setShowModal(true);
+  };
+
+  const handleImport = async (file: File) => {
+    const reader = new FileReader();
+    return new Promise<void>((resolve, reject) => {
+      reader.onload = async (event) => {
+        try {
+          const text = event.target?.result as string;
+          const lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
+          if (lines.length <= 1) {
+            resolve();
+            return;
+          }
+
+          const data = lines.slice(1).map(line => {
+            const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+            const row = matches ? matches.map(m => m.replace(/^"|"$/g, '')) : line.split(',');
+
+            return {
+              inventory_code: row[0] || generateRandomSKU(),
+              inventory_name: row[1] || 'Vật tư mới',
+              unit_of_measure: row[3] || 'Kg',
+              stock_quantity: Number(row[4]) || 0,
+              min_stock_level: Number(row[5]) || 0,
+              last_import_price: Number(row[6]) || 0,
+              import_date: new Date().toISOString(),
+              note: row[8] || ''
+            };
+          });
+
+          await bulkImportItems(data);
+          alert(`Đã nhập thành công ${data.length} mặt hàng!`);
+          fetchData();
+          resolve();
+        } catch (error) {
+          console.error('Error importing data:', error);
+          reject(new Error('Lỗi khi nhập dữ liệu. Vui lòng kiểm tra định dạng file CSV.'));
+        }
+      };
+      reader.onerror = () => reject(new Error('Lỗi khi đọc file'));
+      reader.readAsText(file);
+    });
+  };
+
   const handleImportClick = () => {
-    fileInputRef.current?.click();
+    setShowImportModal(true);
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -246,70 +329,36 @@ const Inventory: React.FC = () => {
   return (
     <div className="p-3 md:p-4 space-y-4 w-full bg-slate-50/50 min-h-screen">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-          <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
-            Quản lý kho vật tư
-          </h1>
-          <p className="text-slate-500 mt-1 text-sm">Theo dõi phân bón, thuốc bảo vệ thực vật và thức ăn chăn nuôi.</p>
-        </div>
-        <div className="flex gap-3">
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept=".csv"
-            className="hidden"
-          />
-          <button
-            onClick={handleExport}
-            className="flex items-center gap-2 px-5 py-2.5 bg-white text-slate-700 font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition-all shadow-sm"
-          >
-            <span className="material-symbols-outlined font-bold">download</span>
-            <span>Xuất Excel</span>
-          </button>
-          <button
-            onClick={handleImportClick}
-            className="flex items-center gap-2 px-5 py-2.5 bg-white text-slate-700 font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition-all shadow-sm"
-          >
-            <span className="material-symbols-outlined font-bold">upload</span>
-            <span>Nhập liệu</span>
-          </button>
-          <button
-            onClick={() => {
-              setEditingItem(null);
-              setFormData({
-                inventory_code: generateRandomSKU(), // Tự động tạo mã SKU khi nhấn thêm
-                inventory_name: '', category_id: '',
-                unit_of_measure: '', stock_quantity: 0, min_stock_level: 0,
-                last_import_price: 0, import_date: new Date().toISOString().split('T')[0], thumbnail_id: '', note: ''
-              });
-              setShowModal(true);
-            }}
-            className="flex items-center gap-2 px-4 py-2 bg-[#13ec49] text-black font-bold rounded-xl hover:bg-[#10d63f] transition-all shadow-lg shadow-[#13ec49]/20 text-sm"
-          >
-            <span className="material-symbols-outlined font-bold text-[20px]">add</span>
-            <span>Thêm vật tư</span>
-          </button>
-        </div>
+      <div>
+        <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
+          Quản lý kho vật tư
+        </h1>
+        <p className="text-slate-500 mt-1 text-sm">Theo dõi phân bón, thuốc bảo vệ thực vật và thức ăn chăn nuôi.</p>
       </div>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept=".csv"
+        className="hidden"
+      />
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
         {[
-          { label: 'Tổng số mặt hàng', value: stats.total_items, icon: 'inventory_2', color: 'text-blue-600', bg: 'bg-blue-50' },
-          { label: 'Cảnh báo hết hàng', value: stats.low_stock_items, icon: 'warning', color: 'text-orange-600', bg: 'bg-orange-50', sub: 'Cần xử lý' },
-          { label: 'Tổng giá trị tồn kho', value: formatVND(stats.total_value), icon: 'payments', color: 'text-emerald-600', bg: 'bg-emerald-50' }
+          { label: 'Tổng số mặt hàng', value: stats.total_items, icon: 'inventory_2', color: 'text-blue-600', bg: 'bg-blue-50', fullWidth: false },
+          { label: 'Cảnh báo hết hàng', value: stats.low_stock_items, icon: 'warning', color: 'text-orange-600', bg: 'bg-orange-50', sub: 'Cần xử lý', fullWidth: false },
+          { label: 'Tổng giá trị tồn kho', value: formatVND(stats.total_value), icon: 'payments', color: 'text-emerald-600', bg: 'bg-emerald-50', fullWidth: true }
         ].map((s, i) => (
-          <div key={i} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4 hover:shadow-md transition-all">
-            <div className={`${s.bg} ${s.color} p-3 rounded-xl`}>
-              <span className="material-symbols-outlined text-xl">{s.icon}</span>
+          <div key={i} className={`bg-white p-3 md:p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3 md:gap-4 hover:shadow-md transition-all ${s.fullWidth ? 'col-span-2 md:col-span-1' : ''}`}>
+            <div className={`${s.bg} ${s.color} p-2 md:p-3 rounded-xl shrink-0`}>
+              <span className="material-symbols-outlined text-lg md:text-xl">{s.icon}</span>
             </div>
-            <div>
-              <p className="text-xs font-medium text-slate-500">{s.label}</p>
-              <div className="flex items-baseline gap-2">
-                <h3 className="text-lg font-black text-slate-900">{s.value}</h3>
-                {s.sub && <span className="text-[10px] font-bold text-orange-600">{s.sub}</span>}
+            <div className="min-w-0">
+              <p className="text-[10px] md:text-xs font-medium text-slate-500 leading-tight">{s.label}</p>
+              <div className="flex items-baseline gap-1 md:gap-2 flex-wrap">
+                <h3 className="text-base md:text-lg font-black text-slate-900">{s.value}</h3>
+                {s.sub && <span className="text-[9px] md:text-[10px] font-bold text-orange-600">{s.sub}</span>}
               </div>
             </div>
           </div>
@@ -318,17 +367,39 @@ const Inventory: React.FC = () => {
 
       {/* Table Section */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-200 flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="relative w-full md:w-96">
+        <div className="p-3 md:p-4 border-b border-slate-200 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+          <div className="relative w-full sm:w-72 md:w-96">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
             <input
               type="text"
-              placeholder="Tìm tên vật tư, SKU, danh mục..."
+              placeholder="Tìm tên vật tư, SKU..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#13ec49]/30 outline-none transition-all"
+              className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#13ec49]/30 outline-none transition-all text-sm"
             />
           </div>
+          <ActionToolbar
+            onAdd={() => {
+              setEditingItem(null);
+              setFormData({
+                inventory_code: generateRandomSKU(),
+                inventory_name: '', category_id: '',
+                unit_of_measure: '', stock_quantity: 0, min_stock_level: 0,
+                last_import_price: 0, import_date: new Date().toISOString().split('T')[0], thumbnail_id: '', note: ''
+              });
+              setShowModal(true);
+            }}
+            addLabel="Thêm vật tư"
+            onEdit={() => selectedItem && handleEditItem(selectedItem)}
+            editDisabled={!selectedItem}
+            onDelete={() => selectedItem && setDeleteTarget(selectedItem)}
+            deleteDisabled={!selectedItem}
+            onRefresh={fetchData}
+            isRefreshing={loading}
+            onExport={handleExport}
+            onImport={() => setShowImportModal(true)}
+            onDownloadTemplate={downloadTemplate}
+          />
         </div>
 
         <div className="overflow-x-auto">
@@ -349,7 +420,11 @@ const Inventory: React.FC = () => {
                 const status = getStockStatus(item);
                 const progress = Math.min((item.stock_quantity / (Math.max(item.min_stock_level, 1) * 5)) * 100, 100);
                 return (
-                  <tr key={item.id} className="group hover:bg-slate-50/80 transition-all">
+                  <tr
+                    key={item.id}
+                    onClick={() => setSelectedItem(prev => prev?.id === item.id ? null : item)}
+                    className={`group transition-all cursor-pointer ${selectedItem?.id === item.id ? 'bg-[#13ec49]/5 ring-1 ring-inset ring-[#13ec49]/20' : 'hover:bg-slate-50/80'}`}
+                  >
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-2">
                         <div className="w-10 h-10 bg-slate-100 rounded-lg overflow-hidden flex items-center justify-center border border-slate-200">
@@ -407,28 +482,13 @@ const Inventory: React.FC = () => {
                     <td className="px-4 py-2.5 text-right">
                       <div className="flex justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-all">
                         <button
-                          onClick={() => {
-                            setEditingItem(item);
-                            setFormData({
-                              inventory_code: item.inventory_code,
-                              inventory_name: item.inventory_name,
-                              category_id: item.category_id || '',
-                              unit_of_measure: item.unit_of_measure || '',
-                              stock_quantity: item.stock_quantity,
-                              min_stock_level: item.min_stock_level,
-                              last_import_price: item.last_import_price || 0,
-                              import_date: item.import_date ? new Date(item.import_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-                              thumbnail_id: item.thumbnail_id || '',
-                              note: item.note || ''
-                            });
-                            setShowModal(true);
-                          }}
+                          onClick={(e) => { e.stopPropagation(); handleEditItem(item); }}
                           className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
                         >
                           <span className="material-symbols-outlined text-[18px]">edit</span>
                         </button>
                         <button
-                          onClick={() => handleDelete(item.id)}
+                          onClick={(e) => { e.stopPropagation(); setDeleteTarget(item); }}
                           className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
                         >
                           <span className="material-symbols-outlined text-[18px]">delete</span>
@@ -442,6 +502,14 @@ const Inventory: React.FC = () => {
           </table>
         </div>
       </div>
+
+      <ConfirmDeleteModal
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
+        isDeleting={isDeleting}
+        itemName={deleteTarget?.inventory_name}
+      />
 
       {/* Modal */}
       {showModal && (
@@ -671,6 +739,14 @@ const Inventory: React.FC = () => {
           </div>
         </div>
       )}
+      <ImportDataModal
+        open={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onImport={handleImport}
+        entityName="vật tư"
+        columnGuide={['SKU', 'Tên vật tư', 'Danh mục', 'Đơn vị tính', 'Số lượng', 'Mức tối thiểu', 'Giá nhập', 'Ngày nhập', 'Ghi chú']}
+        onDownloadTemplate={downloadTemplate}
+      />
     </div>
   );
 };
