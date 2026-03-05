@@ -4,7 +4,7 @@ import { io } from 'socket.io-client';
 import { getMediaFiles, getFarmImages } from '../../services/media.service';
 import { getMediaUrl } from '../../services/products.service';
 import { getComments, createComment, addReaction, deleteComment, getCommentStats, getReactionDetails } from '../../services/comments.service';
-import { incrementVisitors, getVisitorCount } from '../../services/stats.service';
+import { incrementVisitors, getVisitorCount, toggleFavoriteCount } from '../../services/stats.service';
 import ShowcaseHeader from '../../templates/ShowcaseHeader';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { WeatherWidget } from '../../components';
@@ -209,6 +209,20 @@ const FarmShowcase: React.FC = () => {
     const [visitorCount, setVisitorCount] = React.useState<number>(0);
     const [showFullAbout, setShowFullAbout] = React.useState(false);
     const [heroIndex, setHeroIndex] = React.useState(0);
+    const [isFavorited, setIsFavorited] = React.useState(() => {
+        return localStorage.getItem('farm_favorited') === 'true';
+    });
+    const [favoriteCount, setFavoriteCount] = React.useState(0);
+
+    const handleFavorite = async () => {
+        const next = !isFavorited;
+        setIsFavorited(next);
+        localStorage.setItem('farm_favorited', String(next));
+        try {
+            const newCount = await toggleFavoriteCount(next ? 'add' : 'remove');
+            setFavoriteCount(newCount);
+        } catch { }
+    };
 
     // Comments logic state
     const [comments, setComments] = React.useState<any[]>([]);
@@ -229,8 +243,13 @@ const FarmShowcase: React.FC = () => {
 
     const fetchStats = async () => {
         try {
-            const count = await getVisitorCount();
+            const response = await import('../../services/stats.service');
+            const count = await response.getVisitorCount();
             setVisitorCount(count);
+            // Also fetch favorites from same endpoint
+            const api = await import('../../services/api');
+            const statsRes = await api.default.get('/showcase/stats');
+            setFavoriteCount(statsRes.data?.favorites || 0);
         } catch (error) {
             console.error('Error fetching stats:', error);
         }
@@ -683,12 +702,34 @@ const FarmShowcase: React.FC = () => {
                         <div className="flex flex-col gap-6">
                             <div className="flex flex-wrap justify-between items-end gap-4 p-4 border-b border-gray-100 pb-6">
                                 <div className="flex min-w-72 flex-col gap-2">
-                                    <div className="flex items-center gap-2 mb-1">
+                                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                                         <span className="bg-[#13ec49]/20 text-[#13ec49] text-xs font-bold px-2 py-1 rounded uppercase tracking-wider">Welcome</span>
-                                        <span className="flex items-center gap-1 bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-1 rounded-full border border-gray-200 shadow-sm animate-pulse-slow">
+                                        <span className="flex items-center gap-1 bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-1 rounded-full border border-gray-200 shadow-sm">
                                             <span className="material-symbols-outlined text-[14px]">visibility</span>
                                             {(visitorCount || 0).toLocaleString('vi-VN')}
                                         </span>
+                                        <span className="flex items-center gap-1 bg-red-50 text-red-400 text-[10px] font-bold px-2 py-1 rounded-full border border-red-100 shadow-sm">
+                                            <span className="material-symbols-outlined text-[14px]">favorite</span>
+                                            {(favoriteCount || 0).toLocaleString('vi-VN')}
+                                        </span>
+                                        {/* Share & Favorite buttons - same row as badges */}
+                                        <button
+                                            onClick={handleShare}
+                                            className="flex items-center gap-1 bg-white border border-gray-200 text-gray-600 text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95"
+                                        >
+                                            <span className="material-symbols-outlined text-[14px]">share</span>
+                                            Chia sẻ
+                                        </button>
+                                        <button
+                                            onClick={handleFavorite}
+                                            className={`flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full border shadow-sm transition-all active:scale-95 ${isFavorited
+                                                ? 'bg-red-50 border-red-200 text-red-500 hover:bg-red-100'
+                                                : 'bg-white border-gray-200 text-gray-600 hover:bg-red-50 hover:border-red-200 hover:text-red-400'
+                                                }`}
+                                        >
+                                            <span className={`material-symbols-outlined text-[14px] ${isFavorited ? 'fill-1' : ''}`}>favorite</span>
+                                            Yêu thích
+                                        </button>
                                     </div>
                                     <h1 className="text-[#111813] text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em]">Vườn Nhà Mình</h1>
                                     <p className="text-[#13ec49] font-bold text-lg italic -mt-1 mb-2">Đất lành, trái ngọt.</p>
@@ -696,22 +737,6 @@ const FarmShowcase: React.FC = () => {
                                         <span className="material-symbols-outlined text-[20px]">location_on</span>
                                         <p className="text-base font-normal leading-normal">Mỹ Tho, Tiền Giang, Việt Nam</p>
                                     </div>
-                                </div>
-                                <div className="flex gap-3">
-                                    <button
-                                        onClick={handleShare}
-                                        className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-white border border-gray-200 text-[#111813] text-sm font-bold shadow-sm hover:bg-gray-50 transition-colors"
-                                    >
-                                        <span className="material-symbols-outlined text-[20px] mr-2">share</span>
-                                        <span className="truncate">Chia sẻ</span>
-                                    </button>
-                                    <button
-                                        onClick={handleOpenGallery}
-                                        className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-[#13ec49] text-[#102215] text-sm font-bold shadow-md hover:brightness-110 transition-all decoration-none"
-                                    >
-                                        <span className="material-symbols-outlined text-[20px] mr-2">photo_library</span>
-                                        <span className="truncate">Xem Gallery</span>
-                                    </button>
                                 </div>
                             </div>
 
@@ -890,60 +915,63 @@ const FarmShowcase: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* Seasonal Highlights */}
+                                {/* Farm Images Gallery */}
                                 <div className="flex flex-col gap-4 mt-4">
                                     <div className="flex justify-between items-center">
-                                        <h3 className="text-xl font-bold text-[#111813]">Sản phẩm nổi bật</h3>
-                                        <Link to="/showcase/products" className="text-[#13ec49] text-sm font-bold hover:underline cursor-pointer">Xem kho hàng →</Link>
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-[#13ec49]/10 rounded-lg text-[#13ec49]">
+                                                <span className="material-symbols-outlined">photo_library</span>
+                                            </div>
+                                            <h3 className="text-xl font-bold text-[#111813]">Hình ảnh của vườn {totalFarmImagesCount > 0 && `(${totalFarmImagesCount})`}</h3>
+                                        </div>
+                                        <button
+                                            onClick={handleOpenGallery}
+                                            className="text-[#13ec49] text-sm font-bold hover:underline"
+                                        >
+                                            Xem tất cả →
+                                        </button>
                                     </div>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        {[0, 1, 2, 3].map((index) => {
+                                            const media = farmImages[index];
+                                            const isLast = index === 3 && totalFarmImagesCount > 4;
 
-                                        {/* Crop Card 1 */}
-                                        <div className="relative group overflow-hidden rounded-xl aspect-[4/3] cursor-pointer">
-                                            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors z-10"></div>
-                                            <div
-                                                className="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110"
-                                                style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1601493700631-2b16ec4b4716?w=400")' }}
-                                            ></div>
-                                            <div className="absolute bottom-3 left-3 z-20">
-                                                <p className="text-white font-bold text-lg">Mận Hậu Giang</p>
-                                                <p className="text-white/80 text-xs">Mùa hè</p>
-                                            </div>
-                                        </div>
-
-                                        {/* Crop Card 2 */}
-                                        <div className="relative group overflow-hidden rounded-xl aspect-[4/3] cursor-pointer">
-                                            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors z-10"></div>
-                                            <div
-                                                className="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110"
-                                                style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1587049352846-4a222e784acc?w=400")' }}
-                                            ></div>
-                                            <div className="absolute bottom-3 left-3 z-20">
-                                                <p className="text-white font-bold text-lg">Cam Sành</p>
-                                                <p className="text-white/80 text-xs">Thu đông</p>
-                                            </div>
-                                        </div>
-
-                                        {/* Crop Card 3 */}
-                                        <div className="relative group overflow-hidden rounded-xl aspect-[4/3] cursor-pointer">
-                                            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors z-10"></div>
-                                            <div
-                                                className="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110"
-                                                style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=400")' }}
-                                            ></div>
-                                            <div className="absolute bottom-3 left-3 z-20">
-                                                <p className="text-white font-bold text-lg">Rau Sạch</p>
-                                                <p className="text-white/80 text-xs">Quanh năm</p>
-                                            </div>
-                                        </div>
-
-                                        {/* Add New Card */}
-                                        <Link to="/master-data/showcase-products" className="flex flex-col items-center justify-center bg-white border-2 border-dashed border-gray-300 rounded-xl aspect-[4/3] cursor-pointer hover:border-[#13ec49] transition-colors group decoration-none">
-                                            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-[#13ec49] group-hover:text-[#102215] transition-colors mb-2">
-                                                <span className="material-symbols-outlined">add</span>
-                                            </div>
-                                            <p className="text-sm font-medium text-gray-500 group-hover:text-[#13ec49]">Thêm sản phẩm</p>
-                                        </Link>
+                                            return (
+                                                <div
+                                                    key={index}
+                                                    onClick={() => media && setSelectedMediaItem(media)}
+                                                    className="w-full aspect-square bg-gray-100 rounded-xl overflow-hidden cursor-pointer hover:ring-2 hover:ring-[#13ec49] transition-all relative group shadow-sm"
+                                                >
+                                                    {media ? (
+                                                        <>
+                                                            {media.mime_type?.startsWith('video/') ? (
+                                                                <div className="w-full h-full flex flex-col items-center justify-center bg-gray-800 text-white">
+                                                                    <span className="material-symbols-outlined text-3xl">movie</span>
+                                                                    <span className="text-[10px] mt-1">VIDEO</span>
+                                                                </div>
+                                                            ) : (
+                                                                <div
+                                                                    className="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110"
+                                                                    style={{ backgroundImage: `url("${getMediaUrl(media.id)}")` }}
+                                                                ></div>
+                                                            )}
+                                                            {isLast && (
+                                                                <div
+                                                                    className="absolute inset-0 bg-black/60 flex items-center justify-center text-center z-20"
+                                                                    onClick={(e) => { e.stopPropagation(); handleOpenGallery(); }}
+                                                                >
+                                                                    <span className="text-white font-bold text-lg">+{totalFarmImagesCount - 4}</span>
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center bg-gray-200/50 text-gray-300">
+                                                            <span className="material-symbols-outlined text-4xl">image</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
 
@@ -1111,59 +1139,7 @@ const FarmShowcase: React.FC = () => {
                             {/* Right Column: Gallery Grid & Contact */}
                             <div className="flex flex-col gap-6">
 
-                                <div className="bg-white p-5 rounded-2xl border border-[#dbe6de] shadow-sm">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <h3 className="text-lg font-bold text-[#111813]">Hình ảnh của vườn {totalFarmImagesCount > 0 && `(${totalFarmImagesCount})`}</h3>
-                                        <button
-                                            onClick={handleOpenGallery}
-                                            className="text-[#13ec49] hover:bg-[#13ec49]/10 p-1 rounded transition-colors flex items-center"
-                                        >
-                                            <span className="material-symbols-outlined">arrow_forward</span>
-                                        </button>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {[0, 1, 2, 3].map((index) => {
-                                            const media = farmImages[index];
-                                            const isLast = index === 3 && totalFarmImagesCount > 4;
 
-                                            return (
-                                                <div
-                                                    key={index}
-                                                    onClick={() => media && setSelectedMediaItem(media)}
-                                                    className="w-full aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-[#13ec49] transition-all relative group"
-                                                >
-                                                    {media ? (
-                                                        <>
-                                                            {media.mime_type?.startsWith('video/') ? (
-                                                                <div className="w-full h-full flex flex-col items-center justify-center bg-gray-800 text-white">
-                                                                    <span className="material-symbols-outlined text-3xl">movie</span>
-                                                                    <span className="text-[10px] mt-1">VIDEO</span>
-                                                                </div>
-                                                            ) : (
-                                                                <div
-                                                                    className="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110"
-                                                                    style={{ backgroundImage: `url("${getMediaUrl(media.id)}")` }}
-                                                                ></div>
-                                                            )}
-                                                            {isLast && (
-                                                                <div
-                                                                    className="absolute inset-0 bg-black/60 flex items-center justify-center text-center z-20"
-                                                                    onClick={(e) => { e.stopPropagation(); handleOpenGallery(); }}
-                                                                >
-                                                                    <span className="text-white font-bold text-lg">+{totalFarmImagesCount - 4}</span>
-                                                                </div>
-                                                            )}
-                                                        </>
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-300">
-                                                            <span className="material-symbols-outlined text-4xl">image</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
 
                                 <WeatherWidget />
 

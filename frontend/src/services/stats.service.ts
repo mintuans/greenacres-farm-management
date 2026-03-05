@@ -27,3 +27,29 @@ export const incrementVisitors = async (): Promise<number> => {
         return 0;
     }
 };
+
+/**
+ * Lấy số lượt yêu thích
+ */
+export const getFavoriteCount = async (): Promise<number> => {
+    try {
+        const response = await api.get(API_URL);
+        return response.data?.favorites || 0;
+    } catch (error) {
+        console.error('Error fetching favorite count:', error);
+        return 0;
+    }
+};
+
+/**
+ * Toggle yêu thích (tăng hoặc giảm 1)
+ */
+export const toggleFavoriteCount = async (action: 'add' | 'remove'): Promise<number> => {
+    try {
+        const response = await api.post(`${API_URL}/favorites/toggle`, { action });
+        return response.data?.favorites || 0;
+    } catch (error) {
+        console.error('Error toggling favorite:', error);
+        return 0;
+    }
+};

@@ -66,74 +66,98 @@ const WeatherWidget: React.FC = () => {
     if (!weather) return null;
 
     return (
-        <div className="bg-white p-5 rounded-2xl border border-[#dbe6de] shadow-sm hover:border-primary/30 transition-all group">
-            <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-bold text-[#111813] flex items-center gap-2">
-                    <span className="material-symbols-outlined text-primary">thermostat</span>
-                    Thời tiết tại vườn
-                </h3>
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Real-time</span>
+        <>
+            {/* Desktop Version: Standard Card */}
+            <div className="hidden md:block bg-white p-5 rounded-2xl border border-[#dbe6de] shadow-sm hover:border-primary/30 transition-all group">
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-bold text-[#111813] flex items-center gap-2">
+                        <span className="material-symbols-outlined text-primary">thermostat</span>
+                        Thời tiết tại vườn
+                    </h3>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Real-time</span>
+                </div>
+
+                <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-4">
+                        <div className={`p-3 rounded-2xl bg-gray-50 group-hover:scale-110 transition-transform duration-500`}>
+                            <span className={`material-symbols-outlined text-4xl ${getIconColor(weather.condition)}`}>
+                                {getIcon(weather.condition)}
+                            </span>
+                        </div>
+                        <div>
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-3xl font-black text-[#111813]">{weather.temp}°</span>
+                                <span className="text-gray-400 font-bold">C</span>
+                            </div>
+                            <p className="text-sm font-medium text-[#61896b]">{weather.description}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 border-t border-gray-100 pt-4 mb-4">
+                    <div className="text-center">
+                        <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">Độ ẩm</p>
+                        <div className="flex items-center justify-center gap-1 text-[#111813] font-bold">
+                            <span className="material-symbols-outlined text-sm text-blue-400">humidity_percentage</span>
+                            {weather.humidity}%
+                        </div>
+                    </div>
+                    <div className="text-center border-x border-gray-100 px-1">
+                        <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">Sức gió</p>
+                        <div className="flex items-center justify-center gap-1 text-[#111813] font-bold">
+                            <span className="material-symbols-outlined text-sm text-green-400">air</span>
+                            {weather.windSpeed} km/h
+                        </div>
+                    </div>
+                    <div className="text-center">
+                        <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">UV</p>
+                        <div className="flex items-center justify-center gap-1 text-[#111813] font-bold">
+                            <span className="material-symbols-outlined text-sm text-orange-400">sunny</span>
+                            {weather.uvIndex}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="space-y-3">
+                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Dự báo 3 ngày tới</p>
+                    {weather.forecast.map((f, i) => (
+                        <div key={i} className="flex items-center justify-between p-2 rounded-xl bg-gray-50/50 hover:bg-gray-50 transition-colors">
+                            <span className="text-sm font-bold text-[#3c4740] w-10">{f.day}</span>
+                            <div className="flex items-center gap-2">
+                                <span className={`material-symbols-outlined text-xl ${getIconColor(f.condition)}`}>
+                                    {getIcon(f.condition)}
+                                </span>
+                                <span className="text-xs text-gray-500 font-medium">
+                                    {f.condition === 'Clear' ? 'Nắng' : f.condition === 'Clouds' ? 'Mây' : f.condition === 'Rain' ? 'Có mưa' : 'Thay đổi'}
+                                </span>
+                            </div>
+                            <span className="text-sm font-black text-[#111813]">{f.temp}°</span>
+                        </div>
+                    ))}
+                </div>
             </div>
 
-            <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-2xl bg-gray-50 group-hover:scale-110 transition-transform duration-500`}>
-                        <span className={`material-symbols-outlined text-4xl ${getIconColor(weather.condition)}`}>
+            {/* Mobile Version: Floating Bubble */}
+            <div className="md:hidden fixed bottom-6 right-6 z-[100] animate-in slide-in-from-bottom-10 duration-500">
+                <div className="bg-white/80 backdrop-blur-md border border-white/50 shadow-2xl rounded-3xl p-3 flex items-center gap-3 active:scale-95 transition-transform">
+                    <div className={`size-10 rounded-2xl bg-white shadow-sm flex items-center justify-center`}>
+                        <span className={`material-symbols-outlined text-2xl ${getIconColor(weather.condition)}`}>
                             {getIcon(weather.condition)}
                         </span>
                     </div>
-                    <div>
-                        <div className="flex items-baseline gap-1">
-                            <span className="text-3xl font-black text-[#111813]">{weather.temp}°</span>
-                            <span className="text-gray-400 font-bold">C</span>
+                    <div className="flex flex-col pr-1">
+                        <div className="flex items-baseline gap-0.5">
+                            <span className="text-lg font-black text-[#111813]">{weather.temp}°</span>
+                            <span className="text-[10px] text-[#61896b] font-bold">C</span>
                         </div>
-                        <p className="text-sm font-medium text-[#61896b]">{weather.description}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 border-t border-gray-100 pt-4 mb-4">
-                <div className="text-center">
-                    <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">Độ ẩm</p>
-                    <div className="flex items-center justify-center gap-1 text-[#111813] font-bold">
-                        <span className="material-symbols-outlined text-sm text-blue-400">humidity_percentage</span>
-                        {weather.humidity}%
-                    </div>
-                </div>
-                <div className="text-center border-x border-gray-100 px-1">
-                    <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">Sức gió</p>
-                    <div className="flex items-center justify-center gap-1 text-[#111813] font-bold">
-                        <span className="material-symbols-outlined text-sm text-green-400">air</span>
-                        {weather.windSpeed} km/h
-                    </div>
-                </div>
-                <div className="text-center">
-                    <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">UV</p>
-                    <div className="flex items-center justify-center gap-1 text-[#111813] font-bold">
-                        <span className="material-symbols-outlined text-sm text-orange-400">sunny</span>
-                        {weather.uvIndex}
-                    </div>
-                </div>
-            </div>
-
-            <div className="space-y-3">
-                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Dự báo 3 ngày tới</p>
-                {weather.forecast.map((f, i) => (
-                    <div key={i} className="flex items-center justify-between p-2 rounded-xl bg-gray-50/50 hover:bg-gray-50 transition-colors">
-                        <span className="text-sm font-bold text-[#3c4740] w-10">{f.day}</span>
-                        <div className="flex items-center gap-2">
-                            <span className={`material-symbols-outlined text-xl ${getIconColor(f.condition)}`}>
-                                {getIcon(f.condition)}
-                            </span>
-                            <span className="text-xs text-gray-500 font-medium">
-                                {f.condition === 'Clear' ? 'Nắng' : f.condition === 'Clouds' ? 'Mây' : f.condition === 'Rain' ? 'Có mưa' : 'Thay đổi'}
-                            </span>
+                        <div className="flex items-center gap-1 text-[#61896b]">
+                            <span className="material-symbols-outlined text-[12px] text-blue-400">humidity_percentage</span>
+                            <span className="text-[10px] font-bold">{weather.humidity}%</span>
                         </div>
-                        <span className="text-sm font-black text-[#111813]">{f.temp}°</span>
                     </div>
-                ))}
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 
