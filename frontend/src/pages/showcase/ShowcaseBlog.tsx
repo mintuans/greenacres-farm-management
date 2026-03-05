@@ -138,7 +138,7 @@ const ShowcaseBlog: React.FC = () => {
                                 </div>
                                 <div>
                                     <h1 className="text-4xl md:text-5xl font-black text-[#111813] tracking-tight">Tin tức</h1>
-                                    <p className="text-[#61896b] text-lg mt-1">Chia sẻ kinh nghiệm, câu chuyện và kiến thức nông nghiệp</p>
+                                    <p className="text-[#61896b] text-lg mt-1">Cập nhật thông tin mới nhất về trong nước và thế giới</p>
                                 </div>
                             </div>
                         </div>
