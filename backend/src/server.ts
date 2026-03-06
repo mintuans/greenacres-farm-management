@@ -1,6 +1,10 @@
 import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+
+// Load environment variables immediately
+dotenv.config();
+
 import http from 'http';
 import { initSocket } from './config/socket';
 import showcaseRoutes from './routes/showcase';
@@ -9,9 +13,6 @@ import oauthRoutes from './routes/auth/oauth.routes';
 import payrollRoutes from './routes/payroll.routes';
 import notificationRoutes from './routes/notification.routes';
 import passport from './config/passport';
-
-// Load environment variables
-dotenv.config();
 
 const app: Application = express();
 const server = http.createServer(app);
