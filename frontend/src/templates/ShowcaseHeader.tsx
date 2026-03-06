@@ -4,6 +4,7 @@ import { useAuth } from '@/src/contexts/AuthContext';
 import { getMediaUrl } from '../services/products.service';
 import logoWeb from '../assets/logo_web.png';
 import NotificationDropdown from '../components/NotificationDropdown';
+import IntelligentAssistant from '../components/IntelligentAssistant';
 
 interface ShowcaseHeaderProps {
     searchTerm?: string;
@@ -134,6 +135,9 @@ const ShowcaseHeader: React.FC<ShowcaseHeaderProps> = ({
                     </div>
                 </div>
             </div>
+
+            {/* Global Intelligent AI Assistant */}
+            <IntelligentAssistant />
         </header>
     );
 };

@@ -1293,6 +1293,7 @@ const FarmShowcase: React.FC = () => {
                     <span className="font-medium text-sm">Đã sao chép liên kết vào bộ nhớ tạm!</span>
                 </div>
             )}
+
         </div>
     );
 };

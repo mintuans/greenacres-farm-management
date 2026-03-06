@@ -112,7 +112,7 @@ const ManagementShowcaseEvents: React.FC = () => {
                         <table className="w-full text-left">
                             <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200 whitespace-nowrap">
                                 <tr>
-                                    <th className="px-6 py-4 min-w-[250px]">Sự kiện</th>
+                                    <th className="px-6 py-4 min-w-[350px]">Tên sự kiện</th>
                                     <th className="px-6 py-4 min-w-[120px]">Gallery</th>
                                     <th className="px-6 py-4 min-w-[160px]">Ngày diễn ra</th>
                                     <th className="px-6 py-4 min-w-[180px]">Địa điểm</th>

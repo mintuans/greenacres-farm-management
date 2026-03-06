@@ -10,6 +10,7 @@ import profileRoutes from './profile.routes';
 import eventsRoutes from './events.routes';
 import weatherRoutes from './weather.routes';
 import newsRoutes from './news.routes';
+import aiRoutes from './ai.routes';
 
 const router = Router();
 
@@ -25,5 +26,6 @@ router.use('/profile', profileRoutes);
 router.use('/events', eventsRoutes);
 router.use('/weather', weatherRoutes);
 router.use('/news', newsRoutes);
+router.use('/ai', aiRoutes);
 
 export default router;

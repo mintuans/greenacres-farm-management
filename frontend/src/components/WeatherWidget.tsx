@@ -5,6 +5,11 @@ const WeatherWidget: React.FC = () => {
     const [weather, setWeather] = useState<WeatherData | null>(null);
     const [loading, setLoading] = useState(true);
 
+    // Drag logic for mobile
+    const [position, setPosition] = useState({ x: 0, y: 0 });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
     useEffect(() => {
         const fetchWeather = async () => {
             try {
@@ -18,6 +23,28 @@ const WeatherWidget: React.FC = () => {
         };
         fetchWeather();
     }, []);
+
+    const handlePointerDown = (e: React.PointerEvent) => {
+        setIsDragging(true);
+        setDragStart({
+            x: e.clientX - position.x,
+            y: e.clientY - position.y
+        });
+        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    };
+
+    const handlePointerMove = (e: React.PointerEvent) => {
+        if (!isDragging) return;
+        setPosition({
+            x: e.clientX - dragStart.x,
+            y: e.clientY - dragStart.y
+        });
+    };
+
+    const handlePointerUp = (e: React.PointerEvent) => {
+        setIsDragging(false);
+        (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+    };
 
     const getIcon = (condition: string) => {
         switch (condition) {
@@ -137,15 +164,25 @@ const WeatherWidget: React.FC = () => {
                 </div>
             </div>
 
-            {/* Mobile Version: Floating Bubble */}
-            <div className="md:hidden fixed bottom-6 right-6 z-[100] animate-in slide-in-from-bottom-10 duration-500">
-                <div className="bg-white/80 backdrop-blur-md border border-white/50 shadow-2xl rounded-3xl p-3 flex items-center gap-3 active:scale-95 transition-transform">
-                    <div className={`size-10 rounded-2xl bg-white shadow-sm flex items-center justify-center`}>
+            {/* Mobile Version: Floating Bubble - Draggable */}
+            <div
+                className="md:hidden fixed bottom-6 right-6 z-[100] touch-none"
+                style={{
+                    transform: `translate(${position.x}px, ${position.y}px)`,
+                    transition: isDragging ? 'none' : 'transform 0.1s ease-out'
+                }}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerUp}
+            >
+                <div className="bg-white/80 backdrop-blur-md border border-white/50 shadow-2xl rounded-3xl p-3 flex items-center gap-3 active:scale-95 transition-transform cursor-move">
+                    <div className={`size-10 rounded-2xl bg-white shadow-sm flex items-center justify-center pointer-events-none`}>
                         <span className={`material-symbols-outlined text-2xl ${getIconColor(weather.condition)}`}>
                             {getIcon(weather.condition)}
                         </span>
                     </div>
-                    <div className="flex flex-col pr-1">
+                    <div className="flex flex-col pr-1 pointer-events-none">
                         <div className="flex items-baseline gap-0.5">
                             <span className="text-lg font-black text-[#111813]">{weather.temp}°</span>
                             <span className="text-[10px] text-[#61896b] font-bold">C</span>

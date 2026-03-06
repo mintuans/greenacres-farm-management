@@ -21,3 +21,4 @@ export type { ConfirmDeleteModalProps } from './ConfirmDeleteModal';
 
 export { ImportDataModal } from './ImportDataModal';
 export type { ImportDataModalProps } from './ImportDataModal';
+export { default as IntelligentAssistant } from './IntelligentAssistant';
