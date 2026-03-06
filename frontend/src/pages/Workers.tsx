@@ -284,7 +284,7 @@ const Workers: React.FC = () => {
                                 <tr>
                                     <th className="px-4 py-3">Mã đối tác</th>
                                     <th className="px-4 py-3">Tên đối tác</th>
-                                    <th className="px-4 py-3">Loại</th>
+                                    <th className="px-4 py-3 min-w-[120px]">Loại</th>
                                     <th className="px-4 py-3">Điện thoại</th>
                                     <th className="px-4 py-3">Địa chỉ</th>
                                     <th className="px-4 py-3">Số dư</th>
@@ -319,7 +319,7 @@ const Workers: React.FC = () => {
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3">
-                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${worker.type === 'SUPPLIER' ? 'bg-blue-100 text-blue-800' :
+                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${worker.type === 'SUPPLIER' ? 'bg-blue-100 text-blue-800' :
                                                     worker.type === 'BUYER' ? 'bg-green-100 text-green-800' :
                                                         worker.type === 'FAMILY' ? 'bg-orange-100 text-orange-800' :
                                                             'bg-purple-100 text-purple-800'

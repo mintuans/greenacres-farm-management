@@ -46,7 +46,7 @@ const Roles: React.FC = () => {
             loadRoles();
         } catch (error: any) {
             console.error('Error saving role:', error);
-            alert(error.response?.data?.message || 'Không thể lưu nhóm quyền');
+            console.error(error.response?.data?.message || 'Không thể lưu nhóm quyền');
         }
     };
 
@@ -68,7 +68,7 @@ const Roles: React.FC = () => {
             loadRoles();
         } catch (error: any) {
             console.error('Error deleting role:', error);
-            alert(error.response?.data?.message || 'Không thể xóa nhóm quyền');
+            console.error(error.response?.data?.message || 'Không thể xóa nhóm quyền');
         } finally {
             setIsDeleting(false);
         }
@@ -81,12 +81,12 @@ const Roles: React.FC = () => {
 
     const handleExport = () => {
         console.log('Exporting roles...');
-        alert('Đang trích xuất danh sách nhóm quyền ra file Excel...');
+        console.log('Đang trích xuất danh sách nhóm quyền ra file Excel...');
     };
 
     const handleDownloadTemplate = () => {
         console.log('Downloading role template...');
-        alert('Đang tải tệp mẫu nhóm quyền...');
+        console.log('Đang tải tệp mẫu nhóm quyền...');
     };
 
     const resetForm = () => {
@@ -111,7 +111,7 @@ const Roles: React.FC = () => {
                 <p className="text-slate-500 text-sm mt-1">Định nghĩa các vai trò trong hệ thống</p>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden border-t-4 border-t-[#13ec49]">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm border-t-4 border-t-[#13ec49]">
                 <div className="p-3 md:p-4 border-b border-slate-200 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
                     <div className="relative w-full sm:max-w-xs">
                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
@@ -148,8 +148,8 @@ const Roles: React.FC = () => {
                         <table className="w-full text-left">
                             <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200 whitespace-nowrap">
                                 <tr>
-                                    <th className="px-6 py-4">Mã nhóm</th>
-                                    <th className="px-6 py-4">Mô tả</th>
+                                    <th className="px-6 py-4 min-w-[150px]">Mã nhóm</th>
+                                    <th className="px-6 py-4 min-w-[350px]">Mô tả</th>
                                     <th className="px-6 py-4">Hệ thống</th>
                                     <th className="px-6 py-4 text-right">Thao tác</th>
                                 </tr>

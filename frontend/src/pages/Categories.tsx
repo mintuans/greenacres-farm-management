@@ -30,7 +30,7 @@ const Categories: React.FC = () => {
             setCategories(data);
         } catch (error) {
             console.error('Error loading categories:', error);
-            alert('Không thể tải danh sách danh mục');
+            console.error('Không thể tải danh sách danh mục');
         } finally {
             setLoading(false);
         }
@@ -49,7 +49,7 @@ const Categories: React.FC = () => {
             loadCategories();
         } catch (error: any) {
             console.error('Error saving category:', error);
-            alert(error.response?.data?.message || 'Không thể lưu danh mục');
+            console.error(error.response?.data?.message || 'Không thể lưu danh mục');
         }
     };
 
@@ -178,9 +178,9 @@ const Categories: React.FC = () => {
                             <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200 whitespace-nowrap">
                                 <tr>
                                     <th className="px-6 py-4">Mã danh mục</th>
-                                    <th className="px-6 py-4">Tên danh mục</th>
-                                    <th className="px-6 py-4">Phạm vi</th>
-                                    <th className="px-6 py-4">Danh mục cha</th>
+                                    <th className="px-6 py-4 min-w-[200px]">Tên danh mục</th>
+                                    <th className="px-6 py-4 min-w-[120px]">Phạm vi</th>
+                                    <th className="px-6 py-4 min-w-[180px]">Danh mục cha</th>
                                     <th className="px-6 py-4 text-right">Thao tác</th>
                                 </tr>
                             </thead>
@@ -205,7 +205,7 @@ const Categories: React.FC = () => {
                                             </td>
                                             <td className="px-6 py-4 font-bold text-slate-900">{cat.category_name}</td>
                                             <td className="px-6 py-4">
-                                                <span className={`px-3 py-1 rounded-lg text-xs font-bold ${getScopeColor(cat.scope)}`}>
+                                                <span className={`px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap ${getScopeColor(cat.scope)}`}>
                                                     {getScopeLabel(cat.scope)}
                                                 </span>
                                             </td>

@@ -229,7 +229,7 @@ const WorkSchedules: React.FC = () => {
                         <table className="w-full text-left">
                             <thead className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] whitespace-nowrap">
                                 <tr>
-                                    <th className="px-8 py-5">Nhân sự & Ca</th>
+                                    <th className="px-8 py-5 min-w-[250px]">Nhân sự & Ca</th>
                                     <th className="px-8 py-5">Công việc</th>
                                     <th className="px-8 py-5">Ngày làm việc</th>
                                     <th className="px-8 py-5">Trạng thái</th>

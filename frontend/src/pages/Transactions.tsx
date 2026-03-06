@@ -219,7 +219,7 @@ const Transactions: React.FC = () => {
       fetchData();
     } catch (error) {
       console.error('Error deleting transaction:', error);
-      alert('Không thể xóa giao dịch này');
+      console.error('Không thể xóa giao dịch này');
     } finally {
       setIsDeleting(false);
     }
@@ -491,7 +491,7 @@ const Transactions: React.FC = () => {
       </div>
 
       {/* Main Content Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden border-t-4 border-t-[#13ec49]">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm border-t-4 border-t-[#13ec49]">
         <div className="p-4 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2 w-full md:w-auto">
             <button className="bg-slate-50 text-slate-700 px-3 py-1.5 rounded-xl text-[9px] font-black flex items-center gap-1.5 border border-slate-200 uppercase tracking-widest hover:bg-slate-100 transition-all"><span className="material-symbols-outlined text-[16px]">filter_list</span> Lọc</button>
@@ -530,7 +530,7 @@ const Transactions: React.FC = () => {
                 <th className="px-4 py-3 w-10 text-center"><input type="checkbox" className="rounded border-slate-200 text-[#13ec49] focus:ring-[#13ec49]" /></th>
                 <th className="px-4 py-3 text-xs">Ngày</th>
                 <th className="px-4 py-3">Nội dung / Chi tiết</th>
-                <th className="px-4 py-3">Phân loại</th>
+                <th className="px-4 py-3 min-w-[140px]">Phân loại</th>
                 <th className="px-4 py-3 text-right">Số tiền</th>
                 <th className="px-4 py-3 text-center">Trạng thái</th>
               </tr>
@@ -558,7 +558,7 @@ const Transactions: React.FC = () => {
                       <div className="font-extrabold text-slate-900 group-hover:text-[#13ec49] transition-colors">{t.note || 'Không có tiêu đề'}</div>
                       <div className="text-[9px] text-slate-400 uppercase tracking-widest mt-0.5">{t.season_name ? `⚡ ${t.season_name}` : '🏠 Chi tiêu chung'}{t.partner_name ? ` • 👤 ${t.partner_name}` : ''}</div>
                     </td>
-                    <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${t.type === 'INCOME' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{t.category_name || 'Khác'}</span></td>
+                    <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider whitespace-nowrap ${t.type === 'INCOME' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{t.category_name || 'Khác'}</span></td>
                     <td className={`px-4 py-3 text-right font-black text-sm ${t.type === 'EXPENSE' ? 'text-red-500' : 'text-green-600'}`}>{t.type === 'EXPENSE' ? '-' : '+'}{Number(t.amount).toLocaleString('vi-VN')}đ</td>
                     <td className="px-4 py-3 text-center"><div className="flex items-center justify-center gap-1.5 text-green-600"><span className="material-symbols-outlined text-[14px]">check_circle</span><span className="text-[9px] font-black uppercase tracking-widest">OK</span></div></td>
                   </tr>

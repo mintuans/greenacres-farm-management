@@ -407,7 +407,7 @@ const Inventory: React.FC = () => {
             <thead className="bg-slate-50/50 text-[11px] font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">
               <tr>
                 <th className="px-4 py-3">Sản phẩm</th>
-                <th className="px-4 py-3">Danh mục</th>
+                <th className="px-4 py-3 min-w-[120px]">Danh mục</th>
                 <th className="px-4 py-3">Số lượng</th>
                 <th className="px-4 py-3">Giá nhập</th>
                 <th className="px-4 py-3">Ngày nhập</th>
@@ -451,7 +451,7 @@ const Inventory: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-4 py-2.5">
-                      <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-bold uppercase border border-blue-100">
+                      <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-bold uppercase border border-blue-100 whitespace-nowrap">
                         {item.category_name || 'Khác'}
                       </span>
                     </td>

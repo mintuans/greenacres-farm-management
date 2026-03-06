@@ -42,7 +42,7 @@ const ManagementShowcaseEvents: React.FC = () => {
             loadData();
         } catch (error) {
             console.error('Error deleting event:', error);
-            alert('Không thể xóa sự kiện');
+            console.error('Không thể xóa sự kiện');
         } finally {
             setIsDeleting(false);
         }
@@ -55,12 +55,12 @@ const ManagementShowcaseEvents: React.FC = () => {
 
     const handleExport = () => {
         console.log('Exporting events...');
-        alert('Đang trích xuất danh sách sự kiện ra file Excel...');
+        console.log('Đang trích xuất danh sách sự kiện ra file Excel...');
     };
 
     const handleDownloadTemplate = () => {
         console.log('Downloading event template...');
-        alert('Đang tải tệp mẫu sự kiện...');
+        console.log('Đang tải tệp mẫu sự kiện...');
     };
 
 
@@ -101,7 +101,7 @@ const ManagementShowcaseEvents: React.FC = () => {
                 </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm border-t-4 border-t-[#13ec49]">
                 {loading ? (
                     <div className="text-center py-20">
                         <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#13ec49]"></div>
@@ -112,11 +112,11 @@ const ManagementShowcaseEvents: React.FC = () => {
                         <table className="w-full text-left">
                             <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200 whitespace-nowrap">
                                 <tr>
-                                    <th className="px-6 py-4">Sự kiện</th>
-                                    <th className="px-6 py-4">Gallery</th>
-                                    <th className="px-6 py-4">Ngày diễn ra</th>
-                                    <th className="px-6 py-4">Địa điểm</th>
-                                    <th className="px-6 py-4">Trạng thái</th>
+                                    <th className="px-6 py-4 min-w-[250px]">Sự kiện</th>
+                                    <th className="px-6 py-4 min-w-[120px]">Gallery</th>
+                                    <th className="px-6 py-4 min-w-[160px]">Ngày diễn ra</th>
+                                    <th className="px-6 py-4 min-w-[180px]">Địa điểm</th>
+                                    <th className="px-6 py-4 min-w-[130px]">Trạng thái</th>
                                     <th className="px-6 py-4 text-right">Thao tác</th>
                                 </tr>
                             </thead>
@@ -167,7 +167,7 @@ const ManagementShowcaseEvents: React.FC = () => {
                                             </td>
                                             <td className="px-6 py-4 text-slate-600">{event.location || '-'}</td>
                                             <td className="px-6 py-4">
-                                                <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${event.status === 'PUBLISHED' ? 'bg-green-100 text-green-700' :
+                                                <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${event.status === 'PUBLISHED' ? 'bg-green-100 text-green-700' :
                                                     event.status === 'ENDED' ? 'bg-slate-100 text-slate-700' :
                                                         'bg-yellow-100 text-yellow-700'
                                                     }`}>

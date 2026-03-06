@@ -124,7 +124,7 @@ const PayrollManagement: React.FC = () => {
 
             {/* Stats Cards */}
             {stats && (
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 gap-4 md:gap-6">
                     <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                         <p className="text-sm font-medium text-slate-500">Tổng phiếu lương</p>
                         <h3 className="text-3xl font-black text-slate-900 mt-2">{stats.total_payrolls}</h3>

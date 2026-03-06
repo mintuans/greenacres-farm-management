@@ -31,7 +31,7 @@ const ProductionUnits: React.FC = () => {
             setUnits(data);
         } catch (error) {
             console.error('Error loading production units:', error);
-            alert('Không thể tải danh sách đơn vị sản xuất');
+            console.error('Không thể tải danh sách đơn vị sản xuất');
         } finally {
             setLoading(false);
         }
@@ -50,7 +50,7 @@ const ProductionUnits: React.FC = () => {
             loadUnits();
         } catch (error: any) {
             console.error('Error saving production unit:', error);
-            alert(error.response?.data?.message || 'Không thể lưu đơn vị sản xuất');
+            console.error(error.response?.data?.message || 'Không thể lưu đơn vị sản xuất');
         }
     };
 
@@ -138,7 +138,7 @@ const ProductionUnits: React.FC = () => {
                 <p className="text-slate-500 mt-2">Danh sách các vườn, chuồng trại và khu vực sản xuất</p>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm border-t-4 border-t-[#13ec49]">
                 <div className="p-3 md:p-4 border-b border-slate-200 flex flex-col md:flex-row gap-4 items-center justify-between">
                     <div className="relative w-full md:w-96">
                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
@@ -179,8 +179,8 @@ const ProductionUnits: React.FC = () => {
                             <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200 whitespace-nowrap">
                                 <tr>
                                     <th className="px-6 py-4">Mã đơn vị</th>
-                                    <th className="px-6 py-4">Tên đơn vị</th>
-                                    <th className="px-6 py-4">Loại hình</th>
+                                    <th className="px-6 py-4 min-w-[200px]">Tên đơn vị</th>
+                                    <th className="px-6 py-4 min-w-[120px]">Loại hình</th>
                                     <th className="px-6 py-4">Diện tích (ha)</th>
                                     <th className="px-6 py-4">Mô tả</th>
                                     <th className="px-6 py-4 text-right">Thao tác</th>
@@ -214,7 +214,7 @@ const ProductionUnits: React.FC = () => {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className={`px-3 py-1 rounded-lg text-xs font-bold ${getTypeColor(unit.type || '')}`}>
+                                                <span className={`px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap ${getTypeColor(unit.type || '')}`}>
                                                     {getTypeLabel(unit.type || '')}
                                                 </span>
                                             </td>

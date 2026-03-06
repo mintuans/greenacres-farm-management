@@ -54,7 +54,7 @@ const Users: React.FC = () => {
             setShowRoleModal(true);
         } catch (error) {
             console.error('Error loading user roles:', error);
-            alert('Không thể tải danh sách vai trò của người dùng');
+            console.error('Không thể tải danh sách vai trò của người dùng');
         }
     };
 
@@ -72,7 +72,7 @@ const Users: React.FC = () => {
             }
         } catch (error) {
             console.error('Error toggling role:', error);
-            alert('Không thể cập nhật vai trò');
+            console.error('Không thể cập nhật vai trò');
         }
     };
 
@@ -89,7 +89,7 @@ const Users: React.FC = () => {
             loadUsers();
         } catch (error: any) {
             console.error('Error saving user:', error);
-            alert(error.response?.data?.message || 'Không thể lưu người dùng');
+            console.error(error.response?.data?.message || 'Không thể lưu người dùng');
         }
     };
 
@@ -112,7 +112,7 @@ const Users: React.FC = () => {
             loadUsers();
         } catch (error: any) {
             console.error('Error deleting user:', error);
-            alert(error.response?.data?.message || 'Không thể xóa người dùng');
+            console.error(error.response?.data?.message || 'Không thể xóa người dùng');
         } finally {
             setIsDeleting(false);
         }
@@ -125,12 +125,12 @@ const Users: React.FC = () => {
 
     const handleExport = () => {
         console.log('Exporting users...');
-        alert('Đang trích xuất danh sách tài khoản ra file Excel...');
+        console.log('Đang trích xuất danh sách tài khoản ra file Excel...');
     };
 
     const handleDownloadTemplate = () => {
         console.log('Downloading user template...');
-        alert('Đang tải tệp mẫu tài khoản...');
+        console.log('Đang tải tệp mẫu tài khoản...');
     };
 
     const resetForm = () => {
@@ -157,7 +157,7 @@ const Users: React.FC = () => {
                 <p className="text-slate-500 text-sm mt-1">Danh sách người dùng đăng nhập vào hệ thống</p>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden border-t-4 border-t-[#13ec49]">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm border-t-4 border-t-[#13ec49]">
                 <div className="p-3 md:p-4 border-b border-slate-200 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
                     <div className="relative w-full sm:max-w-xs">
                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
@@ -194,9 +194,9 @@ const Users: React.FC = () => {
                         <table className="w-full text-left">
                             <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200 whitespace-nowrap">
                                 <tr>
-                                    <th className="px-6 py-4">Họ và tên</th>
-                                    <th className="px-6 py-4">Email / SĐT</th>
-                                    <th className="px-6 py-4">Trạng thái</th>
+                                    <th className="px-6 py-4 min-w-[220px]">Họ và tên</th>
+                                    <th className="px-6 py-4 min-w-[180px]">Email / SĐT</th>
+                                    <th className="px-6 py-4 min-w-[140px]">Trạng thái</th>
                                     <th className="px-6 py-4">Ngày tạo</th>
                                     <th className="px-6 py-4 text-right">Thao tác</th>
                                 </tr>
@@ -218,7 +218,7 @@ const Users: React.FC = () => {
                                             <td className="px-6 py-4 font-bold text-slate-900">{user.full_name}</td>
                                             <td className="px-6 py-4 text-slate-600">{user.email || user.phone}</td>
                                             <td className="px-6 py-4">
-                                                <span className={`px-3 py-1 rounded-lg text-xs font-bold ${user.is_active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                                                <span className={`px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap ${user.is_active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
                                                     {user.is_active ? 'Hoạt động' : 'Khóa'}
                                                 </span>
                                             </td>

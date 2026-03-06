@@ -68,7 +68,7 @@ const ManagementGuests: React.FC = () => {
             setFormData({ full_name: '', default_title: '', phone: '', email: '', avatar_id: '' });
             loadGuests();
         } catch (error) {
-            alert(`Không thể ${editingId ? 'cập nhật' : 'tạo'} khách mời`);
+            console.error(`Không thể ${editingId ? 'cập nhật' : 'tạo'} khách mời`);
         }
     };
 
@@ -93,7 +93,7 @@ const ManagementGuests: React.FC = () => {
             loadGuests();
         } catch (error) {
             console.error('Error deleting guest:', error);
-            alert('Không thể xóa khách mời');
+            console.error('Không thể xóa khách mời');
         } finally {
             setIsDeleting(false);
         }
@@ -106,12 +106,12 @@ const ManagementGuests: React.FC = () => {
 
     const handleExport = () => {
         console.log('Exporting guests...');
-        alert('Đang trích xuất danh sách khách mời ra file Excel...');
+        console.log('Đang trích xuất danh sách khách mời ra file Excel...');
     };
 
     const handleDownloadTemplate = () => {
         console.log('Downloading guest template...');
-        alert('Đang tải tệp mẫu khách mời...');
+        console.log('Đang tải tệp mẫu khách mời...');
     };
 
     return (
@@ -145,7 +145,7 @@ const ManagementGuests: React.FC = () => {
                 </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden text-sm">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm border-t-4 border-t-[#13ec49] text-sm">
                 {loading ? (
                     <div className="text-center py-20 italic text-slate-400">Đang tải...</div>
                 ) : (
@@ -153,10 +153,10 @@ const ManagementGuests: React.FC = () => {
                         <table className="w-full text-left">
                             <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200 whitespace-nowrap">
                                 <tr>
-                                    <th className="px-6 py-4">Khách mời</th>
-                                    <th className="px-6 py-4">Chức danh mặc định</th>
-                                    <th className="px-6 py-4">Điện thoại</th>
-                                    <th className="px-6 py-4">Email</th>
+                                    <th className="px-6 py-4 min-w-[280px]">Khách mời</th>
+                                    <th className="px-6 py-4 min-w-[220px]">Chức danh mặc định</th>
+                                    <th className="px-6 py-4 min-w-[130px]">Điện thoại</th>
+                                    <th className="px-6 py-4 min-w-[200px]">Email</th>
                                     <th className="px-6 py-4 text-right">Thao tác</th>
                                 </tr>
                             </thead>
@@ -173,7 +173,7 @@ const ManagementGuests: React.FC = () => {
                                             className={`group transition-all cursor-pointer ${selectedGuest?.id === guest.id ? 'bg-[#13ec49]/5 ring-1 ring-inset ring-[#13ec49]/30' : 'hover:bg-slate-50'}`}
                                         >
                                             <td className="px-6 py-4 uppercase">
-                                                <div className="flex items-center gap-3">
+                                                <div className="flex items-center gap-3 whitespace-nowrap">
                                                     {guest.avatar_id ? (
                                                         <img src={getMediaUrl(guest.avatar_id)} alt="" className="size-10 rounded-full object-cover" />
                                                     ) : (

@@ -61,7 +61,7 @@ export class BackupSchedulerService {
      */
     private static async performBackup(taskName: string): Promise<void> {
         try {
-            const backupDir = path.join(__dirname, '../../backups');
+            const backupDir = path.join(process.cwd(), 'backups');
 
             // Tạo thư mục backups nếu chưa tồn tại
             if (!fsSync.existsSync(backupDir)) {
@@ -72,31 +72,40 @@ export class BackupSchedulerService {
             const filename = `auto_backup_${timestamp}.sql`;
             const backupPath = path.join(backupDir, filename);
 
-            // Lấy thông tin kết nối database
-            const dbHost = process.env.DB_HOST || 'localhost';
-            const dbPort = process.env.DB_PORT || '5432';
-            const dbName = process.env.DB_NAME || 'quan_ly_nong_trai';
-            const dbUser = process.env.DB_USER || 'postgres';
-            const dbPassword = process.env.DB_PASSWORD || '';
-
-            // Tạo command pg_dump
-            // Determine Platform and Command
             const isWindows = process.platform === 'win32';
             let command = '';
 
+            const dbUrl = process.env.DATABASE_URL;
+
             if (isWindows) {
+                const dbHost = process.env.DB_HOST || 'localhost';
+                const dbPort = process.env.DB_PORT || '5432';
+                const dbName = process.env.DB_NAME || 'greenacres';
+                const dbUser = process.env.DB_USER || 'postgres';
+                const dbPassword = process.env.DB_PASSWORD || '';
+
                 const pgBinPath = process.env.PG_BIN_PATH || 'C:\\Program Files\\PostgreSQL\\18\\bin';
                 const pgDumpExe = `${pgBinPath}\\pg_dump.exe`;
-                command = `powershell -Command "$env:PGPASSWORD='${dbPassword}'; & '${pgDumpExe}' -h ${dbHost} -p ${dbPort} -U ${dbUser} -d ${dbName} -F p -f '${backupPath}'"`;
+
+                if (dbUrl) {
+                    command = `powershell -Command "& '${pgDumpExe}' --dbname='${dbUrl}' -F p -f '${backupPath}'"`;
+                } else {
+                    command = `powershell -Command "$env:PGPASSWORD='${dbPassword}'; & '${pgDumpExe}' -h ${dbHost} -p ${dbPort} -U ${dbUser} -d ${dbName} -F p -f '${backupPath}'"`;
+                }
             } else {
-                // Linux/Unix Logic
-                // Use PGPASSWORD environment variable inline
-                // Assuming pg_dump is in GLOBAL PATH on Linux (standard install)
-                command = `PGPASSWORD='${dbPassword}' pg_dump -h ${dbHost} -p ${dbPort} -U ${dbUser} -d ${dbName} -F p -f '${backupPath}'`;
+                if (dbUrl) {
+                    command = `pg_dump "${dbUrl}" -F p -f '${backupPath}'`;
+                } else {
+                    const dbHost = process.env.DB_HOST || 'localhost';
+                    const dbPort = process.env.DB_PORT || '5432';
+                    const dbName = process.env.DB_NAME || 'quan_ly_nong_trai';
+                    const dbUser = process.env.DB_USER || 'postgres';
+                    const dbPassword = process.env.DB_PASSWORD || '';
+                    command = `PGPASSWORD='${dbPassword}' pg_dump -h ${dbHost} -p ${dbPort} -U ${dbUser} -d ${dbName} -F p -f '${backupPath}'`;
+                }
             }
 
-            console.log(`📁 Backup path: ${backupPath}`);
-
+            console.log(`📁 [${taskName}] Backup path: ${backupPath}`);
             await execAsync(command);
 
             const stats = await fs.stat(backupPath);
