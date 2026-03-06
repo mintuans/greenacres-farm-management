@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { JobType, getJobTypes, createJobType, updateJobType, deleteJobType, CreateJobTypeInput } from '../api/job-type.api';
 import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../components';
 import ExcelJS from 'exceljs';
@@ -32,7 +32,7 @@ const JobTypes: React.FC = () => {
             setJobs(data);
         } catch (error) {
             console.error('Error loading job types:', error);
-            alert('Không thể tải danh sách công việc');
+            console.error('Không thể tải danh sách công việc');
         } finally {
             setLoading(false);
         }
@@ -51,7 +51,7 @@ const JobTypes: React.FC = () => {
             loadJobs();
         } catch (error: any) {
             console.error('Error saving job type:', error);
-            alert(error.response?.data?.message || 'Không thể lưu công việc');
+            console.error(error.response?.data?.message || 'Không thể lưu công việc');
         }
     };
 
@@ -148,7 +148,7 @@ const JobTypes: React.FC = () => {
                 </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden border-t-4 border-t-[#13ec49]">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm border-t-4 border-t-[#13ec49]">
                 <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row gap-4 items-center justify-between">
                     <div className="relative w-full sm:max-w-md">
                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
@@ -183,7 +183,7 @@ const JobTypes: React.FC = () => {
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200">
+                            <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200 whitespace-nowrap">
                                 <tr>
                                     <th className="px-6 py-4">Mã công việc</th>
                                     <th className="px-6 py-4">Tên công việc</th>

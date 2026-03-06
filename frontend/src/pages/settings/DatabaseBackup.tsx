@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { databaseBackupApi, BackupFile } from '@/src/api/database-backup.api';
 
 const DatabaseBackup: React.FC = () => {
@@ -225,7 +225,7 @@ const DatabaseBackup: React.FC = () => {
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full">
-                                <thead className="bg-slate-50 border-b border-slate-200">
+                                <thead className="bg-slate-50 border-b border-slate-200 whitespace-nowrap">
                                     <tr>
                                         <th className="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
                                             Tên File

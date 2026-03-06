@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { getManagementProducts, createManagementProduct, updateManagementProduct, deleteManagementProduct, ManagementProduct } from '../../services/management-products.service';
 import { getProductCategories, ProductCategory, getMediaUrl } from '../../services/products.service';
 import { getMediaFiles, MediaFile } from '../../services/media.service';
@@ -215,7 +215,7 @@ const ManagementProducts: React.FC = () => {
             {/* Table */}
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                 <table className="w-full">
-                    <thead className="bg-gray-50 border-b border-gray-200">
+                    <thead className="bg-gray-50 border-b border-gray-200 whitespace-nowrap">
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Mã SP</th>
                             <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase">Tên sản phẩm</th>

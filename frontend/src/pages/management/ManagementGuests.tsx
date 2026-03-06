@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
     getAllGuests,
     createGuest,
@@ -151,7 +151,7 @@ const ManagementGuests: React.FC = () => {
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200">
+                            <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200 whitespace-nowrap">
                                 <tr>
                                     <th className="px-6 py-4">Khách mời</th>
                                     <th className="px-6 py-4">Chức danh mặc định</th>

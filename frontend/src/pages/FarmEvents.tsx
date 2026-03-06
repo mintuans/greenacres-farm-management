@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { getFarmEvents, createFarmEvent, updateFarmEvent, deleteFarmEvent, FarmEvent } from '../api/farm-event.api';
 import { getSeasons, Season } from '../api/season.api';
 import { getProductionUnits, ProductionUnit } from '../api/production-unit.api';
@@ -216,7 +216,7 @@ const FarmEvents: React.FC = () => {
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                            <thead className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] whitespace-nowrap">
                                 <tr>
                                     <th className="px-8 py-5">Tên sự kiện</th>
                                     <th className="px-8 py-5">Loại</th>

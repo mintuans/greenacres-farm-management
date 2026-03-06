@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllBlogPostsForManagement, deleteBlogPost, BlogPost } from '../../services/blog.service';
 import { getMediaUrl } from '../../services/products.service';
@@ -143,7 +143,7 @@ const ManagementBlog: React.FC = () => {
                         </div>
                     ) : (
                         <table className="w-full min-w-[1000px]">
-                            <thead className="bg-gray-50 border-b border-gray-100">
+                            <thead className="bg-gray-50 border-b border-gray-100 whitespace-nowrap">
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                                         Bài viết

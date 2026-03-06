@@ -261,7 +261,7 @@ const WarehouseManagement: React.FC = () => {
 
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
-                        <thead>
+                        <thead className="whitespace-nowrap">
                             <tr className="bg-slate-50/50 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
                                 <th className="px-8 py-5">Thông tin Sản phẩm</th>
                                 <th className="px-8 py-5">Mã / SKU</th>

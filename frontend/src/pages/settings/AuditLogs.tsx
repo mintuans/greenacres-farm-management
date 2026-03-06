@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { AuditLog, getAuditLogs } from '../../api/audit-log.api';
 
 const AuditLogs: React.FC = () => {
@@ -91,7 +91,7 @@ const AuditLogs: React.FC = () => {
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200">
+                            <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200 whitespace-nowrap">
                                 <tr>
                                     <th className="px-6 py-4">Thời gian</th>
                                     <th className="px-6 py-4">Người thực hiện</th>

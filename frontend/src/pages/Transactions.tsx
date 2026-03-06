@@ -525,7 +525,7 @@ const Transactions: React.FC = () => {
 
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead>
+            <thead className="whitespace-nowrap">
               <tr className="bg-slate-50/50 text-[9px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
                 <th className="px-4 py-3 w-10 text-center"><input type="checkbox" className="rounded border-slate-200 text-[#13ec49] focus:ring-[#13ec49]" /></th>
                 <th className="px-4 py-3 text-xs">Ngày</th>

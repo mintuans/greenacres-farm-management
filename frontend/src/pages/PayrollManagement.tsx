@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
     getAllPayrolls,
     updatePayrollStatus,
@@ -47,7 +47,7 @@ const PayrollManagement: React.FC = () => {
             await updatePayrollStatus(id, status);
 
             if (status === 'PAID') {
-                alert('✅ Đã thanh toán lương thành công!\n🎉 Transaction đã được tạo tự động trong hệ thống tài chính.');
+                console.log('✅ Đã thanh toán lương thành công!');
             }
 
             await fetchData(); // Refresh data
@@ -154,7 +154,7 @@ const PayrollManagement: React.FC = () => {
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
-                        <thead className="bg-slate-50/50 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        <thead className="bg-slate-50/50 text-xs font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">
                             <tr>
                                 <th className="px-6 py-4">Mã phiếu</th>
                                 <th className="px-6 py-4">Nhân viên</th>
@@ -344,7 +344,7 @@ const PayrollManagement: React.FC = () => {
                                 </div>
 
                                 <table className="w-full mb-10 text-sm">
-                                    <thead className="border-y border-slate-200">
+                                    <thead className="border-y border-slate-200 whitespace-nowrap">
                                         <tr className="font-sans uppercase text-[10px] font-black text-slate-400 tracking-wider">
                                             <th className="py-3 text-left">Ngày làm / Công việc</th>
                                             <th className="py-3 text-center">Ca</th>

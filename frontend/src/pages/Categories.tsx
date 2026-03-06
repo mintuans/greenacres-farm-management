@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Category, getCategories, createCategory, updateCategory, deleteCategory, CreateCategoryInput } from '../api/category.api';
 import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../components';
 
@@ -175,7 +175,7 @@ const Categories: React.FC = () => {
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200">
+                            <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200 whitespace-nowrap">
                                 <tr>
                                     <th className="px-6 py-4">Mã danh mục</th>
                                     <th className="px-6 py-4">Tên danh mục</th>

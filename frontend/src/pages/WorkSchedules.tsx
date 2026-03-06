@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { getWorkSchedules, createWorkSchedule, updateWorkSchedule, deleteWorkSchedule, WorkSchedule } from '../api/work-schedule.api';
 import { getPartners, Partner } from '../api/partner.api';
 import { getWorkShifts, WorkShift } from '../api/work-shift.api';
@@ -101,7 +101,7 @@ const WorkSchedules: React.FC = () => {
 
     const handleExport = () => {
         console.log('Exporting schedules...');
-        alert('Đang trích xuất kế hoạch làm việc ra file Excel...');
+        // toast.success('Đang trích xuất kế hoạch làm việc...');
     };
 
     const handleImport = async (file: File) => {
@@ -111,7 +111,7 @@ const WorkSchedules: React.FC = () => {
 
     const handleDownloadTemplate = () => {
         console.log('Downloading schedule template...');
-        alert('Đang tải tệp mẫu kế hoạch làm việc...');
+        // toast.success('Đang tải tệp mẫu...');
     };
 
     const getStatusStyle = (status: string) => {
@@ -183,21 +183,9 @@ const WorkSchedules: React.FC = () => {
                     <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Kế hoạch Làm việc</h1>
                     <p className="text-slate-500 mt-2 font-medium">Lập kế hoạch và bàn giao công việc cho nhân sự nông trại.</p>
                 </div>
-                <ActionToolbar
-                    onAdd={() => {
-                        setEditingItem(null);
-                        setFormData({
-                            partner_id: '', shift_id: '', job_type_id: '',
-                            work_date: new Date().toISOString().split('T')[0],
-                            status: 'PLANNED', note: '', season_id: ''
-                        });
-                        setShowModal(true);
-                    }}
-                    addLabel="Lên lịch làm việc"
-                />
             </div>
 
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden min-h-[400px]">
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm min-h-[400px]">
                 <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-between">
                     <div className="relative w-full md:w-96">
                         <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
@@ -239,7 +227,7 @@ const WorkSchedules: React.FC = () => {
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                            <thead className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] whitespace-nowrap">
                                 <tr>
                                     <th className="px-8 py-5">Nhân sự & Ca</th>
                                     <th className="px-8 py-5">Công việc</th>

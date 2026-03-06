@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { Partner, getPartners, createPartner, updatePartner, deletePartner, CreatePartnerInput, getNextPartnerCode } from '../api/partner.api';
 import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../components';
 import ExcelJS from 'exceljs';
@@ -45,7 +45,7 @@ const Workers: React.FC = () => {
             setWorkers(data);
         } catch (error) {
             console.error('Error loading workers:', error);
-            alert('Không thể tải danh sách nhân viên');
+            console.error('Không thể tải danh sách nhân viên');
         } finally {
             setLoading(false);
         }
@@ -64,7 +64,7 @@ const Workers: React.FC = () => {
             loadWorkers();
         } catch (error: any) {
             console.error('Error saving worker:', error);
-            alert(error.response?.data?.message || 'Không thể lưu nhân viên');
+            console.error(error.response?.data?.message || 'Không thể lưu nhân viên');
         }
     };
 
@@ -88,7 +88,7 @@ const Workers: React.FC = () => {
             loadWorkers();
         } catch (error: any) {
             console.error('Error deleting worker:', error);
-            alert(error.response?.data?.message || 'Không thể xóa đối tác');
+            console.error(error.response?.data?.message || 'Không thể xóa đối tác');
         } finally {
             setIsDeleting(false);
         }
@@ -245,7 +245,7 @@ const Workers: React.FC = () => {
                 <p className="text-slate-500 text-sm mt-1">Danh sách nhân viên, nhà cung cấp và người mua</p>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
                 <div className="p-3 md:p-4 border-b border-slate-200 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
                     <div className="relative w-full sm:max-w-xs">
                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
@@ -280,7 +280,7 @@ const Workers: React.FC = () => {
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-slate-50 text-[10px] font-bold text-slate-500 border-b border-slate-200 uppercase tracking-widest">
+                            <thead className="bg-slate-50 text-[10px] font-bold text-slate-500 border-b border-slate-200 uppercase tracking-widest whitespace-nowrap">
                                 <tr>
                                     <th className="px-4 py-3">Mã đối tác</th>
                                     <th className="px-4 py-3">Tên đối tác</th>

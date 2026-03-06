@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { getInventory, getInventoryStats, createItem, updateItem, deleteItem, InventoryItem, bulkImportItems } from '../api/inventory.api';
 import { getCategoryTree, Category } from '../api/category.api';
 import { getMediaFiles, MediaFile } from '../services/media.service';
@@ -366,7 +366,7 @@ const Inventory: React.FC = () => {
       </div>
 
       {/* Table Section */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
         <div className="p-3 md:p-4 border-b border-slate-200 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
           <div className="relative w-full sm:w-72 md:w-96">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
@@ -404,7 +404,7 @@ const Inventory: React.FC = () => {
 
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-slate-50/50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+            <thead className="bg-slate-50/50 text-[11px] font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">
               <tr>
                 <th className="px-4 py-3">Sản phẩm</th>
                 <th className="px-4 py-3">Danh mục</th>

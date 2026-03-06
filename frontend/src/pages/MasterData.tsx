@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 
 type TabType = 'categories' | 'shifts' | 'jobs' | 'workers' | 'units';
 
@@ -164,7 +164,7 @@ const MasterData: React.FC = () => {
           {/* Categories Table */}
           {activeTab === 'categories' && (
             <table className="w-full text-left">
-              <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200">
+              <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200 whitespace-nowrap">
                 <tr>
                   <th className="px-6 py-4">Mã thể loại</th>
                   <th className="px-6 py-4">Tên thể loại</th>
@@ -205,7 +205,7 @@ const MasterData: React.FC = () => {
           {/* Work Shifts Table */}
           {activeTab === 'shifts' && (
             <table className="w-full text-left">
-              <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200">
+              <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200 whitespace-nowrap">
                 <tr>
                   <th className="px-6 py-4">Mã ca</th>
                   <th className="px-6 py-4">Tên ca làm việc</th>
@@ -244,7 +244,7 @@ const MasterData: React.FC = () => {
           {/* Job Types Table */}
           {activeTab === 'jobs' && (
             <table className="w-full text-left">
-              <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200">
+              <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200 whitespace-nowrap">
                 <tr>
                   <th className="px-6 py-4">Mã công việc</th>
                   <th className="px-6 py-4">Tên công việc</th>
@@ -285,7 +285,7 @@ const MasterData: React.FC = () => {
           {/* Workers Table */}
           {activeTab === 'workers' && (
             <table className="w-full text-left">
-              <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200">
+              <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200 whitespace-nowrap">
                 <tr>
                   <th className="px-6 py-4">Mã nhân viên</th>
                   <th className="px-6 py-4">Tên nhân viên</th>
@@ -324,7 +324,7 @@ const MasterData: React.FC = () => {
           {/* Production Units Table */}
           {activeTab === 'units' && (
             <table className="w-full text-left">
-              <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200">
+              <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200 whitespace-nowrap">
                 <tr>
                   <th className="px-6 py-4">Mã đơn vị</th>
                   <th className="px-6 py-4">Tên đơn vị</th>

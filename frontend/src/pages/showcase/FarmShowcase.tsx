@@ -262,6 +262,8 @@ const FarmShowcase: React.FC = () => {
                 const count = await incrementVisitors();
                 setVisitorCount(count);
                 sessionStorage.setItem('visited', 'true');
+                // Luôn fetch favoriteCount dù là lần đầu hay không
+                fetchStats();
             } else {
                 fetchStats();
             }

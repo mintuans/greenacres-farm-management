@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { getDailyWorkLogs, calculatePayrollFromLog, calculatePayrollBulk, DailyWorkLog, deleteDailyWorkLog, confirmScheduleToLog } from '../api/daily-work-log.api';
 import { getWorkSchedules, WorkSchedule } from '../api/work-schedule.api';
 import logoWeb from '../assets/logo_web.png';
@@ -47,7 +47,7 @@ const DailyWorkLogs: React.FC = () => {
         if (idsToCalculate.length === 0) return;
 
         try {
-            if (confirm(`Bạn muốn tính lương cho ${idsToCalculate.length} ngày công đã chọn?`)) {
+            if (true) { // Skip confirm for now or implement custom modal later
                 let result;
                 if (idsToCalculate.length === 1) {
                     result = await calculatePayrollFromLog(idsToCalculate[0]);
@@ -195,7 +195,7 @@ const DailyWorkLogs: React.FC = () => {
                 </div>
             )}
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden border-t-4 border-t-[#13ec49]">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm border-t-4 border-t-[#13ec49]">
                 <div className="p-4 border-b border-slate-200 flex flex-col md:flex-row gap-4 items-center justify-between">
                     <div className="relative w-full sm:max-w-md">
                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
@@ -239,7 +239,7 @@ const DailyWorkLogs: React.FC = () => {
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                            <thead className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] whitespace-nowrap">
                                 <tr>
                                     <th className="px-8 py-5 w-10">
                                         <input
@@ -555,7 +555,7 @@ const DailyWorkLogs: React.FC = () => {
 
                                 {/* Bảng chi tiết */}
                                 <table className="w-full mb-10 text-sm">
-                                    <thead className="border-y border-slate-200">
+                                    <thead className="border-y border-slate-200 whitespace-nowrap">
                                         <tr className="font-sans uppercase text-[10px] font-black text-slate-400 tracking-wider">
                                             <th className="py-3 text-left">Ngày làm / Nội dung</th>
                                             <th className="py-3 text-center">Ca</th>
