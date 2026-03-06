@@ -10,8 +10,11 @@ const api = axios.create({
 // Thêm token và prefix /api vào mỗi request
 api.interceptors.request.use(
     (config) => {
-        // Tự động thêm /api nếu chưa có (cho cả dev và prod)
-        if (config.url && !config.url.startsWith('http') && !config.url.startsWith('/api')) {
+        // Tự động thêm /api nếu chưa có và baseURL chưa có /api
+        const baseURL = config.baseURL || '';
+        const hasApiInBase = baseURL.endsWith('/api') || baseURL.endsWith('/api/');
+
+        if (config.url && !config.url.startsWith('http') && !config.url.startsWith('/api') && !hasApiInBase) {
             const separator = config.url.startsWith('/') ? '' : '/';
             config.url = `/api${separator}${config.url}`;
         }

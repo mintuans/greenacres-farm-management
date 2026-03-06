@@ -984,7 +984,7 @@ const FarmShowcase: React.FC = () => {
                                             <div className="p-2 bg-[#13ec49]/10 rounded-lg text-[#13ec49]">
                                                 <span className="material-symbols-outlined">reviews</span>
                                             </div>
-                                            <h2 className="text-2xl font-bold text-[#111813]">Đánh giá & Bình luận</h2>
+                                            <h2 className="text-lg md:text-2xl font-bold text-[#111813] whitespace-nowrap">Đánh giá & Bình luận</h2>
                                         </div>
                                         <div className="flex items-center gap-2 bg-white px-3 py-1 rounded-full border border-gray-100 shadow-sm">
                                             <span className="text-[#f59e0b] material-symbols-outlined fill-1">star</span>

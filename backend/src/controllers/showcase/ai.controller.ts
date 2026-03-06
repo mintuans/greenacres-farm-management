@@ -18,9 +18,9 @@ export const chatWithAI = async (req: Request, res: Response): Promise<any> => {
     }
 
     try {
-        console.log('🤖 Sending request to Gemini AI...');
+        console.log('🤖 Sending request to Gemini AI (gemini-3-flash-preview)...');
         const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${currentApiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${currentApiKey}`,
             {
                 method: 'POST',
                 headers: {
@@ -53,6 +53,14 @@ export const chatWithAI = async (req: Request, res: Response): Promise<any> => {
         if (!response.ok) {
             const errorData: any = await response.json();
             console.error('❌ Gemini API Error:', JSON.stringify(errorData));
+
+            // Xử lý lỗi hết hạn mức (Quota) một cách thân thiện
+            if (response.status === 429) {
+                return res.json({
+                    response: 'Chào bạn! Greenie hiện đang tiếp đón rất nhiều khách tham quan nên hơi bận một chút. Bạn hãy thử lại sau ít phút hoặc hotline 0123.456.789 nhé! 🌿'
+                });
+            }
+
             throw new Error(errorData.error?.message || 'Gemini API Error');
         }
 
