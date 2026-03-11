@@ -31,24 +31,17 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks(id) {
             if (id.includes('node_modules')) {
-              if (id.includes('react')) {
-                return 'vendor-react';
-              }
               if (id.includes('exceljs')) {
-                return 'vendor-excel';
-              }
-              if (id.includes('axios')) {
-                return 'vendor-axios';
+                 return 'vendor-excel';
               }
               if (id.includes('socket.io-client')) {
-                return 'vendor-socket';
+                 return 'vendor-socket';
               }
-              return 'vendor-others';
             }
           }
         }
       },
-      chunkSizeWarningLimit: 1200,
+      chunkSizeWarningLimit: 1200
     }
   };
 });
