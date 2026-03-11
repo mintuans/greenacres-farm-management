@@ -1,10 +1,11 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getDailyWorkLogs, calculatePayrollFromLog, calculatePayrollBulk, DailyWorkLog, deleteDailyWorkLog, confirmScheduleToLog } from '../api/daily-work-log.api';
 import { getWorkSchedules, WorkSchedule } from '../api/work-schedule.api';
 import logoWeb from '../assets/logo_web.png';
 import { ActionToolbar, ConfirmDeleteModal } from '../components';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import { useTranslation } from 'react-i18next';
 
 
 const DailyWorkLogs: React.FC = () => {
@@ -21,6 +22,7 @@ const DailyWorkLogs: React.FC = () => {
     const [deleteTarget, setDeleteTarget] = useState<DailyWorkLog | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [selectedLog, setSelectedLog] = useState<DailyWorkLog | null>(null);
+    const { t, i18n } = useTranslation();
 
     useEffect(() => {
         fetchData();
@@ -60,7 +62,7 @@ const DailyWorkLogs: React.FC = () => {
                     setSelectedLogForPreview({
                         isBulk: idsToCalculate.length > 1,
                         logs: selectedLogs,
-                        payroll_code: result.payrollId ? 'PL-NEW' : 'N/A',
+                        payroll_code: result.payrollId ? 'PL-NEW' : t('common.na'),
                         partner_name: selectedLogs[0].partner_name,
                         total_amount: selectedLogs.reduce((sum, l) => sum + Number(l.total_amount), 0)
                     });
@@ -71,7 +73,7 @@ const DailyWorkLogs: React.FC = () => {
             }
         } catch (error: any) {
             console.error('Error calculating payroll:', error);
-            alert(error.response?.data?.message || 'Có lỗi xảy ra khi tính lương.');
+            alert(error.response?.data?.message || t('work_logs.messages.calc_error') || 'Có lỗi xảy ra khi tính lương.');
         }
     };
 
@@ -111,7 +113,7 @@ const DailyWorkLogs: React.FC = () => {
             fetchData();
         } catch (error) {
             console.error('Error deleting daily work log:', error);
-            alert('Không thể xóa nhật ký làm việc');
+            alert(t('work_logs.messages.delete_error'));
         } finally {
             setIsDeleting(false);
         }
@@ -121,22 +123,22 @@ const DailyWorkLogs: React.FC = () => {
         const workbook = new ExcelJS.Workbook();
         const ws = workbook.addWorksheet('Nhật ký làm việc');
         ws.columns = [
-            { header: 'Ngày', key: 'date', width: 15 },
-            { header: 'Nhân viên', key: 'partner', width: 25 },
-            { header: 'Công việc', key: 'job', width: 25 },
-            { header: 'Ca', key: 'shift', width: 15 },
-            { header: 'Đơn giá', key: 'rate', width: 15 },
-            { header: 'Thành tiền', key: 'total', width: 15 },
-            { header: 'Vụ mùa', key: 'season', width: 20 },
+            { header: t('work_logs.preview_modal.table_head.content'), key: 'date', width: 15 },
+            { header: t('partners.table.name'), key: 'partner', width: 25 },
+            { header: t('sidebar.jobs'), key: 'job', width: 25 },
+            { header: t('work_logs.preview_modal.table_head.shift'), key: 'shift', width: 15 },
+            { header: t('transactions.modal.unit_price'), key: 'rate', width: 15 },
+            { header: t('work_logs.table.amount'), key: 'total', width: 15 },
+            { header: t('sidebar.seasons'), key: 'season', width: 20 },
         ];
         ws.getRow(1).eachCell(cell => {
             cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF13EC49' } };
             cell.font = { bold: true };
         });
         filteredLogs.forEach(l => ws.addRow({
-            date: new Date(l.work_date).toLocaleDateString('vi-VN'),
+            date: new Date(l.work_date).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US'),
             partner: l.partner_name,
-            job: l.job_name || 'Khác',
+            job: l.job_name || t('common.others'),
             shift: l.shift_name,
             rate: l.applied_rate,
             total: l.total_amount,
@@ -157,8 +159,8 @@ const DailyWorkLogs: React.FC = () => {
         <div className="p-6 md:p-8 space-y-8 max-w-[1440px] mx-auto bg-slate-50/50 min-h-screen">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Nhật ký Làm việc</h1>
-                    <p className="text-slate-500 mt-2 font-medium">Theo dõi và xác nhận công việc thực tế của nhân viên.</p>
+                    <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">{t('work_logs.title')}</h1>
+                    <p className="text-slate-500 mt-2 font-medium">{t('work_logs.subtitle')}</p>
                 </div>
             </div>
 
@@ -167,7 +169,7 @@ const DailyWorkLogs: React.FC = () => {
                 <div className="bg-[#13ec49]/5 border border-[#13ec49]/20 rounded-[32px] p-6">
                     <div className="flex items-center gap-3 mb-4">
                         <span className="material-symbols-outlined text-[#13ec49]">pending_actions</span>
-                        <h2 className="font-black text-slate-900 uppercase tracking-widest text-xs">Cần xác nhận chốt công ({pendingSchedules.length})</h2>
+                        <h2 className="font-black text-slate-900 uppercase tracking-widest text-xs">{t('work_logs.pending_confirmation', { count: pendingSchedules.length })}</h2>
                     </div>
                     <div className="flex flex-wrap gap-3">
                         {pendingSchedules.slice(0, 5).map(s => (
@@ -187,7 +189,7 @@ const DailyWorkLogs: React.FC = () => {
                                     }}
                                     className="px-4 py-2 bg-slate-900 text-white text-xs font-black rounded-xl hover:bg-black transition-all"
                                 >
-                                    Chốt công
+                                    {t('work_logs.confirm_btn')}
                                 </button>
                             </div>
                         ))}
@@ -204,14 +206,14 @@ const DailyWorkLogs: React.FC = () => {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full bg-slate-50 border-none rounded-lg py-2.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-[#13ec49]/30 transition-all outline-none"
-                            placeholder="Tìm nhân viên, công việc..."
+                            placeholder={t('work_logs.search_placeholder')}
                         />
                     </div>
                     <ActionToolbar
                         hideAdd
                         onEdit={() => selectedLog && setSelectedLogForPreview(selectedLog) && setShowPreviewModal(true)}
                         editDisabled={!selectedLog}
-                        editLabel="Xem chi tiết"
+                        editLabel={t('payroll.actions.view')}
                         onDelete={() => selectedLog && setDeleteTarget(selectedLog)}
                         deleteDisabled={!selectedLog}
                         onRefresh={fetchData}
@@ -221,13 +223,13 @@ const DailyWorkLogs: React.FC = () => {
                 </div>
                 {selectedLogIds.length > 0 && (
                     <div className="p-4 bg-slate-50 flex items-center gap-4 animate-in fade-in slide-in-from-right-4">
-                        <span className="text-sm font-bold text-[#13ec49]">Đã chọn {selectedLogIds.length} ngày công</span>
+                        <span className="text-sm font-bold text-[#13ec49]">{t('work_logs.selected_count', { count: selectedLogIds.length })}</span>
                         <button
                             onClick={() => handleCalculatePayroll()}
                             className="px-6 py-2.5 bg-slate-900 text-white text-xs font-black rounded-xl hover:bg-black transition-all flex items-center gap-2 shadow-lg shadow-slate-900/20"
                         >
                             <span className="material-symbols-outlined text-sm">payments</span>
-                            Tính lương gộp
+                            {t('work_logs.calc_bulk')}
                         </button>
                     </div>
                 )}
@@ -249,12 +251,12 @@ const DailyWorkLogs: React.FC = () => {
                                             onChange={toggleSelectAll}
                                         />
                                     </th>
-                                    <th className="px-8 py-5">Nhân sự & Công việc</th>
-                                    <th className="px-8 py-5">Ngày & Ca</th>
-                                    <th className="px-8 py-5 text-center">Trạng thái</th>
-                                    <th className="px-8 py-5 text-right">Thành tiền</th>
-                                    <th className="px-8 py-5 text-center">Lương</th>
-                                    <th className="px-8 py-5 text-right">Thao tác</th>
+                                    <th className="px-8 py-5">{t('work_logs.table.worker_job')}</th>
+                                    <th className="px-8 py-5">{t('work_logs.table.date_shift')}</th>
+                                    <th className="px-8 py-5 text-center">{t('work_logs.table.status')}</th>
+                                    <th className="px-8 py-5 text-right">{t('work_logs.table.amount')}</th>
+                                    <th className="px-8 py-5 text-center">{t('work_logs.table.payroll')}</th>
+                                    <th className="px-8 py-5 text-right">{t('work_logs.table.actions')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -262,7 +264,7 @@ const DailyWorkLogs: React.FC = () => {
                                     <tr>
                                         <td colSpan={7} className="px-8 py-20 text-center">
                                             <span className="material-symbols-outlined text-slate-200 text-6xl block mb-4">analytics</span>
-                                            <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Chưa có nhật ký làm việc</p>
+                                            <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">{t('work_logs.messages.empty')}</p>
                                         </td>
                                     </tr>
                                 ) : (
@@ -281,9 +283,9 @@ const DailyWorkLogs: React.FC = () => {
                                                         onChange={(e) => { e.stopPropagation(); toggleSelectLog(item.id); }}
                                                     />
                                                 ) : item.payroll_id ? (
-                                                    <span className="material-symbols-outlined text-slate-400 text-sm" title="Đã có phiếu lương">verified</span>
+                                                    <span className="material-symbols-outlined text-slate-400 text-sm" title={t('work_logs.messages.has_payroll_tooltip') || 'Đã có phiếu lương'}>verified</span>
                                                 ) : (
-                                                    <span className="material-symbols-outlined text-slate-200 text-sm" title="Chưa hoàn thành">pending</span>
+                                                    <span className="material-symbols-outlined text-slate-200 text-sm" title={t('work_logs.messages.pending_tooltip') || 'Chưa hoàn thành'}>pending</span>
                                                 )}
                                             </td>
                                             <td className="px-8 py-5">
@@ -294,7 +296,7 @@ const DailyWorkLogs: React.FC = () => {
                                                     <div>
                                                         <p className="font-extrabold text-slate-900">{item.partner_name}</p>
                                                         <div className="flex items-center gap-2">
-                                                            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider whitespace-nowrap">{item.job_name || 'Khác'}</p>
+                                                            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider whitespace-nowrap">{item.job_name || t('common.others')}</p>
                                                             {item.season_name && (
                                                                 <>
                                                                     <span className="text-slate-300">•</span>
@@ -306,7 +308,7 @@ const DailyWorkLogs: React.FC = () => {
                                                 </div>
                                             </td>
                                             <td className="px-8 py-5">
-                                                <p className="font-black text-slate-900">{new Date(item.work_date).toLocaleDateString('vi-VN')}</p>
+                                                <p className="font-black text-slate-900">{new Date(item.work_date).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</p>
                                                 <div className="flex items-center gap-2">
                                                     <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{item.shift_name}</p>
                                                     <span className={`text-[9px] font-black uppercase px-1.5 rounded-md ${item.mandays === 0 ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
@@ -321,18 +323,18 @@ const DailyWorkLogs: React.FC = () => {
                                                             item.status === 'REJECTED' ? 'bg-orange-50 text-orange-600' :
                                                                 'bg-slate-100 text-slate-500'
                                                     }`}>
-                                                    {item.status === 'DONE' ? 'Hoàn thành' :
-                                                        item.status === 'INPROGRESS' ? 'Đang chờ' :
-                                                            item.status === 'CANCELLED' ? 'Đã hủy' :
-                                                                item.status === 'REJECTED' ? 'Từ chối' :
-                                                                    item.status || 'Khác'}
+                                                    {item.status === 'DONE' ? t('work_logs.status.done') :
+                                                        item.status === 'INPROGRESS' ? t('work_logs.status.inprogress') :
+                                                            item.status === 'CANCELLED' ? t('work_logs.status.cancelled') :
+                                                                item.status === 'REJECTED' ? t('work_logs.status.rejected') :
+                                                                    item.status || t('transactions.table.other')}
                                                 </span>
                                             </td>
                                             <td className="px-8 py-5 text-right">
                                                 <p className="text-lg font-black text-slate-900">
-                                                    {new Intl.NumberFormat('vi-VN').format(item.total_amount)}đ
+                                                    {Number(item.total_amount).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}đ
                                                 </p>
-                                                <p className="text-[10px] font-bold text-slate-400 italic">@{new Intl.NumberFormat('vi-VN').format(item.applied_rate)}đ</p>
+                                                <p className="text-[10px] font-bold text-slate-400 italic">@{Number(item.applied_rate).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}đ</p>
                                             </td>
                                             <td className="px-8 py-5 text-center">
                                                 {item.payroll_id ? (
@@ -348,7 +350,7 @@ const DailyWorkLogs: React.FC = () => {
                                                         <span className="text-[10px] font-black uppercase italic">{item.payroll_code || 'XEM PHIẾU'}</span>
                                                     </button>
                                                 ) : (
-                                                    <span className="text-[10px] font-bold text-slate-300 uppercase italic">Chưa tính lương</span>
+                                                    <span className="text-[10px] font-bold text-slate-300 uppercase italic">{t('work_logs.status.unpaid')}</span>
                                                 )}
                                             </td>
                                             <td className="px-8 py-5 text-right flex items-center justify-end gap-2">
@@ -359,18 +361,18 @@ const DailyWorkLogs: React.FC = () => {
                                                             setSelectedLogForPreview(item);
                                                             setShowPreviewModal(true);
                                                         } else {
-                                                            alert('Bạn chưa tính lương cho ngày này.');
+                                                            alert(t('work_logs.messages.uncalculated_error'));
                                                         }
                                                     }}
                                                     className="p-2.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition-all"
-                                                    title="Chi tiết lương"
+                                                    title={t('work_logs.messages.view_detail_tooltip') || 'Chi tiết lương'}
                                                 >
                                                     <span className="material-symbols-outlined">info</span>
                                                 </button>
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); setDeleteTarget(item); }}
                                                     className="p-2.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-0 group-hover:opacity-100"
-                                                    title="Xóa nhật ký"
+                                                    title={t('work_logs.messages.delete_tooltip') || 'Xóa nhật ký'}
                                                 >
                                                     <span className="material-symbols-outlined">delete</span>
                                                 </button>
@@ -392,8 +394,8 @@ const DailyWorkLogs: React.FC = () => {
 
                         <div className="flex justify-between items-center mb-10">
                             <div>
-                                <h2 className="text-3xl font-black text-slate-900">Xác nhận Chốt công</h2>
-                                <p className="text-slate-500 font-medium mt-1">Hoàn tất ngày làm việc cho nhân viên.</p>
+                                <h2 className="text-3xl font-black text-slate-900">{t('work_logs.confirm_modal.title')}</h2>
+                                <p className="text-slate-500 font-medium mt-1">{t('work_logs.confirm_modal.subtitle')}</p>
                             </div>
                             <button onClick={() => setShowConfirmModal(false)} className="size-12 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all">
                                 <span className="material-symbols-outlined text-[28px]">close</span>
@@ -407,13 +409,13 @@ const DailyWorkLogs: React.FC = () => {
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900">{selectedSchedule.partner_name}</h3>
                                 <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">{selectedSchedule.job_name} • {selectedSchedule.shift_name}</p>
-                                <p className="text-slate-400 font-bold text-xs mt-1">{new Date(selectedSchedule.work_date).toLocaleDateString('vi-VN')}</p>
+                                <p className="text-slate-400 font-bold text-xs mt-1">{new Date(selectedSchedule.work_date).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</p>
                             </div>
                         </div>
 
                         <div className="space-y-6">
                             <div>
-                                <label className="block text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Hình thức làm việc</label>
+                                <label className="block text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">{t('work_logs.confirm_modal.working_type')}</label>
                                 <div className="grid grid-cols-2 gap-4">
                                     <button
                                         onClick={() => setMandaysValue(0)}
@@ -423,8 +425,8 @@ const DailyWorkLogs: React.FC = () => {
                                             <span className="material-symbols-outlined text-[20px]">sunny</span>
                                         </div>
                                         <div>
-                                            <p className={`font-black tracking-tight ${mandaysValue === 0 ? 'text-slate-900' : 'text-slate-400'}`}>Cả ngày</p>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase">Hệ số 1.0</p>
+                                            <p className={`font-black tracking-tight ${mandaysValue === 0 ? 'text-slate-900' : 'text-slate-400'}`}>{t('work_logs.confirm_modal.full_day')}</p>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase">{t('work_logs.confirm_modal.full_day_rate')}</p>
                                         </div>
                                     </button>
                                     <button
@@ -435,8 +437,8 @@ const DailyWorkLogs: React.FC = () => {
                                             <span className="material-symbols-outlined text-[20px]">partly_cloudy_day</span>
                                         </div>
                                         <div>
-                                            <p className={`font-black tracking-tight ${mandaysValue === 1 ? 'text-slate-900' : 'text-slate-400'}`}>Nửa buổi</p>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase">Hệ số 0.5</p>
+                                            <p className={`font-black tracking-tight ${mandaysValue === 1 ? 'text-slate-900' : 'text-slate-400'}`}>{t('work_logs.confirm_modal.half_day')}</p>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase">{t('work_logs.confirm_modal.half_day_rate')}</p>
                                         </div>
                                     </button>
                                 </div>
@@ -447,13 +449,13 @@ const DailyWorkLogs: React.FC = () => {
                                     onClick={() => setShowConfirmModal(false)}
                                     className="flex-1 py-5 font-black text-slate-500 hover:bg-slate-50 rounded-[24px] transition-all"
                                 >
-                                    Hủy bỏ
+                                    {t('work_logs.confirm_modal.cancel')}
                                 </button>
                                 <button
                                     onClick={handleConfirmSchedule}
                                     className="flex-[1.5] py-5 bg-[#13ec49] text-black font-black rounded-[24px] hover:bg-[#10d63f] active:scale-95 transition-all shadow-xl shadow-[#13ec49]/20"
                                 >
-                                    Xác nhận Chốt công
+                                    {t('work_logs.confirm_modal.confirm')}
                                 </button>
                             </div>
                         </div>
@@ -501,8 +503,8 @@ const DailyWorkLogs: React.FC = () => {
                                     <span className="material-symbols-outlined">description</span>
                                 </div>
                                 <div>
-                                    <h2 className="font-black text-slate-900">Xem trước Phiếu lương</h2>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-1">Hệ thống quản lý Vườn Nhà Mình</p>
+                                    <h2 className="font-black text-slate-900">{t('work_logs.preview_modal.title')}</h2>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-1">{t('payroll.slip.system_name')}</p>
                                 </div>
                             </div>
                             <div className="flex gap-2">
@@ -511,7 +513,7 @@ const DailyWorkLogs: React.FC = () => {
                                     className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-black flex items-center gap-2 hover:bg-black transition-all"
                                 >
                                     <span className="material-symbols-outlined text-sm">print</span>
-                                    Xuất PDF / In
+                                    {t('work_logs.preview_modal.print')}
                                 </button>
                                 <button onClick={() => setShowPreviewModal(false)} className="size-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-red-500 transition-all">
                                     <span className="material-symbols-outlined">close</span>
@@ -529,26 +531,26 @@ const DailyWorkLogs: React.FC = () => {
                                             <img src={logoWeb} alt="Logo" className="size-8 object-contain" />
                                             Vườn Nhà Mình
                                         </h3>
-                                        <p className="text-xs font-bold text-slate-500 font-sans mt-1">QUẢN LÝ NÔNG TRẠI THÔNG MINH</p>
-                                        <p className="text-[10px] text-slate-400 font-sans mt-0.5">Địa chỉ: Tân Lộc, Thới Thuận, Thốt Nốt, Cần Thơ</p>
+                                        <p className="text-xs font-bold text-slate-500 font-sans mt-1 uppercase">{t('payroll.slip.system_name')}</p>
+                                        <p className="text-[10px] text-slate-400 font-sans mt-0.5">{t('payroll.slip.footer.management')}</p>
                                     </div>
                                     <div className="text-right">
-                                        <h1 className="text-3xl font-black text-slate-900 font-sans tracking-tight">PHIẾU LƯƠNG</h1>
-                                        <p className="text-sm font-bold text-slate-600 font-sans mt-1">Số: <span className="text-red-600">{selectedLogForPreview.payroll_code || '---'}</span></p>
-                                        <p className="text-[10px] text-slate-400 font-sans">Ngày lập: {new Date().toLocaleDateString('vi-VN')}</p>
+                                        <h1 className="text-3xl font-black text-slate-900 font-sans tracking-tight">{t('payroll.slip.header')}</h1>
+                                        <p className="text-sm font-bold text-slate-600 font-sans mt-1">{t('work_logs.preview_modal.slip_no')} <span className="text-red-600">{selectedLogForPreview.payroll_code || '---'}</span></p>
+                                        <p className="text-[10px] text-slate-400 font-sans">{t('work_logs.preview_modal.created_date')} {new Date().toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</p>
                                     </div>
                                 </div>
 
                                 {/* Thông tin nhân viên */}
                                 <div className="grid grid-cols-2 gap-8 mb-10">
                                     <div>
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 font-sans">Người nhận lương</p>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 font-sans">{t('work_logs.preview_modal.receiver')}</p>
                                         <p className="text-lg font-black text-slate-900 font-sans">{selectedLogForPreview.partner_name}</p>
-                                        <p className="text-sm text-slate-600 font-sans italic opacity-80 mt-1">Nhân sự Nông vụ</p>
+                                        <p className="text-sm text-slate-600 font-sans italic opacity-80 mt-1">{t('partners.types.worker')}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 font-sans">Thời gian làm việc</p>
-                                        <p className="text-sm font-bold text-slate-900 font-sans italic">{new Date(selectedLogForPreview.work_date).toLocaleDateString('vi-VN')}</p>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 font-sans">{t('work_logs.preview_modal.work_time')}</p>
+                                        <p className="text-sm font-bold text-slate-900 font-sans italic">{new Date(selectedLogForPreview.work_date).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</p>
                                         <p className="text-xs text-slate-500 font-sans mt-1 uppercase font-black">{selectedLogForPreview.shift_name}</p>
                                     </div>
                                 </div>
@@ -557,23 +559,23 @@ const DailyWorkLogs: React.FC = () => {
                                 <table className="w-full mb-10 text-sm">
                                     <thead className="border-y border-slate-200 whitespace-nowrap">
                                         <tr className="font-sans uppercase text-[10px] font-black text-slate-400 tracking-wider">
-                                            <th className="py-3 text-left">Ngày làm / Nội dung</th>
-                                            <th className="py-3 text-center">Ca</th>
-                                            <th className="py-3 text-center">Ngày công</th>
-                                            <th className="py-3 text-right">Thành tiền</th>
+                                            <th className="py-3 text-left">{t('work_logs.preview_modal.table_head.content')}</th>
+                                            <th className="py-3 text-center">{t('work_logs.preview_modal.table_head.shift')}</th>
+                                            <th className="py-3 text-center">{t('work_logs.preview_modal.table_head.mandays')}</th>
+                                            <th className="py-3 text-right">{t('work_logs.preview_modal.table_head.amount')}</th>
                                         </tr>
                                     </thead>
                                     <tbody className="border-b border-slate-200 divide-y divide-slate-50 italic">
                                         {(selectedLogForPreview.logs || [selectedLogForPreview]).map((log: any, idx: number) => (
                                             <tr key={idx}>
                                                 <td className="py-4">
-                                                    <p className="font-bold text-slate-800">{new Date(log.work_date).toLocaleDateString('vi-VN')}</p>
+                                                    <p className="font-bold text-slate-800">{new Date(log.work_date).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</p>
                                                     <p className="text-[10px] font-semibold text-slate-500 font-sans not-italic uppercase">{log.job_name}</p>
                                                 </td>
                                                 <td className="py-4 text-center font-sans text-xs">{log.shift_name}</td>
                                                 <td className="py-4 text-center font-sans text-xs">{log.mandays === 0 ? '1.0' : '0.5'}</td>
                                                 <td className="py-4 text-right font-black font-sans text-slate-900">
-                                                    {new Intl.NumberFormat('vi-VN').format(log.total_amount)}đ
+                                                    {Number(log.total_amount).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}đ
                                                 </td>
                                             </tr>
                                         ))}
@@ -583,17 +585,17 @@ const DailyWorkLogs: React.FC = () => {
                                 {/* Tổng cộng */}
                                 <div className="ml-auto w-64 space-y-3 mb-12 bg-slate-50 p-6 rounded-2xl border border-dashed border-slate-200">
                                     <div className="flex justify-between items-center text-sm font-sans">
-                                        <span className="text-slate-500 font-medium tracking-tight">Số ngày công:</span>
-                                        <span className="font-bold text-slate-900">{(selectedLogForPreview.logs || [selectedLogForPreview]).length} ngày</span>
+                                        <span className="text-slate-500 font-medium tracking-tight">{t('work_logs.preview_modal.summary.mandays_count')}</span>
+                                        <span className="font-bold text-slate-900">{(selectedLogForPreview.logs || [selectedLogForPreview]).length}</span>
                                     </div>
                                     <div className="flex justify-between items-center text-sm font-sans">
-                                        <span className="text-slate-500 font-medium tracking-tight">Tổng cộng:</span>
-                                        <span className="font-bold text-slate-900">{new Intl.NumberFormat('vi-VN').format(selectedLogForPreview.total_amount)}đ</span>
+                                        <span className="text-slate-500 font-medium tracking-tight">{t('work_logs.preview_modal.summary.total')}</span>
+                                        <span className="font-bold text-slate-900">{Number(selectedLogForPreview.total_amount).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}đ</span>
                                     </div>
                                     <div className="pt-3 border-t border-slate-200 flex justify-between items-center">
-                                        <span className="text-xs font-black text-slate-900 font-sans uppercase tracking-[0.1em]">Thực nhận</span>
+                                        <span className="text-xs font-black text-slate-900 font-sans uppercase tracking-[0.1em]">{t('work_logs.preview_modal.summary.final')}</span>
                                         <span className="text-xl font-black text-[#13ec49] font-sans tracking-tight">
-                                            {new Intl.NumberFormat('vi-VN').format(selectedLogForPreview.total_amount)}đ
+                                            {Number(selectedLogForPreview.total_amount).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}đ
                                         </span>
                                     </div>
                                 </div>
@@ -601,16 +603,16 @@ const DailyWorkLogs: React.FC = () => {
                                 {/* Chữ ký */}
                                 <div className="mt-auto grid grid-cols-2 gap-20 text-center font-sans">
                                     <div>
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-16">Người nhận lương</p>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-16">{t('work_logs.preview_modal.receiver')}</p>
                                         <p className="font-bold text-slate-900">{selectedLogForPreview.partner_name}</p>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-16">Người xác nhận</p>
-                                        <p className="font-bold text-slate-900">Lê Minh Tuấn</p>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-16">{t('work_logs.preview_modal.validator')}</p>
+                                        <p className="font-bold text-slate-900">{t('payroll.slip.footer.representative')}</p>
                                     </div>
                                 </div>
                                 <div className="mt-8 pt-6 border-t border-slate-100 text-[10px] font-medium text-slate-400 font-sans flex justify-between uppercase tracking-widest italic">
-                                    <span>Chứng từ được tạo bởi hệ thống Vườn Nhà Mình</span>
+                                    <span>{t('payroll.slip.footer.generated_by')}</span>
                                     <span>Ver 1.0.0</span>
                                 </div>
                             </div>

@@ -8,6 +8,7 @@ import { incrementVisitors, getVisitorCount, toggleFavoriteCount } from '../../s
 import ShowcaseHeader from '../../templates/ShowcaseHeader';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { WeatherWidget } from '../../components';
+import { useTranslation } from 'react-i18next';
 
 interface CommentItemProps {
     comment: any;
@@ -27,6 +28,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
     comment, replyingTo, setReplyingTo, replyContent, setReplyContent,
     handleSubmitReply, isSubmitting, handleReaction, handleDelete, user, onShowReactions, depth = 0
 }) => {
+    const { t } = useTranslation();
     const isRoot = depth === 0;
     const emojiMap: any = { like: '👍', love: '❤️', haha: '😂', wow: '😮', sad: '😢', angry: '😡' };
     const [showAllReplies, setShowAllReplies] = React.useState(false);
@@ -80,7 +82,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                             className="flex items-center gap-1.5 hover:text-primary transition-all font-bold text-[11px] text-[#61896b]"
                         >
                             <span className="material-symbols-outlined text-[16px]">thumb_up</span>
-                            Thích
+                            {t('showcase_home.like')}
                         </button>
                         <div className="absolute bottom-[100%] left-0 pb-3 hidden group-hover/react-recursive:flex animate-in zoom-in-50 duration-200 z-10">
                             <div className="bg-white shadow-2xl rounded-full p-2 border border-gray-100 flex gap-2 items-center">
@@ -102,7 +104,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                         onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
                     >
                         <span className="material-symbols-outlined text-[16px]">reply</span>
-                        Phản hồi
+                        {t('showcase_home.reply')}
                     </button>
 
                     {shouldHideInitially && !showAllReplies && (
@@ -110,21 +112,21 @@ const CommentItem: React.FC<CommentItemProps> = ({
                             onClick={() => setShowAllReplies(true)}
                             className="text-[10px] font-bold text-primary hover:underline ml-2"
                         >
-                            Xem thêm {replyCount} phản hồi...
+                            {t('showcase_home.view_more_replies', { count: replyCount })}
                         </button>
                     )}
 
                     {(user?.id === comment.user_id || user?.role === 'SUPER_ADMIN') && (
                         <button
                             onClick={() => {
-                                if (confirm('Bạn có chắc muốn xóa bình luận này?')) {
+                                if (confirm(t('showcase_home.confirm_delete_comment'))) {
                                     handleDelete(comment.id);
                                 }
                             }}
                             className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-bold text-red-400 hover:text-red-600 flex items-center gap-1"
                         >
                             <span className="material-symbols-outlined text-[14px]">delete</span>
-                            Xóa
+                            {t('showcase_home.delete')}
                         </button>
                     )}
                 </div>
@@ -138,7 +140,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                         <div className="flex-1 flex flex-col gap-2">
                             <textarea
                                 autoFocus
-                                placeholder={`Phản hồi ${comment.user}...`}
+                                placeholder={t('showcase_home.reply_to', { name: comment.user })}
                                 className="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none h-20 shadow-inner"
                                 value={replyContent}
                                 onChange={(e) => setReplyContent(e.target.value)}
@@ -148,14 +150,14 @@ const CommentItem: React.FC<CommentItemProps> = ({
                                     className="px-4 py-1.5 rounded-lg text-xs font-bold text-gray-400 hover:bg-gray-100 transition-colors"
                                     onClick={() => setReplyingTo(null)}
                                 >
-                                    Hủy
+                                    {t('showcase_home.cancel')}
                                 </button>
                                 <button
                                     className="bg-primary text-white px-5 py-1.5 rounded-lg text-xs font-bold hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50 active:scale-95"
                                     onClick={() => handleSubmitReply(comment.id)}
                                     disabled={!replyContent.trim() || isSubmitting}
                                 >
-                                    {isSubmitting ? 'Đang gửi...' : 'Gửi phản hồi'}
+                                    {isSubmitting ? t('showcase_home.submitting') : t('showcase_home.submit_reply')}
                                 </button>
                             </div>
                         </div>
@@ -187,7 +189,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                                 onClick={() => setShowAllReplies(false)}
                                 className="text-[10px] font-bold text-gray-400 hover:text-primary text-left"
                             >
-                                Thu gọn phản hồi
+                                {t('showcase_home.collapse_replies')}
                             </button>
                         )}
                     </div>
@@ -198,6 +200,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
 };
 
 const FarmShowcase: React.FC = () => {
+    const { t } = useTranslation();
     const [recentMedia, setRecentMedia] = React.useState<any[]>([]);
     const [farmImages, setFarmImages] = React.useState<any[]>([]);
     const [totalMediaCount, setTotalMediaCount] = React.useState(0);
@@ -243,12 +246,10 @@ const FarmShowcase: React.FC = () => {
 
     const fetchStats = async () => {
         try {
-            const response = await import('../../services/stats.service');
-            const count = await response.getVisitorCount();
-            setVisitorCount(count);
-            // Also fetch favorites from same endpoint
             const api = await import('../../services/api');
             const statsRes = await api.default.get('/showcase/stats');
+            // Cập nhật cả hai cùng lúc để không bị lệch thời gian load
+            setVisitorCount(statsRes.data?.count || 0);
             setFavoriteCount(statsRes.data?.favorites || 0);
         } catch (error) {
             console.error('Error fetching stats:', error);
@@ -259,11 +260,16 @@ const FarmShowcase: React.FC = () => {
         try {
             const sessionVisited = sessionStorage.getItem('visited');
             if (!sessionVisited) {
-                const count = await incrementVisitors();
-                setVisitorCount(count);
+                // Đánh dấu đã visit và tăng lượng truy cập
                 sessionStorage.setItem('visited', 'true');
-                // Luôn fetch favoriteCount dù là lần đầu hay không
-                fetchStats();
+                const api = await import('../../services/api');
+                const [count, statsRes] = await Promise.all([
+                    incrementVisitors(),
+                    api.default.get('/showcase/stats')
+                ]);
+                
+                setVisitorCount(count);
+                setFavoriteCount(statsRes.data?.favorites || 0);
             } else {
                 fetchStats();
             }
@@ -430,7 +436,7 @@ const FarmShowcase: React.FC = () => {
     const handleSubmitComment = async () => {
         // Kiểm tra đăng nhập
         if (!user) {
-            if (confirm('Bạn cần đăng nhập để bình luận. Chuyển đến trang đăng nhập?')) {
+            if (confirm(t('showcase_home.login_to_comment'))) {
                 navigate('/login');
             }
             return;
@@ -462,8 +468,8 @@ const FarmShowcase: React.FC = () => {
 
                 const formatted = {
                     ...comment,
-                    user: user?.full_name || 'Tôi',
-                    avatar: comment.avatar_id ? getMediaUrl(comment.avatar_id) : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.full_name || 'Tôi')}&background=13ec49&color=fff`,
+                    user: user?.full_name || t('showcase_home.guest'),
+                    avatar: comment.avatar_id ? getMediaUrl(comment.avatar_id) : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.full_name || t('showcase_home.guest'))}&background=13ec49&color=fff`,
                     time: 'Vừa xong',
                     likes: 0,
                     reactions: [],
@@ -477,7 +483,7 @@ const FarmShowcase: React.FC = () => {
             setRating(5);
         } catch (error) {
             console.error('Error posting comment:', error);
-            alert('Có lỗi khi gửi bình luận. Vui lòng thử lại!');
+            alert(t('showcase_home.error_commenting'));
         } finally {
             setIsSubmitting(false);
         }
@@ -486,7 +492,7 @@ const FarmShowcase: React.FC = () => {
     const handleSubmitReply = async (parentId: string) => {
         // Kiểm tra đăng nhập
         if (!user) {
-            if (confirm('Bạn cần đăng nhập để phản hồi. Chuyển đến trang đăng nhập?')) {
+            if (confirm(t('showcase_home.login_to_reply'))) {
                 navigate('/login');
             }
             return;
@@ -518,8 +524,8 @@ const FarmShowcase: React.FC = () => {
 
                 const formatted = {
                     ...comment,
-                    user: user?.full_name || 'Tôi',
-                    avatar: comment.avatar_id ? getMediaUrl(comment.avatar_id) : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.full_name || 'Tôi')}&background=13ec49&color=fff`,
+                    user: user?.full_name || t('showcase_home.guest'),
+                    avatar: comment.avatar_id ? getMediaUrl(comment.avatar_id) : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.full_name || t('showcase_home.guest'))}&background=13ec49&color=fff`,
                     time: 'Vừa xong',
                     likes: 0,
                     reactions: [],
@@ -546,7 +552,7 @@ const FarmShowcase: React.FC = () => {
             setReplyingTo(null);
         } catch (error) {
             console.error('Error posting reply:', error);
-            alert('Có lỗi khi gửi phản hồi. Vui lòng thử lại!');
+            alert(t('showcase_home.error_replying'));
         } finally {
             setIsSubmitting(false);
         }
@@ -570,7 +576,7 @@ const FarmShowcase: React.FC = () => {
             updateStats();
         } catch (error) {
             console.error('Error deleting comment:', error);
-            alert('Không thể xóa bình luận này.');
+            alert(t('showcase_home.cannot_delete'));
         }
     };
 
@@ -587,7 +593,7 @@ const FarmShowcase: React.FC = () => {
     const handleReaction = async (commentId: string, type: string) => {
         // Kiểm tra đăng nhập
         if (!user) {
-            if (confirm('Bạn cần đăng nhập để bày tỏ cảm xúc. Chuyển đến trang đăng nhập?')) {
+            if (confirm(t('showcase_home.login_to_react'))) {
                 navigate('/login');
             }
             return;
@@ -620,9 +626,9 @@ const FarmShowcase: React.FC = () => {
         } catch (error: any) {
             console.error('Error adding reaction:', error);
             if (error.response?.status === 403) {
-                alert('Bạn không có quyền bày tỏ cảm xúc. Vui lòng kiểm tra lại quyền hạn.');
+                alert(t('showcase_home.no_permission_react'));
             } else {
-                alert('Không thể thực hiện. Vui lòng thử lại sau.');
+                alert(t('showcase_home.error_reacting'));
             }
         }
     };
@@ -630,8 +636,8 @@ const FarmShowcase: React.FC = () => {
 
     const handleShare = async () => {
         const shareData = {
-            title: 'Vườn Nhà Mình',
-            text: 'Ghé thăm vườn mận hữu cơ chất lượng cao tại Mỹ Tho, Tiền Giang!',
+            title: t('showcase_home.farm_name'),
+            text: t('showcase_home.farm_desc'),
             url: window.location.href,
         };
 
@@ -648,7 +654,7 @@ const FarmShowcase: React.FC = () => {
                 setShowToast(true);
                 setTimeout(() => setShowToast(false), 3000);
             } catch (err) {
-                alert('Không thể sao chép liên kết');
+                alert(t('showcase_home.copy_link_error'));
             }
         }
     };
@@ -705,10 +711,10 @@ const FarmShowcase: React.FC = () => {
                             <div className="flex flex-wrap justify-between items-end gap-4 p-4 border-b border-gray-100 pb-6">
                                 <div className="flex min-w-72 flex-col gap-2">
                                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                        <span className="bg-[#13ec49]/20 text-[#13ec49] text-xs font-bold px-2 py-1 rounded uppercase tracking-wider">Welcome</span>
+                                        <span className="bg-[#13ec49]/20 text-[#13ec49] text-xs font-bold px-2 py-1 rounded uppercase tracking-wider">{t('showcase_home.welcome')}</span>
                                         <span className="flex items-center gap-1 bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-1 rounded-full border border-gray-200 shadow-sm">
                                             <span className="material-symbols-outlined text-[14px]">visibility</span>
-                                            {(visitorCount || 0).toLocaleString('vi-VN')}
+                                            {(visitorCount || 0).toLocaleString(t('showcase_home.location') === 'My Tho, Tien Giang, Vietnam' ? 'en-US' : 'vi-VN')}
                                         </span>
                                         <span className="flex items-center gap-1 bg-red-50 text-red-400 text-[10px] font-bold px-2 py-1 rounded-full border border-red-100 shadow-sm">
                                             <span className="material-symbols-outlined text-[14px]">favorite</span>
@@ -720,7 +726,7 @@ const FarmShowcase: React.FC = () => {
                                             className="flex items-center gap-1 bg-white border border-gray-200 text-gray-600 text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95"
                                         >
                                             <span className="material-symbols-outlined text-[14px]">share</span>
-                                            Chia sẻ
+                                            {t('showcase_home.share')}
                                         </button>
                                         <button
                                             onClick={handleFavorite}
@@ -733,11 +739,11 @@ const FarmShowcase: React.FC = () => {
                                             Yêu thích
                                         </button>
                                     </div>
-                                    <h1 className="text-[#111813] text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em]">Vườn Nhà Mình</h1>
-                                    <p className="text-[#13ec49] font-bold text-lg italic -mt-1 mb-2">Đất lành, trái ngọt.</p>
+                                    <h1 className="text-[#111813] text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em]">{t('showcase_home.farm_name')}</h1>
+                                    <p className="text-[#13ec49] font-bold text-lg italic -mt-1 mb-2">{t('showcase_home.slogan')}</p>
                                     <div className="flex items-center gap-2 text-[#61896b]">
                                         <span className="material-symbols-outlined text-[20px]">location_on</span>
-                                        <p className="text-base font-normal leading-normal">Mỹ Tho, Tiền Giang, Việt Nam</p>
+                                        <p className="text-base font-normal leading-normal">{t('showcase_home.location')}</p>
                                     </div>
                                 </div>
                             </div>
@@ -748,10 +754,10 @@ const FarmShowcase: React.FC = () => {
 
                                 <div className="absolute bottom-6 left-6 z-20 text-white animate-in fade-in slide-in-from-bottom-4 duration-500">
                                     <h3 className="text-2xl md:text-3xl font-bold drop-shadow-lg">
-                                        {recentMedia[heroIndex]?.image_name?.replace(/\.[^/.]+$/, "") || "Mùa Thu hoạch 2026"}
+                                        {recentMedia[heroIndex]?.image_name?.replace(/\.[^/.]+$/, "") || t('showcase_home.hero_title_1')}
                                     </h3>
                                     <p className="opacity-90 font-medium drop-shadow-md">
-                                        {recentMedia[heroIndex] ? "Khoảnh khắc tuyệt đẹp tại vườn mận" : "Vườn mận chín vàng rộm vào mùa hè"}
+                                        {recentMedia[heroIndex] ? t('showcase_home.hero_desc_1') : t('showcase_home.hero_desc_2')}
                                     </p>
                                 </div>
 
@@ -822,49 +828,49 @@ const FarmShowcase: React.FC = () => {
                                         <div className="p-2 bg-[#13ec49]/10 rounded-lg text-[#13ec49]">
                                             <span className="material-symbols-outlined">history_edu</span>
                                         </div>
-                                        <h2 className="text-2xl font-bold text-[#111813]">Hành Trình Phát Triển Của Vườn Nhà</h2>
+                                        <h2 className="text-2xl font-bold text-[#111813]">{t('showcase_home.history_title')}</h2>
                                     </div>
 
                                     <div className={`relative transition-all duration-500 overflow-hidden ${!showFullAbout ? 'max-h-[220px]' : 'max-h-[2000px]'}`}>
                                         <p className="text-[#3c4740] text-lg font-medium leading-relaxed mb-4 italic">
-                                            Từ những ngày đầu khai khẩn, khu vườn của gia đình chúng tôi đã trải qua một hành trình dài hơn hai thập kỷ, gắn liền với sự thay đổi của thổ nhưỡng và tâm huyết của những người làm vườn thực thụ.
+                                            {t('showcase_home.history_intro')}
                                         </p>
 
                                         <div className="flex flex-col gap-6">
                                             <div className="bg-white/50 p-4 rounded-xl border-l-4 border-[#13ec49]">
-                                                <h3 className="text-[#111813] font-bold text-lg mb-2">1. Những bước đi đầu tiên (2003 - 2013)</h3>
+                                                <h3 className="text-[#111813] font-bold text-lg mb-2">{t('showcase_home.history_step_1')}</h3>
                                                 <p className="text-[#3c4740] text-base leading-relaxed">
-                                                    Câu chuyện bắt đầu từ năm 2003, khi những gốc táo đầu tiên được đặt xuống đất. Sau đó, gia đình quyết định chuyển đổi sang trồng vú sữa – loại cây cho bóng mát và giá trị kinh tế cao thời bấy giờ. Đến năm 2006, cây mận chính thức xuất hiện trong vườn, ban đầu chỉ là những gốc trồng xen kẽ dưới tán vú sữa.
+                                                    {t('showcase_home.history_step_1_desc')}
                                                 </p>
                                             </div>
 
                                             <div className="bg-white/50 p-4 rounded-xl border-l-4 border-blue-400">
-                                                <h3 className="text-[#111813] font-bold text-lg mb-2">2. Bước ngoặt và sự chuyên canh (2014 - 2024)</h3>
+                                                <h3 className="text-[#111813] font-bold text-lg mb-2">{t('showcase_home.history_step_2')}</h3>
                                                 <p className="text-[#3c4740] text-base leading-relaxed mb-3">
-                                                    Năm 2014 đánh dấu một quyết định quan trọng: Chúng tôi nhận thấy những cây vú sữa lâu năm phát triển quá cao, gây khó khăn và nguy hiểm trong khâu thu hoạch cũng như chăm sóc. Với mục tiêu tối ưu hóa năng suất, gia đình đã quyết định chặt bỏ vú sữa để tập trung toàn lực vào cây mận.
+                                                    {t('showcase_home.history_step_2_desc_1')}
                                                 </p>
                                                 <p className="text-[#3c4740] text-base leading-relaxed">
-                                                    Kể từ đó, mận trở thành nguồn thu nhập chính và là niềm tự hào của vườn. Để tận dụng tối đa diện tích đất và tạo hệ sinh thái đa dạng, chúng tôi còn trồng xen canh thêm hạnh (quất) và dứa (khóm). Mô hình "lấy ngắn nuôi dài" này không chỉ giúp giữ ẩm cho đất mà còn mang lại nguồn thu phụ ổn định quanh năm.
+                                                    {t('showcase_home.history_step_2_desc_2')}
                                                 </p>
                                             </div>
 
                                             <div className="bg-white/50 p-4 rounded-xl border-l-4 border-orange-400">
-                                                <h3 className="text-[#111813] font-bold text-lg mb-2">3. Tầm nhìn mới: Kết hợp chăn nuôi bền vững (2025)</h3>
+                                                <h3 className="text-[#111813] font-bold text-lg mb-2">{t('showcase_home.history_step_3')}</h3>
                                                 <p className="text-[#3c4740] text-base leading-relaxed mb-3">
-                                                    Không dừng lại ở việc canh tác cây ăn trái, giữa năm 2025, cha tôi đã tiên phong triển khai thêm mô hình nuôi ếch. Đây là bước đi chiến lược nhằm:
+                                                    {t('showcase_home.history_step_3_desc')}
                                                 </p>
                                                 <ul className="list-none space-y-2 ml-2">
                                                     <li className="flex gap-2 text-[#3c4740] text-base">
                                                         <span className="text-[#13ec49] font-bold">•</span>
-                                                        <span><strong>Tận dụng nguồn nước:</strong> Kết hợp mương vườn sẵn có để nuôi ếch.</span>
+                                                        <span><strong>{t('showcase_home.history_step_3_point_1')}</strong> {t('showcase_home.history_step_3_point_1_desc')}</span>
                                                     </li>
                                                     <li className="flex gap-2 text-[#3c4740] text-base">
                                                         <span className="text-[#13ec49] font-bold">•</span>
-                                                        <span><strong>Tăng giá trị kinh tế:</strong> Đa dạng hóa sản phẩm cung ứng ra thị trường ngoài trái cây tươi.</span>
+                                                        <span><strong>{t('showcase_home.history_step_3_point_2')}</strong> {t('showcase_home.history_step_3_point_2_desc')}</span>
                                                     </li>
                                                     <li className="flex gap-2 text-[#3c4740] text-base">
                                                         <span className="text-[#13ec49] font-bold">•</span>
-                                                        <span><strong>Hướng tới nông nghiệp tuần hoàn:</strong> Tận dụng phụ phẩm nông nghiệp và tạo ra nguồn phân bón hữu cơ tự nhiên từ chất thải của ếch để nuôi dưỡng ngược lại cho gốc mận.</span>
+                                                        <span><strong>{t('showcase_home.history_step_3_point_3')}</strong> {t('showcase_home.history_step_3_point_3_desc')}</span>
                                                     </li>
                                                 </ul>
                                             </div>
@@ -880,7 +886,7 @@ const FarmShowcase: React.FC = () => {
                                         className="flex items-center gap-2 text-[#13ec49] font-bold text-sm w-fit hover:underline pt-2"
                                     >
                                         <span className="material-symbols-outlined">{showFullAbout ? 'expand_less' : 'expand_more'}</span>
-                                        {showFullAbout ? 'Thu gọn' : 'Xem thêm'}
+                                        {showFullAbout ? t('showcase_home.read_less') : t('showcase_home.read_more')}
                                     </button>
                                 </div>
 
@@ -891,8 +897,8 @@ const FarmShowcase: React.FC = () => {
                                             <span className="material-symbols-outlined text-[24px]">verified</span>
                                         </div>
                                         <div>
-                                            <h3 className="text-[#111813] text-base font-bold">Đang cập nhật</h3>
-                                            <p className="text-[#61896b] text-xs">Chứng nhận VietGAP</p>
+                                            <h3 className="text-[#111813] text-base font-bold">{t('showcase_home.updating')}</h3>
+                                            <p className="text-[#61896b] text-xs">{t('showcase_home.vietgap')}</p>
                                         </div>
                                     </div>
 
@@ -901,8 +907,8 @@ const FarmShowcase: React.FC = () => {
                                             <span className="material-symbols-outlined text-[24px]">landscape</span>
                                         </div>
                                         <div>
-                                            <h3 className="text-[#111813] text-base font-bold">2.5 Hecta</h3>
-                                            <p className="text-[#61896b] text-xs">Diện tích canh tác</p>
+                                            <h3 className="text-[#111813] text-base font-bold">{t('showcase_home.area')}</h3>
+                                            <p className="text-[#61896b] text-xs">{t('showcase_home.cultivation_area')}</p>
                                         </div>
                                     </div>
 
@@ -911,8 +917,8 @@ const FarmShowcase: React.FC = () => {
                                             <span className="material-symbols-outlined text-[24px]">history</span>
                                         </div>
                                         <div>
-                                            <h3 className="text-[#111813] text-base font-bold">Thành lập 2003</h3>
-                                            <p className="text-[#61896b] text-xs">Hành trình 23 năm</p>
+                                            <h3 className="text-[#111813] text-base font-bold">{t('showcase_home.founded')}</h3>
+                                            <p className="text-[#61896b] text-xs">{t('showcase_home.journey')}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -924,13 +930,13 @@ const FarmShowcase: React.FC = () => {
                                             <div className="p-2 bg-[#13ec49]/10 rounded-lg text-[#13ec49]">
                                                 <span className="material-symbols-outlined">photo_library</span>
                                             </div>
-                                            <h3 className="text-xl font-bold text-[#111813]">Hình ảnh của vườn {totalFarmImagesCount > 0 && `(${totalFarmImagesCount})`}</h3>
+                                            <h3 className="text-xl font-bold text-[#111813]">{t('showcase_home.farm_images')} {totalFarmImagesCount > 0 && `(${totalFarmImagesCount})`}</h3>
                                         </div>
                                         <button
                                             onClick={handleOpenGallery}
                                             className="text-[#13ec49] text-sm font-bold hover:underline"
                                         >
-                                            Xem tất cả →
+                                            {t('showcase_home.view_all')} &rarr;
                                         </button>
                                     </div>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -984,12 +990,12 @@ const FarmShowcase: React.FC = () => {
                                             <div className="p-2 bg-[#13ec49]/10 rounded-lg text-[#13ec49]">
                                                 <span className="material-symbols-outlined">reviews</span>
                                             </div>
-                                            <h2 className="text-lg md:text-2xl font-bold text-[#111813] whitespace-nowrap">Đánh giá & Bình luận</h2>
+                                            <h2 className="text-lg md:text-2xl font-bold text-[#111813] whitespace-nowrap">{t('showcase_home.reviews_comments')}</h2>
                                         </div>
                                         <div className="flex items-center gap-2 bg-white px-3 py-1 rounded-full border border-gray-100 shadow-sm">
                                             <span className="text-[#f59e0b] material-symbols-outlined fill-1">star</span>
                                             <span className="font-bold text-[#111813]">{commentStats.avg_rating || '0.0'}</span>
-                                            <span className="text-gray-400 text-xs">({commentStats.total_count} đánh giá)</span>
+                                            <span className="text-gray-400 text-xs">{t('showcase_home.reviews_count', { count: commentStats.total_count })}</span>
                                         </div>
                                     </div>
 
@@ -1003,7 +1009,7 @@ const FarmShowcase: React.FC = () => {
                                         </div>
                                         <div className="flex-1 flex flex-col gap-3">
                                             <textarea
-                                                placeholder="Chia sẻ cảm nghĩ của bạn về vườn..."
+                                                placeholder={t('showcase_home.share_thoughts')}
                                                 className="w-full bg-[#f8faf8] border-none rounded-lg p-3 text-sm focus:ring-1 focus:ring-[#13ec49] focus:bg-white transition-all resize-none h-20"
                                                 value={newComment}
                                                 onChange={(e) => setNewComment(e.target.value)}
@@ -1026,7 +1032,7 @@ const FarmShowcase: React.FC = () => {
                                                     disabled={isSubmitting || !newComment.trim()}
                                                     className="bg-[#13ec49] text-[#102215] px-6 py-2 rounded-lg font-bold text-sm hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                                 >
-                                                    {isSubmitting ? 'Đang gửi...' : 'Gửi đánh giá'}
+                                                    {isSubmitting ? t('showcase_home.submitting') : t('showcase_home.submit_review')}
                                                 </button>
                                             </div>
                                         </div>
@@ -1062,7 +1068,7 @@ const FarmShowcase: React.FC = () => {
                                                 <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-[#f8faf8]">
                                                     <h3 className="text-lg font-bold text-[#111813] flex items-center gap-2">
                                                         <span className="material-symbols-outlined text-primary">favorite</span>
-                                                        Cảm xúc dữ liệu
+                                                        {t('showcase_home.reactions_data')}
                                                     </h3>
                                                     <button
                                                         onClick={() => setShowReactionModal(false)}
@@ -1100,7 +1106,7 @@ const FarmShowcase: React.FC = () => {
                                                     ) : (
                                                         <div className="py-10 text-center text-gray-400">
                                                             <span className="material-symbols-outlined text-4xl mb-2 opacity-20">sentiment_neutral</span>
-                                                            <p className="text-sm font-medium">Chưa có cảm xúc nào</p>
+                                                            <p className="text-sm font-medium">{t('showcase_home.no_reactions')}</p>
                                                         </div>
                                                     )}
                                                 </div>
@@ -1109,7 +1115,7 @@ const FarmShowcase: React.FC = () => {
                                                         onClick={() => setShowReactionModal(false)}
                                                         className="px-8 py-2 bg-primary text-white rounded-full font-bold text-sm shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-105 active:scale-95 transition-all"
                                                     >
-                                                        Đóng
+                                                        {t('showcase_home.close')}
                                                     </button>
                                                 </div>
                                             </div>
@@ -1123,7 +1129,7 @@ const FarmShowcase: React.FC = () => {
                                             className="w-full py-3 bg-white border border-gray-100 rounded-xl text-primary font-bold text-sm hover:bg-primary/5 transition-all shadow-sm flex items-center justify-center gap-2 mt-4"
                                         >
                                             <span className="material-symbols-outlined text-[18px]">expand_more</span>
-                                            Xem thêm {comments.length - visibleCommentsCount} bình luận...
+                                            {t('showcase_home.view_more_comments', { count: comments.length - visibleCommentsCount })}
                                         </button>
                                     )}
 
@@ -1132,7 +1138,7 @@ const FarmShowcase: React.FC = () => {
                                             onClick={() => setVisibleCommentsCount(3)}
                                             className="text-center text-xs text-gray-400 hover:text-primary transition-colors py-2"
                                         >
-                                            Thu gọn bình luận
+                                            {t('showcase_home.collapse_comments')}
                                         </button>
                                     )}
                                 </div>
@@ -1161,8 +1167,8 @@ const FarmShowcase: React.FC = () => {
                                     </div>
                                     <div className="p-5 flex flex-col gap-4">
                                         <div>
-                                            <h3 className="text-lg font-bold text-[#111813] mb-1">Ghé thăm chúng tôi</h3>
-                                            <p className="text-[#61896b] text-sm">Đông Hòa, Thành phố Mỹ Tho, Tiền Giang, Việt Nam</p>
+                                            <h3 className="text-lg font-bold text-[#111813] mb-1">{t('showcase_home.visit_us')}</h3>
+                                            <p className="text-[#61896b] text-sm">{t('showcase_home.visit_address')}</p>
                                         </div>
                                         <div className="space-y-3">
                                             <div className="flex items-center gap-3 text-sm">
@@ -1175,11 +1181,11 @@ const FarmShowcase: React.FC = () => {
                                             </div>
                                             <div className="flex items-center gap-3 text-sm">
                                                 <span className="material-symbols-outlined text-[#13ec49]">schedule</span>
-                                                <span className="text-[#111813]">T2 - T7: 8:00 - 17:00</span>
+                                                <span className="text-[#111813]">{t('showcase_home.working_hours')}</span>
                                             </div>
                                         </div>
                                         <button className="w-full mt-2 py-2 rounded-lg bg-[#f0f4f1] text-[#111813] font-bold text-sm hover:bg-gray-200 transition-colors">
-                                            Chỉ đường
+                                            {t('showcase_home.directions')}
                                         </button>
                                     </div>
                                 </div>
@@ -1198,8 +1204,8 @@ const FarmShowcase: React.FC = () => {
                             <span>© {new Date().getFullYear()} Vườn Mận Lê Minh Tuấn. All rights reserved.</span>
                         </div>
                         <div className="flex gap-6">
-                            <Link to="/showcase/privacy-policy" className="hover:text-[#13ec49] transition-colors">Chính sách bảo mật</Link>
-                            <Link to="/showcase/terms-of-service" className="hover:text-[#13ec49] transition-colors">Điều khoản dịch vụ</Link>
+                            <Link to="/showcase/privacy-policy" className="hover:text-[#13ec49] transition-colors">{t('showcase_events.privacy_policy')}</Link>
+                            <Link to="/showcase/terms-of-service" className="hover:text-[#13ec49] transition-colors">{t('showcase_events.terms_of_service')}</Link>
                         </div>
                     </div>
                 </footer>
@@ -1212,7 +1218,7 @@ const FarmShowcase: React.FC = () => {
                         <div className="p-6 border-b flex items-center justify-between bg-white sticky top-0 z-10">
                             <h3 className="text-2xl font-bold flex items-center gap-2">
                                 <span className="material-symbols-outlined text-[#13ec49]">photo_library</span>
-                                Bộ sưu tập ảnh vườn
+                                {t('showcase_home.gallery_title')}
                             </h3>
                             <button
                                 onClick={() => setShowGalleryModal(false)}
@@ -1290,7 +1296,7 @@ const FarmShowcase: React.FC = () => {
             {showToast && (
                 <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-[#111813] text-white px-6 py-3 rounded-full shadow-2xl z-[200] flex items-center gap-3 animate-in slide-in-from-bottom-5 duration-300">
                     <span className="material-symbols-outlined text-[#13ec49]">check_circle</span>
-                    <span className="font-medium text-sm">Đã sao chép liên kết vào bộ nhớ tạm!</span>
+                    <span className="font-medium text-sm">{t('showcase_home.link_copied')}</span>
                 </div>
             )}
 

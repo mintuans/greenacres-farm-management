@@ -1,0 +1,1316 @@
+{
+  "common": {
+    "welcome": "Chào mừng đến với Green Acres Farm",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "edit": "Sửa",
+    "delete": "Xóa",
+    "search": "Tìm kiếm",
+    "loading": "Đang tải...",
+    "no_data": "Không có dữ liệu",
+    "all_seasons": "Tất cả mùa vụ",
+    "export_report": "Xuất báo cáo",
+    "income": "Thu nhập",
+    "expense": "Chi phí",
+    "exporting": "Đang trích xuất dữ liệu...",
+    "downloading_template": "Đang tải tệp mẫu...",
+    "others": "Khác",
+    "na": "N/A"
+  },
+  "dashboard": {
+    "title": "Tổng quan trang trại",
+    "current_month": "Tháng hiện tại",
+    "total_income": "Tổng thu nhập",
+    "total_expense": "Tổng chi phí",
+    "net_profit": "Lợi nhuận ròng",
+    "season_investment": "Đầu tư mùa vụ",
+    "seasons_count": "{{count}} vụ",
+    "load_error": "Không thể tải dữ liệu thống kê",
+    "cash_flow_history": "Lịch sử dòng tiền",
+    "cash_flow_subtitle": "Thu nhập vs Chi phí (6 tháng qua)",
+    "low_stock_items": "Vật tư sắp hết",
+    "out_of_stock": "Hết hàng",
+    "low_stock": "Sắp hết",
+    "warning": "Cảnh báo",
+    "remaining": "Còn",
+    "stock_sufficient": "Tất cả vật tư đều đủ",
+    "high_balance_workers": "Nhân viên có số dư cao",
+    "no_worker_data": "Không có dữ liệu nhân viên",
+    "total_balance": "tổng số dư"
+  },
+  "sidebar": {
+    "dashboard": "Bảng điều khiển",
+    "schedule": "Lịch làm việc",
+    "inventory": "Quản lý Kho",
+    "seasons": "Vụ mùa",
+    "transactions": "Giao dịch",
+    "payroll_management": "Quản lý Nhân sự",
+    "workers": "Danh sách Nhân viên",
+    "shifts": "Ca làm việc",
+    "jobs": "Công việc",
+    "work_schedules": "Lịch phân công",
+    "daily_work_logs": "Nhật ký công việc",
+    "payroll": "Bảng lương",
+    "master_data": "Dữ liệu danh mục",
+    "events": "Sự kiện nông trại",
+    "categories": "Danh mục",
+    "units": "Đơn vị tính",
+    "products": "Sản phẩm Showcase",
+    "media": "Thư viện ảnh",
+    "news": "Tin tức",
+    "event_mgmt": "Sự kiện quảng bá",
+    "guest_mgmt": "Khách mời",
+    "notifications": "Thông báo",
+    "warehouse_management": "Quản lý Kho",
+    "warehouse_items": "Vật tư trong kho",
+    "warehouse_types": "Loại vật tư",
+    "settings": "Cài đặt hệ thống",
+    "users": "Người dùng",
+    "roles": "Vai trò",
+    "permissions": "Quyền hạn",
+    "role_permissions": "Phân quyền",
+    "audit_logs": "Lịch sử hệ thống",
+    "backup_restore": "Sao lưu & Phục hồi",
+    "app_name": "Vườn Nhà Mình",
+    "app_subtitle": "Nông trại số",
+    "view_website": "Xem Website",
+    "logout": "Đăng xuất"
+  },
+  "header": {
+    "search_placeholder": "Tìm kiếm...",
+    "showcase_page": "Trang Showcase",
+    "guest": "Khách",
+    "profile": "Hồ sơ"
+  },
+  "showcase_header": {
+    "home": "Trang chủ",
+    "products": "Sản phẩm",
+    "events": "Sự kiện",
+    "news": "Tin tức",
+    "search": "Tìm kiếm...",
+    "guest": "Du khách"
+  },
+  "showcase_products": {
+    "search_placeholder": "Tìm sản phẩm...",
+    "categories": "Danh mục",
+    "all": "Tất cả",
+    "no_products": "Không tìm thấy sản phẩm nào",
+    "featured": "Nổi bật",
+    "out_of_stock": "Hết hàng",
+    "in_stock": "Còn {{count}}"
+  },
+
+  "showcase_blog": {
+    "search_placeholder": "Tìm bài viết...",
+    "news": "Tin tức",
+    "news_desc": "Cập nhật thông tin mới nhất về trong nước và thế giới",
+    "loading": "Đang tải bài viết...",
+    "new_news": "Tin tức mới",
+    "featured_post": "Bài viết nổi bật",
+    "farm_name": "Vườn Nhà",
+    "read_time": "phút đọc",
+    "views": "lượt xem",
+    "read_more": "Đọc tiếp",
+    "vnexpress_link": "Xem tại VNExpress",
+    "view_details": "Xem chi tiết",
+    "current_news": "Tin thời sự",
+    "view_news": "Xem tại báo",
+    "no_posts": "Không tìm thấy bài viết",
+    "try_search_again": "Thử tìm kiếm với từ khóa khác hoặc kiểm tra lại sau"
+  },
+  "showcase_home": {
+    "guest": "Khách",
+    "like": "Thích",
+    "reply": "Phản hồi",
+    "view_more_replies": "Xem thêm {{count}} phản hồi...",
+    "collapse_replies": "Thu gọn phản hồi",
+    "delete": "Xóa",
+    "submitting": "Đang gửi...",
+    "submit_reply": "Gửi phản hồi",
+    "reply_to": "Phản hồi {{name}}...",
+    "cancel": "Hủy",
+    "confirm_delete_comment": "Bạn có chắc muốn xóa bình luận này?",
+    "login_to_comment": "Bạn cần đăng nhập để bình luận. Chuyển đến trang đăng nhập?",
+    "error_commenting": "Có lỗi khi gửi bình luận. Vui lòng thử lại!",
+    "login_to_reply": "Bạn cần đăng nhập để phản hồi. Chuyển đến trang đăng nhập?",
+    "error_replying": "Có lỗi khi gửi phản hồi. Vui lòng thử lại!",
+    "cannot_delete": "Không thể xóa bình luận này.",
+    "login_to_react": "Bạn cần đăng nhập để bày tỏ cảm xúc. Chuyển đến trang đăng nhập?",
+    "no_permission_react": "Bạn không có quyền bày tỏ cảm xúc. Vui lòng kiểm tra lại quyền hạn.",
+    "error_reacting": "Không thể thực hiện. Vui lòng thử lại sau.",
+    "farm_name": "Vườn Nhà Mình",
+    "farm_desc": "Ghé thăm vườn mận hữu cơ chất lượng cao tại Mỹ Tho, Tiền Giang!",
+    "copy_link_error": "Không thể sao chép liên kết",
+    "welcome": "Welcome",
+    "share": "Chia sẻ",
+    "favorite": "Yêu thích",
+    "slogan": "Đất lành, trái ngọt.",
+    "location": "Mỹ Tho, Tiền Giang, Việt Nam",
+    "hero_title_1": "Mùa Thu hoạch 2026",
+    "hero_desc_1": "Khoảnh khắc tuyệt đẹp tại vườn mận",
+    "hero_desc_2": "Vườn mận chín vàng rộm vào mùa hè",
+    "history_title": "Hành Trình Phát Triển Của Vườn Nhà",
+    "history_intro": "Từ những ngày đầu khai khẩn, khu vườn của gia đình chúng tôi đã trải qua một hành trình dài hơn hai thập kỷ, gắn liền với sự thay đổi của thổ nhưỡng và tâm huyết của những người làm vườn thực thụ.",
+    "history_step_1": "1. Những bước đi đầu tiên (2003 - 2013)",
+    "history_step_1_desc": "Câu chuyện bắt đầu từ năm 2003, khi những gốc táo đầu tiên được đặt xuống đất. Sau đó, gia đình quyết định chuyển đổi sang trồng vú sữa – loại cây cho bóng mát và giá trị kinh tế cao thời bấy giờ. Đến năm 2006, cây mận chính thức xuất hiện trong vườn, ban đầu chỉ là những gốc trồng xen kẽ dưới tán vú sữa.",
+    "history_step_2": "2. Bước ngoặt và sự chuyên canh (2014 - 2024)",
+    "history_step_2_desc_1": "Năm 2014 đánh dấu một quyết định quan trọng: Chúng tôi nhận thấy những cây vú sữa lâu năm phát triển quá cao, gây khó khăn và nguy hiểm trong khâu thu hoạch cũng như chăm sóc. Với mục tiêu tối ưu hóa năng suất, gia đình đã quyết định chặt bỏ vú sữa để tập trung toàn lực vào cây mận.",
+    "history_step_2_desc_2": "Kể từ đó, mận trở thành nguồn thu nhập chính và là niềm tự hào của vườn. Để tận dụng tối đa diện tích đất và tạo hệ sinh thái đa dạng, chúng tôi còn trồng xen canh thêm hạnh (quất) và dứa (khóm). Mô hình \"lấy ngắn nuôi dài\" này không chỉ giúp giữ ẩm cho đất mà làm mang lại nguồn thu phụ ổn định quanh năm.",
+    "history_step_3": "3. Tầm nhìn mới: Kết hợp chăn nuôi bền vững (2025)",
+    "history_step_3_desc": "Không dừng lại ở việc canh tác cây ăn trái, giữa năm 2025, cha tôi đã tiên phong triển khai thêm mô hình nuôi ếch. Đây là bước đi chiến lược nhằm:",
+    "history_step_3_point_1": "Tận dụng nguồn nước:",
+    "history_step_3_point_1_desc": "Kết hợp mương vườn sẵn có để nuôi ếch.",
+    "history_step_3_point_2": "Tăng giá trị kinh tế:",
+    "history_step_3_point_2_desc": "Đa dạng hóa sản phẩm cung ứng ra thị trường ngoài trái cây tươi.",
+    "history_step_3_point_3": "Hướng tới nông nghiệp tuần hoàn:",
+    "history_step_3_point_3_desc": "Tận dụng phụ phẩm nông nghiệp và tạo ra nguồn phân bón hữu cơ tự nhiên từ chất thải của ếch để nuôi dưỡng ngược lại cho gốc mận.",
+    "read_more": "Xem thêm",
+    "read_less": "Thu gọn",
+    "updating": "Đang cập nhật",
+    "vietgap": "Chứng nhận VietGAP",
+    "area": "2.5 Hecta",
+    "cultivation_area": "Diện tích canh tác",
+    "founded": "Thành lập 2003",
+    "journey": "Hành trình 23 năm",
+    "farm_images": "Hình ảnh của vườn",
+    "view_all": "Xem tất cả",
+    "reviews_comments": "Đánh giá & Bình luận",
+    "reviews_count": "({{count}} đánh giá)",
+    "share_thoughts": "Chia sẻ cảm nghĩ của bạn về vườn...",
+    "submit_review": "Gửi đánh giá",
+    "reactions_data": "Cảm xúc dữ liệu",
+    "no_reactions": "Chưa có cảm xúc nào",
+    "close": "Đóng",
+    "view_more_comments": "Xem thêm {{count}} bình luận...",
+    "collapse_comments": "Thu gọn bình luận",
+    "visit_us": "Ghé thăm chúng tôi",
+    "visit_address": "Đông Hòa, Thành phố Mỹ Tho, Tiền Giang, Việt Nam",
+    "working_hours": "T2 - T7: 8:00 - 17:00",
+    "directions": "Chỉ đường",
+    "gallery_title": "Bộ sưu tập ảnh vườn",
+    "link_copied": "Đã sao chép liên kết vào bộ nhớ tạm!"
+  },
+  "showcase_contact": {
+    "title": "Liên hệ với chúng tôi",
+    "description": "Chúng tôi luôn sẵn lòng lắng nghe ý kiến đóng góp, giải đáp thắc mắc hoặc hỗ trợ bạn trải nghiệm các sản phẩm từ Vườn Nhà Mình.",
+    "contact_info": "Thông tin liên lạc",
+    "address": "Địa chỉ vườn",
+    "phone": "Số điện thoại",
+    "email": "Email hỗ trợ",
+    "working_hours": "Giờ mở cửa",
+    "morning": "Sáng: 08:00 - 12:00",
+    "afternoon": "Chiều: 13:30 - 17:30 (T2 - T7)",
+    "follow_us": "Theo dõi chúng tôi",
+    "send_message": "Gửi tin nhắn cho chúng tôi",
+    "full_name": "Họ và tên *",
+    "full_name_placeholder": "VD: Nguyễn Văn A",
+    "email_address": "Địa chỉ Email *",
+    "email_placeholder": "email@example.com",
+    "phone_number": "Số điện thoại",
+    "phone_placeholder": "09xx xxx xxx",
+    "subject": "Chủ đề",
+    "subject_placeholder": "-- Chọn chủ đề --",
+    "subject_business": "Hợp tác kinh doanh",
+    "subject_support": "Hỗ trợ kỹ thuật",
+    "subject_feedback": "Phản hồi sản phẩm",
+    "subject_other": "Khác",
+    "message_content": "Nội dung tin nhắn *",
+    "message_placeholder": "Bạn cần chúng tôi hỗ trợ điều gì?",
+    "submit_button": "Gửi tin nhắn liên hệ",
+    "success_message": "Cảm ơn bạn! Tin nhắn của bạn đã được gửi thành công. Chúng tôi sẽ phản hồi sớm nhất có thể.",
+    "copyright": "© {{year}} Vườn Nhà Mình. Đã đăng ký bản quyền."
+  },
+  "showcase_blog_detail": {
+    "loading_post": "Đang tải bài viết...",
+    "post_not_found": "Không tìm thấy bài viết",
+    "back_to_list": "Quay lại danh sách",
+    "breadcrumb_news": "Tin tức",
+    "read_time_minutes": "{{minutes}} phút đọc",
+    "default_read_time": "5 phút đọc",
+    "views": "{{count}} lượt xem",
+    "share_post": "Chia sẻ bài viết:",
+    "back_to_news_list": "Quay lại danh sách tin tức",
+    "related_posts": "Bài viết liên quan",
+    "view_all": "Xem tất cả"
+  },
+  "showcase_policy": {
+    "title": "Chính sách bảo mật thông tin",
+    "intro_1": "Vườn Nhà Mình luôn tôn trọng sự riêng tư của khách hàng, và đó là lý do chúng tôi luôn cam kết bảo vệ những thông tin cá nhân của khách hàng.",
+    "intro_2": "Trong tài liệu này, khái niệm \"thông tin cá nhân\" được hiểu bao gồm tên, địa chỉ, địa chỉ email, số điện thoại hay bất kỳ thông tin cá nhân nào khác mà khách hàng cung cấp, hoặc bất kỳ thông tin nào về khách hàng được thu thập theo luật định hiện hành. Mong rằng tài liệu sẽ giúp bạn hiểu rõ những thông tin cá nhân nào mà Vườn Nhà Mình sẽ thu thập, cũng như cách chúng tôi sử dụng những thông tin này sau đó.",
+    "intro_3": "Khi bạn truy cập và sử dụng trang web (bao gồm cả việc đăng ký dịch vụ trực tuyến), chúng tôi hiểu rằng bạn hoàn toàn đồng ý với những điều khoản của chính sách này.",
+    "sec1_title": "Khai báo khi sử dụng",
+    "sec1_desc": "Tất cả nội dung bạn xem được trên trang web nhằm phục vụ nhu cầu thông tin của bạn và giúp bạn lựa chọn dịch vụ. Vì thế, bạn được sử dụng trang web mà không cần cung cấp bất kỳ thông tin cá nhân nào. Tuy nhiên, trong một số trường hợp liên quan đến việc đăng ký dịch vụ, chúng tôi có thể yêu cầu bạn cung cấp thông tin cá nhân.",
+    "sec2_title": "Thông tin cá nhân do bạn cung cấp",
+    "sec2_desc_1": "Khi bạn cung cấp các thông tin cần thiết, chúng tôi sẽ sử dụng chúng để đáp ứng yêu cầu của bạn, hoặc chúng tôi có thể liên lạc với bạn qua thư từ, email, tin nhắn hay điện thoại; hoặc tuân theo luật định hiện hành, Vườn Nhà Mình sử dụng các phương tiện trên để giới thiệu đến bạn những sản phẩm, dịch vụ hay chương trình khuyến mãi mới từ Vườn Nhà Mình. Khi cung cấp thông tin cho chúng tôi qua trang web này, bạn hiểu rõ và chấp thuận việc thu thập, sử dụng và tiết lộ những thông tin cá nhân nêu trên cho một số mục đích được quy định trong trang này.",
+    "sec2_desc_2": "Bạn hoàn toàn đồng ý và chấp thuận rằng những thông tin cá nhân bạn cung cấp khi sử dụng trang web có thể được bảo lưu tại trụ sở hay chi nhánh của Vườn Nhà Mình có thể được lưu trữ tại một số máy chủ hiện có hay chưa biết trước cho mục đích vận hành và phát triển trang web cũng như các dịch vụ của Vườn Nhà Mình.",
+    "sec2_desc_3": "Nếu bạn đặt hàng một sản phẩm, yêu cầu một dịch vụ hoặc gởi thư phản hồi lên trang web, chúng tôi có thể liên hệ với bạn để có những thông tin bổ sung cần thiết cho việc xử lý hoặc hoàn thành đơn đặt hàng hoặc yêu cầu của bạn. Tuy nhiên, chúng tôi sẽ không cung cấp thông tin này cho một bên thứ ba mà không được sự cho phép của bạn, trừ trường hợp bị pháp luật hiện hành bắt buộc hoặc trường hợp cần thiết để xử lý đơn đặt hàng.",
+    "sec3_title": "Cung cấp cho các đơn vị khác",
+    "sec3_desc": "Chúng tôi có thể sử dụng một số đơn vị khác để cung cấp sản phẩm hay dịch vụ cho bạn. Chúng tôi cũng cần trao đổi thông tin cá nhân của bạn đến các đơn vị này để họ hoàn thành yêu cầu của bạn. Những đơn vị này cũng không được phép sử dụng thông tin cá nhân của bạn cho các mục đích khác và chúng tôi đồng thời yêu cầu họ tuân theo quy định bảo mật khi tiến hành cung cấp dịch vụ.",
+    "sec4_title": "Ghi nhận thông tin trình duyệt",
+    "sec4_desc_1": "Đôi khi, thông tin có thể được đưa vào máy tính của bạn để giúp chúng tôi nâng cấp trang web hay cải thiện chất lượng dịch vụ cho bạn. Những thông tin này thường được biết đến dưới dạng các \"cookies\" mà nhiều trang web hiện cũng đang sử dụng. \"Cookies\" là những mẩu thông tin lưu trữ trong đĩa cứng hay trình duyệt trên máy tính của bạn, không phải trên trang web. Chúng cho phép thu thập một số thông tin về máy tính của bạn như địa chỉ IP, hệ điều hành, chế độ trình duyệt và địa chỉ của các trang web liên quan.",
+    "sec4_desc_2": "Nếu bạn không muốn nhận các cookies này, hoặc muốn được thông báo khi các cookies này được đặt vào, bạn có thể cài đặt chế độ trình duyệt của bạn thực hiện điều này nếu trình duyệt của bạn hỗ trợ. Vui lòng lưu ý, nếu bạn tắt chế độ nhận cookies, bạn sẽ không thể truy cập hay sử dụng một số tiện ích trên trang web mà không được xác định trước. Chúng tôi không cố ý hạn chế việc sử dụng của bạn trong tình huống này, đây chỉ là giới hạn trong việc lập trình và xây dựng trang web.",
+    "sec5_title": "Sự an toàn",
+    "sec5_desc_1": "Khi lập trình trang web, chúng tôi có thể đặt những luật định hợp lý mang tính thương mại để ngăn chặn hành vi truy cập bất hợp pháp và việc sử dụng không thích đáng các thông tin cá nhân của bạn đã gửi cho Vườn Nhà Mình thông qua việc sử dụng trang web này. Nếu trang web này hỗ trợ việc giao dịch trực tuyến, nó sẽ được áp dụng một tiêu chuẩn công nghệ được gọi là SSL (Secure Sockets Layer), để bảo vệ tính bảo mật và an toàn trên đường truyền dữ liệu.",
+    "sec5_desc_2": "Vì luôn có những rủi ro liên quan đến vấn đề cung cấp dữ liệu cá nhân, cho dù là cung cấp trực tiếp, qua điện thoại hay qua mạng internet, hay qua các phương tiện kỹ thuật khác; và không có hệ thống kỹ thuật nào an toàn tuyệt đối hay chống được tất cả các \"hacker\" và \"tamper\", Vườn Nhà Mình luôn nỗ lực tiến hành những biện pháp đề phòng thích hợp đối với từng đặc tính của thông tin để ngăn chặn và giảm thiểu tối đa các rủi ro có thể khi bạn sử dụng trang web này.",
+    "sec6_title": "Thông tin qua E-mail",
+    "sec6_desc": "Khi bạn đăng ký dịch vụ, địa chỉ e-mail của bạn cung cấp sẽ dùng làm công cụ trao đổi thông tin với bạn. Trước hết bạn hãy chắc rằng bạn cung cấp địa chỉ e-mail hữu dụng đối với bạn trong suốt quá trình sử dụng dịch vụ. Chúng tôi có thể gởi những thông tin bí mật qua e-mail hay tiếp nhận yêu cầu hỗ trợ của bạn. Trong trường hợp bạn không còn sử dụng e-mail đã cung cấp, bạn phải báo cho chúng tôi để về việc thay đổi này. Để bảo vệ bạn, Vườn Nhà Mình có thể tạm thời ngưng tiếp nhận yêu cầu qua e-mail bạn đã cung cấp nếu nhận thấy có sự gian lận hoặc thông tin bất thường – cho đến khi chúng tôi liên hệ được với bạn để xác nhận.",
+    "sec7_title": "Điều chỉnh thông tin thu thập",
+    "sec7_desc": "Vườn Nhà Mình sẽ chủ động hoặc theo yêu cầu của bạn bổ sung, hiệu chỉnh hay tẩy xóa các dữ liệu thông tin cá nhân không chính xác, không đầy đủ hoặc không cập nhật khi bạn còn liên kết với hoạt động của chúng tôi.",
+    "sec8_title": "Đối tượng “Trẻ vị thành niên”",
+    "sec8_desc": "Vườn Nhà Mình từ chối phục vụ cá nhân còn ở độ tuổi Trẻ vị thành niên (do luật pháp địa phương mà bạn cư ngụ quy định) không được quyền mua hay tìm cách sử dụng dựa trên điều lệ hợp pháp khác trên trang web này nếu không có sự chấp thuận của ba/mẹ hay người giám hộ hợp pháp, trừ khi luật pháp địa phương có áp dụng hay cho phép.",
+    "sec9_title": "Các đường liên kết ngoài trang web",
+    "sec9_desc": "Trang web này có thể chứa các đường liên kết đến các trang web khác được đặt vào nhằm mục đích giới thiệu hoặc bổ sung thông tin liên quan để bạn tham khảo. Vườn Nhà Mình không chịu trách nhiệm về nội dung hay các hành vi của bất kỳ trang web nào khác.",
+    "sec10_title": "Việc thay đổi quy định",
+    "sec10_desc": "Vườn Nhà Mình có thể thay đổi quy định này một cách không thường xuyên, bao gồm việc bổ sung, loại bỏ một phần nội dung hoặc tạm ngưng trang web mà không cần báo trước. Tuy nhiên, nếu quy định này được thay đổi theo hướng có thể gây bất lợi cho bạn, Vườn Nhà Mình sẽ cố gắng thông báo về sự thay đổi qua e-mail bạn đã cung cấp hoặc ngay trên trang chủ.",
+    "back_home": "Quay lại trang chủ"
+  },
+  "showcase_terms": {
+    "title": "Điều khoản dịch vụ",
+    "sec1_title": "Chấp nhận điều khoản",
+    "sec1_desc": "Bằng việc truy cập, đăng ký hoặc sử dụng bất kỳ tính năng nào của hệ thống quản lý và dịch vụ <strong>Vườn Nhà Mình</strong>, bạn xác nhận rằng mình đã đọc, hiểu và hoàn toàn đồng ý tuân thủ các điều khoản và điều kiện được nêu tại đây. Nếu bạn không đồng ý với bất kỳ phần nào của các điều khoản này, vui lòng ngừng sử dụng dịch vụ của chúng tôi ngay lập tức.",
+    "sec2_title": "Đăng ký & Bảo mật tài khoản",
+    "sec2_desc_1": "Khi tạo tài khoản tại Vườn Nhà Mình, bạn cam kết cung cấp thông tin chính xác, đầy đủ và cập nhật. Bạn chịu trách nhiệm hoàn toàn về việc bảo mật mật khẩu và tất cả các hoạt động diễn ra dưới tài khoản của mình.",
+    "sec2_desc_2": "Bạn phải thông báo ngay cho chúng tôi nếu phát hiện bất kỳ hành vi truy cập trái phép hoặc vi phạm bảo mật nào. Chúng tôi không chịu trách nhiệm cho bất kỳ tổn thất hoặc thiệt hại nào phát sinh từ việc bạn không tuân thủ quy định bảo mật này.",
+    "sec3_title": "Hành vi bị cấm",
+    "sec3_desc": "Để đảm bảo môi trường quản lý nông nghiệp minh bạch và an toàn, bạn cam kết KHÔNG thực hiện các hành vi sau:",
+    "sec3_li_1": "Cố ý nhập liệu các thông tin sai lệch, gian lận về sản lượng, mùa vụ hoặc thông tin tài chính.",
+    "sec3_li_2": "Tìm cách can thiệp, phá hoại hệ thống (hack), spam hoặc phát tán mã độc.",
+    "sec3_li_3": "Sử dụng dịch vụ cho bất kỳ mục đích bất hợp pháp nào hoặc vi phạm pháp luật hiện hành.",
+    "sec4_title": "Sở hữu trí tuệ",
+    "sec4_desc_1": "Tất cả nội dung bao gồm nhưng không giới hạn ở: logo, mã nguồn, thiết kế giao diện, hình ảnh, văn bản và các tài sản kỹ thuật số khác trên hệ thống đều thuộc quyền sở hữu độc quyền của <strong>Vườn Nhà Mình</strong>.",
+    "sec4_desc_2": "Mọi hành vi sao chép, trích dẫn hoặc sử dụng các tài sản này cho mục đích thương mại mà không có sự đồng ý bằng văn bản của chúng tôi đều bị coi là vi phạm bản quyền và sẽ được xử lý theo quy định của pháp luật.",
+    "sec5_title": "Giới hạn trách nhiệm",
+    "sec5_desc": "GreenAcres nỗ lực hết mình để duy trì dịch vụ ổn định. Tuy nhiên, chúng tôi không chịu trách nhiệm trong trường hợp gián đoạn dịch vụ do các nguyên nhân bất khả kháng như sự cố mạng, thiên tai hoặc các lỗi kỹ thuật ngoài tầm kiểm soát. Chúng tôi có quyền tạm ngưng cung cấp dịch vụ để bảo trì hoặc nâng cấp hệ thống bất kỳ lúc nào."
+  },
+  "showcase_event": {
+    "login_required": "Bạn cần đăng nhập để xem chi tiết sự kiện. Chuyển đến trang đăng nhập?",
+    "join_login_required": "Bạn cần đăng nhập để tham gia sự kiện. Chuyển đến trang đăng nhập?",
+    "join_success": "Hẹn gặp lại bạn tại sự kiện!",
+    "join_error": "Có lỗi xảy ra khi tham gia sự kiện",
+    "join_failed": "Không thể tham gia sự kiện vào lúc này",
+    "upload_success": "Tải ảnh lên thành công!",
+    "upload_error": "Lỗi khi tải ảnh lên",
+    "breadcrumb_home": "Trang chủ",
+    "breadcrumb_events": "Sự kiện",
+    "loading": "Đang tải chi tiết sự kiện...",
+    "access_denied": "Truy cập bị từ chối",
+    "access_denied_desc": "Rất tiếc, bạn không được mời tham gia sự kiện này. Vui lòng liên hệ quản trị viên nếu bạn nghĩ đây là một sự nhầm lẫn.",
+    "back_to_events": "Quay lại danh sách sự kiện",
+    "event_not_found": "Không tìm thấy sự kiện",
+    "participants": "Danh sách tham gia",
+    "participants_desc": "Cùng đón chào những vị khách quý sẽ cùng chúng ta khai xuân, hái lộc đầu năm! 🌸🧧✨",
+    "joined": "Đã tham gia",
+    "joining": "Đang đăng ký...",
+    "join_now": "Tham gia ngay",
+    "vip": "VIP",
+    "guest": "Khách mời",
+    "member": "Member",
+    "inviting": "Công tác mời khách đang được triển khai...",
+    "featured": "Sự kiện nổi bật",
+    "end": "Kết thúc",
+    "event_details": "Chi tiết sự kiện",
+    "event_details_desc": "Thông tin chi tiết về sự kiện sẽ được cập nhật sớm nhất. Hãy sẵn sàng cho những trải nghiệm tuyệt vời tại Vườn Nhà Mình!",
+    "location": "Địa điểm tổ chức",
+    "default_location": "Tại Vườn Nhà Mình",
+    "location_desc": "Mỹ Tho, Tiền Giang, Việt Nam",
+    "dress_code": "Trang phục",
+    "dress_code_desc_1": "Lễ hội / Tự do",
+    "dress_code_desc_2": "Gì cũng được, bạn đẹp là được🧧✨",
+    "register_now": "Đăng ký ngay!",
+    "register_desc": "Tham gia cùng chúng tôi để có một trải nghiệm đáng nhớ nhất trong năm!",
+    "registering": "Đang thực hiện...",
+    "interested": "Tôi quan tâm",
+    "moments": "Khoảnh khắc",
+    "contribute_photos": "Đóng góp ảnh",
+    "view_more": "Xem thêm",
+    "no_photos": "Chưa có ảnh chia sẻ.",
+    "please_contribute": "Hãy đóng góp ảnh!",
+    "tip_title": "Vườn Nhà Mình Tip",
+    "tip_desc": "\"Hái lộc đầu xuân, vạn sự như ý! Đừng bỏ lỡ cơ hội nhận những phần quà 'lộc xuân' mang đậm hương vị quê nhà dành riêng cho bạn tại sự kiện lần này nhé! 🧧🌸✨\"",
+    "welcome": "Chào mừng bạn!",
+    "awesome": "Tuyệt quá!"
+  },
+  "showcase_events": {
+    "loading": "Đang tải danh sách sự kiện...",
+    "no_events_title": "Chưa có sự kiện nào",
+    "no_events_desc": "Hãy quay lại sau để xem các sự kiện mới nhất nhé!",
+    "featured": "Sự kiện nổi bật",
+    "social_event": "Sự kiện xã hội",
+    "festive_gathering": "Lễ hội giao lưu",
+    "default_location": "Tại Vườn Nhà Mình",
+    "default_desc": "Cùng nhau chào đón mùa màng bội thu và nâng ly chúc mừng năm mới với những món ăn hảo hạng từ nông trại, âm nhạc đồng quê rộn rã và ánh lửa trại bập bùng, ấm áp.",
+    "whos_coming": "Ai sẽ tham gia?",
+    "friends_family": "Bạn bè & Gia đình",
+    "join_event": "Tham gia ngay",
+    "other_events": "Sự kiện khác",
+    "view_all": "Xem tất cả",
+    "soil_health": "Sức khỏe đất",
+    "default_workshop_desc": "Khám phá bí quyết của 'vàng đen' trong nông nghiệp. Chúng tôi sẽ chia sẻ về luân canh, kiểm soát nhiệt độ và độ ẩm để đạt năng suất hoàn hảo.",
+    "details": "Chi tiết",
+    "workshops_coming_soon": "Các hội thảo đang được lên kế hoạch...",
+    "copyright": "© {{year}} {{farm_name}}. All rights reserved.",
+    "privacy_policy": "Chính sách bảo mật",
+    "terms_of_service": "Điều khoản sử dụng"
+  },
+  "inventory": {
+    "title": "Quản lý kho vật tư",
+    "subtitle": "Theo dõi phân bón, thuốc bảo vệ thực vật và thức ăn chăn nuôi.",
+    "stats": {
+      "total_items": "Tổng số mặt hàng",
+      "low_stock": "Cảnh báo hết hàng",
+      "action_needed": "Cần xử lý",
+      "total_value": "Tổng giá trị tồn kho"
+    },
+    "search_placeholder": "Tìm tên vật tư, SKU...",
+    "add_btn": "Thêm vật tư",
+    "table": {
+      "product": "Sản phẩm",
+      "category": "Danh mục",
+      "quantity": "Số lượng",
+      "price": "Giá nhập",
+      "date": "Ngày nhập",
+      "status": "Trạng thái",
+      "actions": "Thao tác"
+    },
+    "stock_status": {
+      "out_of_stock": "HẾT HÀNG",
+      "low_stock": "SẮP HẾT",
+      "in_stock": "CÒN HÀNG"
+    },
+    "modal": {
+      "view_title": "Chi tiết vật tư",
+      "edit_title": "Cập nhật vật tư",
+      "add_title": "Thêm vật tư mới",
+      "change_image": "Thay đổi",
+      "select_image": "Chọn hình ảnh",
+      "item_name": "Tên vật tư",
+      "sku": "Mã SKU",
+      "gen_code": "Tạo mã mới",
+      "import_price": "Giá nhập (VNĐ)",
+      "unit": "Đơn vị tính",
+      "select_unit": "-- Chọn đơn vị --",
+      "current_stock": "Tồn kho hiện tại",
+      "min_stock": "Mức tối thiểu",
+      "import_date": "Ngày nhập",
+      "close": "Đóng chi tiết",
+      "cancel": "Hủy bỏ",
+      "save": "Lưu thay đổi",
+      "create": "Tạo vật tư"
+    },
+    "media": {
+      "title": "Thư viện hình ảnh",
+      "empty": "Bạn chưa có ảnh nào trong thư viện (phần Product)",
+      "done": "Xong"
+    },
+    "import": {
+      "entity_name": "vật tư",
+      "success": "Đã nhập thành công {{count}} mặt hàng!",
+      "error": "Lỗi khi nhập dữ liệu. Vui lòng kiểm tra định dạng file CSV.",
+      "read_error": "Lỗi khi đọc file",
+      "columns": [
+        "SKU",
+        "Tên vật tư",
+        "Danh mục",
+        "Đơn vị tính",
+        "Số lượng",
+        "Mức tối thiểu",
+        "Giá nhập",
+        "Ngày nhập",
+        "Ghi chú"
+      ]
+    },
+    "messages": {
+      "delete_error": "Không thể xóa vật tư này",
+      "new_item": "Vật tư mới"
+    }
+  },
+  "partners": {
+    "title": "Quản lý Đối tác",
+    "subtitle": "Danh sách nhân viên, nhà cung cấp và người mua",
+    "search_placeholder": "Tìm kiếm đối tác...",
+    "add_btn": "Thêm đối tác",
+    "table": {
+      "code": "Mã đối tác",
+      "name": "Tên đối tác",
+      "type": "Loại",
+      "phone": "Điện thoại",
+      "address": "Địa chỉ",
+      "balance": "Số dư",
+      "actions": "Thao tác"
+    },
+    "types": {
+      "worker": "Nhân viên",
+      "supplier": "Nhà cung cấp",
+      "buyer": "Người mua",
+      "family": "Gia đình"
+    },
+    "status": {
+      "loading": "Đang tải...",
+      "not_found": "Không tìm thấy đối tác nào",
+      "empty": "Chưa có đối tác nào"
+    },
+    "modal": {
+      "add_title": "Thêm đối tác mới",
+      "edit_title": "Sửa đối tác",
+      "code": "Mã đối tác *",
+      "name": "Tên đối tác *",
+      "type": "Loại *",
+      "phone": "Điện thoại",
+      "address": "Địa chỉ",
+      "placeholder": {
+        "code": "VD: NV-001",
+        "name": "Nhập tên đối tác",
+        "phone": "0901234567",
+        "address": "Nhập địa chỉ",
+        "select_type": "-- Chọn loại --"
+      },
+      "cancel": "Hủy",
+      "save": "Cập nhật",
+      "create": "Tạo mới"
+    },
+    "import": {
+      "entity_name": "tài khoản",
+      "columns": [
+        "Mã đối tác",
+        "Tên đối tác",
+        "Loại (WORKER/SUPPLIER/BUYER/FAMILY)",
+        "Điện thoại",
+        "Địa chỉ"
+      ]
+    },
+    "export": {
+      "sheet_name": "Danh sách đối tác",
+      "filename": "DanhSach_DoiTac_{{date}}.xlsx"
+    },
+    "messages": {
+      "load_error": "Không thể tải danh sách đối tác",
+      "save_error": "Không thể lưu đối tác",
+      "delete_error": "Không thể xóa đối tác",
+      "confirm_delete": "Bạn có chắc muốn xóa đối tác này?",
+      "import_empty": "File không có dữ liệu"
+    }
+  },
+  "payroll": {
+    "title": "Quản lý Phiếu lương",
+    "subtitle": "Tự động tạo transaction khi chuyển trạng thái sang \"Đã trả\"",
+    "stats": {
+      "total": "Tổng phiếu lương",
+      "pending": "Chờ xử lý",
+      "paid": "Đã thanh toán",
+      "total_spent": "Tổng đã chi"
+    },
+    "table": {
+      "code": "Mã phiếu",
+      "worker": "Nhân viên",
+      "total": "Tổng tiền",
+      "final": "Thực nhận",
+      "status": "Trạng thái",
+      "transaction": "Transaction ID",
+      "actions": "Thao tác",
+      "no_transaction": "Chưa tạo GD"
+    },
+    "status": {
+      "draft": "Chờ thanh toán",
+      "paid": "Đã trả",
+      "cancelled": "Đã hủy"
+    },
+    "actions": {
+      "view": "Xem chi tiết",
+      "pay": "💰 Trả lương",
+      "cancel": "Hủy phiếu"
+    },
+    "automation": {
+      "title": "Quy trình tự động hóa",
+      "subtitle": "Khi bạn nhấn nút \"Trả lương\", hệ thống sẽ tự động thực hiện các bước:",
+      "step1_title": "1. Tài chính",
+      "step1_desc": "• Tạo Transaction EXPENSE trong sổ thu chi",
+      "step2_title": "2. Nhân sự",
+      "step2_desc": "• Tự cập nhật số dư (current_balance) của nhân viên"
+    },
+    "slip": {
+      "title": "Chi tiết Phiếu lương",
+      "system_name": "Hệ thống quản trị Vườn Nhà Mình",
+      "print": "In phiếu",
+      "header": "PHIẾU LƯƠNG",
+      "no": "Số:",
+      "date": "Ngày lập:",
+      "receiver": "Người nhận lương",
+      "payment_date": "Ngày trả:",
+      "table": {
+        "date_job": "Ngày làm / Công việc",
+        "shift": "Ca",
+        "rate": "Đơn giá",
+        "amount": "Thành tiền"
+      },
+      "summary": {
+        "base": "Tổng cộng cố định:",
+        "bonus": "Thưởng/Phạt:",
+        "final": "Thực nhận"
+      },
+      "footer": {
+        "receiver": "Người nhận lương",
+        "representative": "Người đại diện",
+        "management": "Ban quản lý Vườn Nhà Mình",
+        "generated_by": "Chứng từ được tạo bởi hệ thống Vườn Nhà Mình"
+      }
+    },
+    "messages": {
+      "confirm_delete": "Bạn có chắc muốn xóa phiếu lương này?",
+      "delete_error": "Lỗi khi xóa phiếu lương",
+      "status_update_success": "✅ Cập nhật trạng thái thành công!",
+      "status_update_error": "Lỗi khi cập nhật trạng thái",
+      "error_prefix": "Lỗi: "
+    }
+  },
+  "transactions": {
+    "title": "Sổ nhật ký giao dịch",
+    "subtitle": "Quản lý thu nhập và chi phí hàng ngày của trang trại.",
+    "months": [
+      "Tháng 01", "Tháng 02", "Tháng 03", "Tháng 04", "Tháng 05", "Tháng 06",
+      "Tháng 07", "Tháng 08", "Tháng 09", "Tháng 10", "Tháng 11", "Tháng 12"
+    ],
+    "back_to_current": "Về tháng hiện tại",
+    "stats": {
+      "income": "Tổng thu",
+      "expense": "Tổng chi",
+      "profit": "Lợi nhuận"
+    },
+    "filter": {
+      "label": "Lọc",
+      "all": "Tất cả",
+      "income": "Thu",
+      "expense": "Chi"
+    },
+    "table": {
+      "date": "Ngày",
+      "content": "Nội dung / Chi tiết",
+      "category": "Phân loại",
+      "amount": "Số tiền",
+      "status": "Trạng thái",
+      "no_title": "Không có tiêu đề",
+      "general": "Chi tiêu chung",
+      "other": "Khác",
+      "completed": "Hoàn tất",
+      "empty": "Chưa có giao dịch nào được ghi lại"
+    },
+    "modal": {
+      "add_title": "Ghi chép giao dịch",
+      "edit_title": "Cập nhật giao dịch",
+      "editing_id": "Đang chỉnh sửa ID:",
+      "add_subtitle": "Cập nhập dòng tiền mới nhất",
+      "type_income": "Thu vào",
+      "type_expense": "Chi ra",
+      "note": "Mô tả giao dịch",
+      "note_placeholder": "Ví dụ: Bán 10 tấn mận, mua phân bón...",
+      "quantity": "Số lượng",
+      "unit_price": "Đơn giá",
+      "unit": "Đơn vị",
+      "total": "Tổng tiền (VNĐ)",
+      "date": "Ngày giao dịch",
+      "category": "Phân loại",
+      "season": "Vụ mùa",
+      "partner": "Đối tác",
+      "save": "Lưu giao dịch",
+      "close": "Đóng"
+    },
+    "detail": {
+      "income": "Thu nhập",
+      "expense": "Chi phí",
+      "date": "Ngày thực hiện",
+      "item_details": "Chi tiết hàng hóa",
+      "pricing_info": "Thông tin số lượng & giá",
+      "petty_transaction": "Giao dịch vặt",
+      "paid": "Đã thanh toán",
+      "edit": "Chỉnh sửa"
+    },
+    "delete": {
+      "item_name": "Giao dịch này",
+      "description": "Dữ liệu tài chính liên quan sẽ bị ảnh hưởng."
+    },
+    "import": {
+      "success": "Đã nhập thành công {{count}} giao dịch!",
+      "error": "Có lỗi xảy ra khi nhập file. Vui lòng kiểm tra lại định dạng file.",
+      "read_error": "Lỗi khi đọc file",
+      "template_name": "Mau_Nhap_Giao_Dich.xlsx",
+      "columns": {
+        "date": "Ngày (YYYY-MM-DD)",
+        "type": "Loại (INCOME/EXPENSE)",
+        "amount": "Số tiền",
+        "note": "Nội dung",
+        "season_code": "Mã vụ mùa"
+      }
+    },
+    "export": {
+      "filename": "Bao_cao_giao_dich_{{date}}.xlsx",
+      "sheet_name": "Giao dịch",
+      "columns": [
+        "Ngày giao dịch",
+        "Nội dung / Chi tiết",
+        "Vụ mùa / Đối tác",
+        "Phân loại",
+        "Số lượng",
+        "Đơn vị",
+        "Đơn giá",
+        "Loại",
+        "Số tiền (VNĐ)",
+        "Trạng thái"
+      ]
+    }
+  },
+  "categories": {
+    "title": "Quản lý Danh mục",
+    "subtitle": "Phân loại các khoản thu/chi và hoạt động nông trại",
+    "search_placeholder": "Tìm kiếm danh mục...",
+    "add_btn": "Thêm danh mục",
+    "table": {
+      "code": "Mã danh mục",
+      "name": "Tên danh mục",
+      "scope": "Phạm vi",
+      "parent": "Danh mục cha",
+      "actions": "Thao tác",
+      "empty": "Chưa có danh mục nào",
+      "not_found": "Không tìm thấy danh mục nào",
+      "scope_farm": "Toàn nông trại",
+      "scope_system": "Hệ thống",
+      "scope_personal": "Cá nhân",
+      "scope_both": "Cả hai"
+    },
+    "scope": {
+      "farm": "Nông trại",
+      "personal": "Cá nhân",
+      "both": "Cả hai"
+    },
+    "modal": {
+      "add_title": "Thêm danh mục mới",
+      "edit_title": "Sửa danh mục",
+      "code": "Mã danh mục *",
+      "name": "Tên danh mục *",
+      "scope": "Phạm vi *",
+      "parent": "Danh mục cha",
+      "code_placeholder": "VD: CAT-VT-DAU",
+      "name_placeholder": "VD: Vật tư - Phân bón",
+      "scope_placeholder": "-- Chọn phạm vi --",
+      "parent_placeholder": "-- Không có (Danh mục gốc) --",
+      "cancel": "Hủy",
+      "save": "Cập nhật",
+      "create": "Tạo mới"
+    },
+    "import": {
+      "entity_name": "danh mục",
+      "columns": ["Mã danh mục", "Tên danh mục", "Phạm vi", "Danh mục cha"]
+    },
+    "messages": {
+      "load_error": "Không thể tải danh sách danh mục",
+      "save_error": "Không thể lưu danh mục",
+      "delete_error": "Không thể xóa danh mục"
+    }
+  },
+  "seasons": {
+    "breadcrumb": "Vụ mùa & Canh tác",
+    "title": "Quản lý Mùa vụ",
+    "subtitle": "Quản lý và theo dõi quá trình sinh trưởng, chi phí của các vụ mùa.",
+    "select_label": "Chọn vụ mùa",
+    "start_new": "Bắt đầu vụ mới",
+    "status": {
+      "active": "Đang hoạt động",
+      "ongoing": "Đang diễn ra",
+      "ended": "Đã kết thúc",
+      "paid": "Đã thanh toán",
+      "approved": "Đã duyệt",
+      "draft": "Bản nháp"
+    },
+    "edit_season": "Chỉnh sửa vụ",
+    "record_usage": "Ghi nhận sử dụng",
+    "expected_revenue": "Doanh thu dự kiến",
+    "financial_goal": "Mục tiêu tài chính",
+    "production_unit": "Khu vực sản xuất",
+    "primary_unit": "Khu vực sản xuất chính",
+    "investment_efficiency": "Hiệu quả đầu tư",
+    "no_data": "CHƯA CÓ DỮ LIỆU",
+    "general_stats": "Thống kê tổng quan",
+    "entire_process": "Toàn bộ quá trình",
+    "total_seasons": "Tổng số vụ mùa",
+    "list_title": "Danh sách các vụ mùa",
+    "recent_transactions": "Giao dịch gần đây",
+    "view_all": "Xem tất cả",
+    "materials_used": "Vật tư đã dùng",
+    "usage_in_season": "Sử dụng trong vụ",
+    "no_medicine": "Chưa sử dụng vật tư nào",
+    "labor_costs": "Chi phí nhân công",
+    "payrolls_in_season": "Bảng lương trong vụ",
+    "table": {
+      "name": "Tên vụ mùa",
+      "unit": "Đơn vị",
+      "time": "Thời gian",
+      "actions": "Thao tác"
+    },
+    "transactions_table": {
+      "date": "Ngày",
+      "content": "Nội dung",
+      "type": "Loại",
+      "amount": "Số tiền",
+      "no_notes": "Không có ghi chú",
+      "other": "Khác",
+      "empty": "Chưa có giao dịch"
+    },
+    "payrolls_table": {
+      "code": "Mã bảng lương",
+      "employee": "Nhân viên",
+      "date": "Ngày tạo",
+      "status": "Trạng thái",
+      "amount": "Số tiền",
+      "empty": "Chưa có dữ liệu bảng lương"
+    },
+    "modal": {
+      "new_title": "Bắt đầu mùa vụ mới",
+      "new_subtitle": "Khởi tạo thông số cho đợt canh tác mới",
+      "edit_title": "Cập nhật vụ mùa",
+      "edit_subtitle": "Chỉnh sửa thông tin vụ mùa {{code}}",
+      "code": "Mã vụ mùa",
+      "area": "Khu vực",
+      "start_date": "Ngày bắt đầu",
+      "revenue": "Doanh thu",
+      "cancel": "Hủy",
+      "init_btn": "Khởi tạo vụ mùa",
+      "save_btn": "Lưu thay đổi"
+    },
+    "usage_modal": {
+      "title": "Ghi nhận sử dụng",
+      "subtitle": "Xuất kho vật tư cho mùa vụ",
+      "select_label": "Chọn loại vật tư / thuốc",
+      "select_placeholder": "Chọn thuốc hoặc phân bón...",
+      "quantity": "Số lượng sử dụng",
+      "date": "Ngày sử dụng",
+      "purpose": "Mục đích sử dụng",
+      "purpose_placeholder": "VD: Phun thuốc trị nấm lần 1, bón lót...",
+      "cancel": "Hủy bỏ",
+      "confirm": "Xác nhận sử dụng"
+    }
+  },
+  "work_logs": {
+    "title": "Nhật ký Làm việc",
+    "subtitle": "Theo dõi và xác nhận công việc thực tế của nhân viên.",
+    "pending_confirmation": "CẦN XÁC NHẬN CHỐT CÔNG ({{count}})",
+    "confirm_btn": "Chốt công",
+    "search_placeholder": "Tìm nhân viên, công việc...",
+    "selected_count": "Đã chọn {{count}} ngày công",
+    "calc_bulk": "Tính lương gộp",
+    "table": {
+      "worker_job": "Nhân sự & Công việc",
+      "date_shift": "Ngày & Ca",
+      "status": "Trạng thái",
+      "amount": "Thành tiền",
+      "payroll": "Lương",
+      "actions": "Thao tác"
+    },
+    "status": {
+      "done": "Hoàn thành",
+      "inprogress": "Đang chờ",
+      "cancelled": "Đã hủy",
+      "rejected": "Từ chối",
+      "unpaid": "Chưa tính lương",
+      "view_slip": "XEM PHIẾU"
+    },
+    "confirm_modal": {
+      "title": "Xác nhận Chốt công",
+      "subtitle": "Hoàn tất ngày làm việc cho nhân viên.",
+      "working_type": "Hình thức làm việc",
+      "full_day": "Cả ngày",
+      "half_day": "Nửa buổi",
+      "full_day_rate": "Hệ số 1.0",
+      "half_day_rate": "Hệ số 0.5",
+      "cancel": "Hủy bỏ",
+      "confirm": "Xác nhận Chốt công"
+    },
+    "preview_modal": {
+      "title": "Xem trước Phiếu lương",
+      "print": "Xuất PDF / In",
+      "slip_no": "Số:",
+      "created_date": "Ngày lập:",
+      "receiver": "Người nhận lương",
+      "work_time": "Thời gian làm việc",
+      "table_head": {
+        "content": "Ngày làm / Nội dung",
+        "shift": "Ca",
+        "mandays": "Ngày công",
+        "amount": "Thành tiền"
+      },
+      "summary": {
+        "mandays_count": "Số ngày công:",
+        "total": "Tổng cộng:",
+        "final": "Thực nhận"
+      },
+      "validator": "Người xác nhận"
+    },
+    "messages": {
+      "delete_error": "Không thể xóa nhật ký làm việc",
+      "calc_error": "Có lỗi xảy ra khi tính lương.",
+      "uncalculated_error": "Bạn chưa tính lương cho ngày này.",
+      "empty": "Chưa có nhật ký làm việc",
+      "has_payroll_tooltip": "Đã có phiếu lương",
+      "pending_tooltip": "Chưa hoàn thành",
+      "view_detail_tooltip": "Chi tiết lương",
+      "delete_tooltip": "Xóa nhật ký"
+    }
+  },
+  "work_schedules": {
+    "title": "Kế hoạch Làm việc",
+    "subtitle": "Lập kế hoạch và bàn giao công việc cho nhân sự nông trại.",
+    "search_placeholder": "Tìm nhân viên, công việc...",
+    "add_btn": "Thêm lịch mới",
+    "table": {
+      "worker_shift": "Nhân sự & Ca",
+      "job": "Công việc",
+      "date": "Ngày làm việc",
+      "status": "Trạng thái",
+      "actions": "Thao tác",
+      "no_shift": "Chưa chọn ca",
+      "other_job": "Khác",
+      "payroll_calculated": "Đã tính lương",
+      "lock_tooltip": "Đã tính lương, không thể sửa/xóa"
+    },
+    "status": {
+      "planned": "Dự kiến",
+      "confirmed": "Đã chốt",
+      "cancelled": "Đã hủy"
+    },
+    "modal": {
+      "add_title": "Lên kế hoạch mới",
+      "edit_title": "Sửa kế hoạch",
+      "worker": "Nhân sự",
+      "worker_placeholder": "-- Chọn nhân viên --",
+      "shift": "Ca làm việc",
+      "shift_placeholder": "-- Chọn ca --",
+      "job": "Dự kiến công việc",
+      "job_placeholder": "-- Loại công việc --",
+      "season": "Vụ mùa",
+      "season_placeholder": "-- Chọn vụ mùa (không bắt buộc) --",
+      "date": "Ngày làm",
+      "status": "Trạng thái",
+      "note": "Ghi chú",
+      "note_placeholder": "Nhiệm vụ cụ thể hoặc lưu ý cho nhân viên...",
+      "cancel": "Hủy bỏ",
+      "save": "Lưu thay đổi",
+      "create": "Xác nhận lên lịch"
+    },
+    "import": {
+      "entity_name": "kế hoạch làm việc",
+      "columns": ["Nhân sự (ID/Tên)", "Ca làm việc (ID/Tên)", "Công việc (ID/Tên)", "Vụ mùa (ID/Tên)", "Ngày làm", "Trạng thái", "Ghi chú"]
+    }
+  },
+  "job_types": {
+    "title": "Quản lý Công việc",
+    "subtitle": "Danh sách các loại công việc và đơn giá",
+    "search_placeholder": "Tìm kiếm công việc...",
+    "add_btn": "Thêm công việc",
+    "table": {
+      "code": "Mã công việc",
+      "name": "Tên công việc",
+      "rate": "Đơn giá",
+      "desc": "Mô tả",
+      "actions": "Thao tác",
+      "empty": "Chưa có công việc nào",
+      "not_found": "Không tìm thấy công việc nào"
+    },
+    "modal": {
+      "add_title": "Thêm công việc mới",
+      "edit_title": "Sửa công việc",
+      "code": "Mã công việc *",
+      "name": "Tên công việc *",
+      "rate": "Đơn giá *",
+      "desc": "Mô tả",
+      "code_placeholder": "VD: JOB-HAI-TRAI",
+      "name_placeholder": "VD: Hái trái",
+      "rate_placeholder": "VD: 200000",
+      "desc_placeholder": "Nhập mô tả công việc",
+      "cancel": "Hủy",
+      "save": "Cập nhật",
+      "create": "Tạo mới"
+    },
+    "import": {
+      "entity_name": "công việc",
+      "columns": ["Mã công việc", "Tên công việc", "Đơn giá", "Mô tả"]
+    },
+    "export": {
+      "sheet_name": "Danh sách công việc",
+      "filename": "DanhSach_CongViec_{{date}}.xlsx"
+    },
+    "template": {
+      "filename": "MauNhap_CongViec.csv"
+    },
+    "messages": {
+      "load_error": "Không thể tải danh sách công việc",
+      "save_error": "Không thể lưu công việc",
+      "delete_error": "Không thể xóa công việc"
+    }
+  },
+  "work_shifts": {
+    "title": "Quản lý Ca làm việc",
+    "subtitle": "Danh sách các ca làm việc trong ngày",
+    "search_placeholder": "Tìm kiếm ca làm việc...",
+    "add_btn": "Thêm ca làm việc",
+    "table": {
+      "code": "Mã ca",
+      "name": "Tên ca làm việc",
+      "start": "Giờ bắt đầu",
+      "end": "Giờ kết thúc",
+      "duration": "Thời lượng",
+      "actions": "Thao tác",
+      "hours": "giờ",
+      "empty": "Chưa có ca làm việc nào",
+      "not_found": "Không tìm thấy ca làm việc nào"
+    },
+    "modal": {
+      "add_title": "Thêm ca làm việc mới",
+      "edit_title": "Sửa ca làm việc",
+      "code": "Mã ca *",
+      "name": "Tên ca *",
+      "start": "Giờ bắt đầu",
+      "end": "Giờ kết thúc",
+      "code_placeholder": "VD: SHIFT-SANG",
+      "name_placeholder": "VD: Ca sáng",
+      "cancel": "Hủy",
+      "save": "Cập nhật",
+      "create": "Tạo mới"
+    },
+    "import": {
+      "entity_name": "ca làm việc",
+      "columns": ["Mã ca", "Tên ca làm việc", "Giờ bắt đầu", "Giờ kết thúc"]
+    },
+    "export": {
+      "sheet_name": "Danh sách ca làm việc",
+      "filename": "DanhSach_CaLamViec_{{date}}.xlsx"
+    },
+    "template": {
+      "filename": "MauNhap_CaLamViec.csv"
+    },
+    "messages": {
+      "load_error": "Không thể tải danh sách ca làm việc",
+      "save_error": "Không thể lưu ca làm việc",
+      "delete_error": "Không thể xóa ca làm việc"
+    }
+  },
+  "production_units": {
+    "title": "Quản lý Đơn vị Sản xuất",
+    "subtitle": "Danh sách các vườn, chuồng trại và khu vực sản xuất",
+    "search_placeholder": "Tìm kiếm đơn vị sản xuất...",
+    "add_btn": "Thêm đơn vị",
+    "table": {
+      "code": "Mã đơn vị",
+      "name": "Tên đơn vị",
+      "type": "Loại hình",
+      "area": "Diện tích (ha)",
+      "desc": "Mô tả",
+      "actions": "Thao tác"
+    },
+    "types": {
+      "crop": "Trồng trọt",
+      "livestock": "Chăn nuôi"
+    },
+    "messages": {
+      "load_error": "Không thể tải danh sách đơn vị sản xuất",
+      "save_error": "Không thể lưu đơn vị sản xuất",
+      "delete_error": "Không thể xóa đơn vị sản xuất",
+      "empty": "Chưa có đơn vị sản xuất nào",
+      "not_found": "Không tìm thấy đơn vị sản xuất nào"
+    },
+    "modal": {
+      "add_title": "Thêm đơn vị sản xuất mới",
+      "edit_title": "Sửa đơn vị sản xuất",
+      "code": "Mã đơn vị *",
+      "name": "Tên đơn vị *",
+      "type": "Loại hình *",
+      "area": "Diện tích (ha)",
+      "desc": "Mô tả",
+      "code_placeholder": "VD: UNIT-VU-A",
+      "name_placeholder": "Nhập tên đơn vị",
+      "area_placeholder": "VD: 2.5",
+      "desc_placeholder": "Nhập mô tả"
+    }
+  },
+  "warehouse_types": {
+    "title": "Phân loại Nhà kho",
+    "subtitle": "Quản lý các loại kho vật lý trong trang trại",
+    "stats": {
+      "total": "Tổng loại kho",
+      "active": "Đang dùng",
+      "facility": "Cơ sở",
+      "main": "Chính"
+    },
+    "search_placeholder": "Tìm kiếm loại kho...",
+    "add_btn": "Thêm loại kho",
+    "table": {
+      "code": "Mã loại kho",
+      "name": "Tên hiển thị",
+      "desc": "Mô tả chi tiết",
+      "actions": "Thao tác"
+    },
+    "messages": {
+      "load_error": "Không thể tải danh sách loại kho",
+      "save_error": "Không thể lưu loại kho",
+      "delete_error": "Không thể xóa loại kho",
+      "empty": "Chưa có phân loại kho nào được tạo",
+      "not_found": "Không tìm thấy loại kho nào khớp với tìm kiếm"
+    },
+    "modal": {
+      "add_title": "Thêm loại kho mới",
+      "edit_title": "Cập nhật loại kho",
+      "subtitle": "Cung cấp thông tin chi tiết nhà kho",
+      "code": "Mã định danh *",
+      "name": "Tên nhà kho *",
+      "desc": "Mô tả thêm",
+      "code_hint": "Mã này dùng để nhận diện kho trong hệ thống và không thể thay đổi sau khi tạo.",
+      "name_placeholder": "Nhập tên hiển thị của kho",
+      "desc_placeholder": "Ghi chú về vị trí, mục đích sử dụng...",
+      "cancel": "Hủy bỏ",
+      "save": "Cập nhật ngay",
+      "create": "Xác nhận tạo kho"
+    }
+  },
+  "warehouse_management": {
+    "title": "Quản lý Kho tổng hợp",
+    "subtitle": "Toàn bộ vật dụng, thiết bị và tài sản trang trại",
+    "filter_all": "Tất cả kho",
+    "stats": {
+      "types_count": "Số loại",
+      "quantity": "Số lượng",
+      "total_value": "Tổng giá trị"
+    },
+    "search_placeholder": "Tìm kiếm mặt hàng...",
+    "add_btn": "Thêm mặt hàng",
+    "table": {
+      "info": "Thông tin Sản phẩm",
+      "code_sku": "Mã / SKU",
+      "warehouse": "Kho lưu trữ",
+      "quantity": "Số lượng",
+      "price": "Đơn giá",
+      "location": "Vị trí",
+      "actions": "Thao tác",
+      "unclassified": "Chưa phân loại"
+    },
+    "modal": {
+      "add_title": "Thêm mặt hàng mới",
+      "edit_title": "Cập nhật mặt hàng",
+      "subtitle": "Cấu bản ghi vật kê khai tài sản",
+      "upload_image": "Tải ảnh lên",
+      "warehouse_type": "Loại nhà kho *",
+      "item_code": "Mã hàng hóa",
+      "sku": "Mã SKU / Barcode",
+      "sku_placeholder": "Dùng để quét mã vạch...",
+      "item_name": "Tên mặt hàng *",
+      "item_name_placeholder": "Tên sản phẩm...",
+      "location": "Vị trí lưu kho",
+      "unit": "Đơn vị tính",
+      "quantity": "Số lượng hiện có",
+      "price": "Giá trị ước tính (VNĐ)",
+      "note": "Ghi chú bổ sung",
+      "note_placeholder": "Mô tả tình trạng máy móc, thời gian bảo trì...",
+      "save_edit": "Cập nhật thay đổi",
+      "save_new": "Ghi nhận vào kho"
+    },
+    "media": {
+      "title": "Thư viện ảnh",
+      "subtitle": "Chọn ảnh phù hợp cho vật kê khai",
+      "no_data": "Không có dữ liệu ảnh."
+    },
+    "messages": {
+      "save_error": "Có lỗi xảy ra khi lưu mặt hàng",
+      "delete_error": "Không thể xóa mặt hàng",
+      "empty": "Không tìm thấy mặt hàng nào"
+    }
+  },
+  "farm_events": {
+    "title": "Sự kiện Nông trại",
+    "subtitle": "Theo dõi các sự kiện quan trọng, thu hoạch và vấn đề phát sinh.",
+    "search_placeholder": "Tìm kiếm sự kiện...",
+    "add_btn": "Thêm sự kiện",
+    "table": {
+      "title": "Tên sự kiện",
+      "type": "Loại",
+      "time": "Thời gian",
+      "location_season": "Vị trí / Vụ mùa",
+      "actions": "Thao tác",
+      "no_desc": "Không có mô tả",
+      "all_day": "Cả ngày",
+      "unassigned": "Chưa gán"
+    },
+    "types": {
+      "task": "Công việc (TASK)",
+      "harvest": "Thu hoạch (HARVEST)",
+      "issue": "Vấn đề (ISSUE)",
+      "other": "Khác (OTHER)"
+    },
+    "modal": {
+      "add_title": "Thêm sự kiện nông trại",
+      "edit_title": "Cập nhật sự kiện",
+      "title": "Tên sự kiện",
+      "title_placeholder": "Ví dụ: Thu hoạch hái mận Vườn A",
+      "event_type": "Loại sự kiện",
+      "production_unit": "Đơn vị / Vị trí",
+      "no_unit": "-- Không gán --",
+      "start_time": "Bắt đầu",
+      "all_day": "Sự kiện cả ngày",
+      "season": "Vụ mùa liên quan",
+      "season_placeholder": "-- Chọn vụ mùa (nếu có) --",
+      "description": "Mô tả chi tiết",
+      "description_placeholder": "Nội dung chi tiết sự kiện...",
+      "cancel": "Hủy bỏ",
+      "save_edit": "Lưu thay đổi",
+      "save_new": "Tạo sự kiện"
+    },
+    "messages": {
+      "delete_error": "Không thể xóa sự kiện này"
+    }
+  },
+  "schedule": {
+    "title": "Lịch làm việc",
+    "subtitle": "Quản lý ca làm việc và sự kiện trang trại hàng tháng",
+    "legend": {
+      "staff": "Nhân viên",
+      "task": "Công việc",
+      "harvest": "Thu hoạch",
+      "issue": "Vấn đề",
+      "maintenance": "Bảo trì",
+      "other": "Khác"
+    },
+    "today": "Hôm nay",
+    "close": "Đóng",
+    "delete_confirm": "Bạn có chắc chắn muốn gỡ sự kiện này khỏi lịch?",
+    "day_modal": {
+      "title": "Sự kiện ngày",
+      "no_events": "Không có sự kiện",
+      "delete_tooltip": "Gỡ sự kiện"
+    },
+    "add_shift_modal": {
+      "title": "Lên lịch làm việc",
+      "subtitle": "Phân công ca làm cho nhân viên",
+      "worker": "Chọn nhân viên",
+      "worker_placeholder": "-- Chọn nhân sự --",
+      "shift": "Chọn ca làm",
+      "shift_placeholder": "-- Chọn ca --",
+      "job": "Loại công việc",
+      "job_placeholder": "-- Chọn loại việc --",
+      "date": "Ngày làm việc",
+      "note": "Ghi chú công việc",
+      "note_placeholder": "Giao nhiệm vụ cụ thể cho nhân viên...",
+      "cancel": "Hủy bỏ",
+      "confirm": "Xác nhận lên lịch"
+    },
+    "stats": {
+      "title": "Thống kê tháng",
+      "events_unit": "SK"
+    }
+  },
+  "user_profile": {
+    "title": "Hồ sơ cá nhân",
+    "home": "Trang chủ",
+    "change_avatar_success": "Thay đổi ảnh đại diện thành công!",
+    "change_avatar_error": "Không thể thay đổi ảnh đại diện. Vui lòng thử lại.",
+    "update_success": "Cập nhật thông tin thành công!",
+    "update_error": "Có lỗi xảy ra khi lưu thông tin.",
+    "guest": "Du khách",
+    "your_plum_tree": "Cây mận của bạn",
+    "not_updated_address": "Chưa cập nhật địa chỉ",
+    "verified_member": "Verified Member",
+    "saving": "Đang lưu...",
+    "save_changes": "Lưu thay đổi",
+    "cancel": "Hủy",
+    "edit_profile": "Chỉnh sửa hồ sơ",
+    "logout": "Đăng xuất",
+    "personal_info": "Thông tin cá nhân",
+    "full_name": "Họ và tên",
+    "phone": "Số điện thoại",
+    "email": "Địa chỉ Email",
+    "verified": "Đã xác thực",
+    "bio": "Tiểu sử / Ghi chú",
+    "bio_placeholder": "Hãy chia sẻ đôi chút về bạn...",
+    "system_mgmt": "Quản trị hệ thống",
+    "admin_dashboard": "Bảng điều khiển quản trị",
+    "admin_desc": "Quản lý mùa vụ, nhân sự, tài chính và cấu hình hệ thống chuyên sâu.",
+    "enter_admin": "Vào Trang Quản Lý",
+    "footer": "Empowering farmers with smart digital tools."
+  },
+  "notifications": {
+    "title": "Quản lý Thông báo",
+    "subtitle": "Hệ thống gửi tin và quản lý thông báo nội bộ",
+    "tab_send": "Gửi mới",
+    "tab_history": "Lịch sử đã gửi",
+    "compose": "Soạn thông báo",
+    "form": {
+      "title_label": "Tiêu đề *",
+      "title_placeholder": "Nhập tiêu đề thông báo...",
+      "content_label": "Nội dung *",
+      "content_placeholder": "Nhập nội dung chi tiết thông báo...",
+      "type_label": "Loại",
+      "category_label": "Danh mục",
+      "link_label": "Đường dẫn chuyển hướng (Link)",
+      "send_btn": "Gửi thông báo ngay",
+      "sending": "Đang gửi..."
+    },
+    "types": {
+      "info": "Thông tin (Info)",
+      "success": "Thành công (Success)",
+      "warning": "Cảnh báo (Warning)",
+      "error": "Lỗi (Error)",
+      "alert": "Khẩn cấp (Alert)"
+    },
+    "recipient": {
+      "title": "Chọn người nhận",
+      "selected": "ĐÃ CHỌN: {{count}}",
+      "search": "Tìm tên hoặc email...",
+      "select_all": "Chọn tất cả lọc được",
+      "deselect_all": "Bỏ chọn tất cả",
+      "loading": "Đang tải danh sách...",
+      "not_found": "Không tìm thấy người dùng nào phù hợp"
+    },
+    "history": {
+      "title": "Thông báo đã gửi",
+      "total": "TỔNG SỐ: {{count}}",
+      "empty": "Chưa có thông báo nào được gửi",
+      "columns": {
+        "content": "Nội dung",
+        "type_category": "Loại & Danh mục",
+        "recipient": "Người nhận",
+        "date": "Ngày gửi",
+        "actions": "Thao tác"
+      },
+      "read_count": "{{count}} đã đọc",
+      "revoke": "Thu hồi"
+    },
+    "messages": {
+      "select_recipient_req": "Vui lòng chọn ít nhất một người nhận",
+      "send_success": "Gửi thông báo thành công!",
+      "send_error": "Không thể gửi thông báo",
+      "revoke_confirm": "Bạn có chắc chắn muốn thu hồi thông báo này không? Nó sẽ bị xóa khỏi tất cả người nhận.",
+      "revoke_success": "Đã thu hồi thông báo thành công",
+      "revoke_error": "Không thể thu hồi thông báo"
+    }
+  },
+  "personal_finance": {
+    "title": "Tài chính gia đình",
+    "subtitle": "Quản lý các khoản chi tiêu cá nhân tách biệt với hoạt động trang trại. Giữ ngân sách nhà cửa rõ ràng.",
+    "family_space": "Không gian gia đình",
+    "record_expense": "Ghi chi tiêu",
+    "stats": {
+      "total_expense": "Tổng chi tiêu gia đình",
+      "remaining_budget": "Ngân sách còn lại",
+      "top_category": "Hạng mục chi nhiều nhất",
+      "in_control": "Trong tầm kiểm soát",
+      "compared_to_last_month": "so với tháng trước"
+    },
+    "budget": {
+      "title": "Ngân sách vs Thực tế",
+      "subtitle": "Tổng quan hàng tháng",
+      "used": "Đã dùng",
+      "spent": "Đã chi ({{spent}})",
+      "total": "Tổng ngân sách ({{total}})",
+      "remaining_info": "Bạn còn {{amount}} cho tháng này."
+    },
+    "categories": {
+      "title": "Phân loại chi tiêu",
+      "subtitle": "Tiền được dùng vào đâu",
+      "view_report": "Xem báo cáo"
+    }
+  }
+}
+

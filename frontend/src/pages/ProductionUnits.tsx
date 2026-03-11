@@ -1,6 +1,8 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProductionUnit, getProductionUnits, createProductionUnit, updateProductionUnit, deleteProductionUnit, CreateProductionUnitInput } from '../api/production-unit.api';
 import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../components';
+import { useTranslation } from 'react-i18next';
+
 
 const ProductionUnits: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -19,8 +21,10 @@ const ProductionUnits: React.FC = () => {
     const [deleteTarget, setDeleteTarget] = useState<ProductionUnit | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
+    const { t, i18n } = useTranslation();
 
     useEffect(() => {
+
         loadUnits();
     }, []);
 
@@ -31,10 +35,11 @@ const ProductionUnits: React.FC = () => {
             setUnits(data);
         } catch (error) {
             console.error('Error loading production units:', error);
-            console.error('Không thể tải danh sách đơn vị sản xuất');
+            console.error(t('production_units.messages.load_error'));
         } finally {
             setLoading(false);
         }
+
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -50,8 +55,9 @@ const ProductionUnits: React.FC = () => {
             loadUnits();
         } catch (error: any) {
             console.error('Error saving production unit:', error);
-            console.error(error.response?.data?.message || 'Không thể lưu đơn vị sản xuất');
+            console.error(error.response?.data?.message || t('production_units.messages.save_error'));
         }
+
     };
 
     const handleEdit = (unit: ProductionUnit) => {
@@ -75,10 +81,11 @@ const ProductionUnits: React.FC = () => {
             loadUnits();
         } catch (error) {
             console.error('Error deleting production unit:', error);
-            alert('Không thể xóa đơn vị sản xuất');
+            alert(t('production_units.messages.delete_error'));
         } finally {
             setIsDeleting(false);
         }
+
     };
 
     const resetForm = () => {
@@ -100,21 +107,23 @@ const ProductionUnits: React.FC = () => {
 
     const handleExport = () => {
         console.log('Exporting data...');
-        alert('Đang trích xuất dữ liệu ra file Excel...');
+        alert(t('common.exporting'));
     };
 
     const handleDownloadTemplate = () => {
         console.log('Downloading template...');
-        alert('Đang tải tệp mẫu...');
+        alert(t('common.downloading_template'));
     };
+
 
     const getTypeLabel = (type: string) => {
         switch (type) {
-            case 'CROP': return 'Trồng trọt';
-            case 'LIVESTOCK': return 'Chăn nuôi';
+            case 'CROP': return t('production_units.types.crop');
+            case 'LIVESTOCK': return t('production_units.types.livestock');
             default: return type;
         }
     };
+
 
     const getTypeColor = (type: string) => {
         switch (type) {
@@ -133,10 +142,11 @@ const ProductionUnits: React.FC = () => {
         <div className="p-3 md:p-4 space-y-4 w-full">
             <div>
                 <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
-                    Quản lý Đơn vị Sản xuất
+                    {t('production_units.title')}
                 </h1>
-                <p className="text-slate-500 mt-2">Danh sách các vườn, chuồng trại và khu vực sản xuất</p>
+                <p className="text-slate-500 mt-2">{t('production_units.subtitle')}</p>
             </div>
+
 
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm border-t-4 border-t-[#13ec49]">
                 <div className="p-3 md:p-4 border-b border-slate-200 flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -147,15 +157,16 @@ const ProductionUnits: React.FC = () => {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full bg-slate-50 border-none rounded-lg py-2.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-[#13ec49]/30 transition-all outline-none font-medium"
-                            placeholder="Tìm kiếm đơn vị sản xuất..."
+                            placeholder={t('production_units.search_placeholder')}
                         />
+
                     </div>
                     <ActionToolbar
                         onAdd={() => {
                             resetForm();
                             setShowModal(true);
                         }}
-                        addLabel="Thêm đơn vị"
+                        addLabel={t('production_units.add_btn')}
                         onEdit={() => selectedUnit && handleEdit(selectedUnit)}
                         editDisabled={!selectedUnit}
                         onDelete={() => selectedUnit && setDeleteTarget(selectedUnit)}
@@ -166,34 +177,38 @@ const ProductionUnits: React.FC = () => {
                         onExport={handleExport}
                         onDownloadTemplate={handleDownloadTemplate}
                     />
+
                 </div>
 
                 {loading ? (
                     <div className="text-center py-12">
                         <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#13ec49]"></div>
-                        <p className="mt-4 text-slate-600">Đang tải...</p>
+                        <p className="mt-4 text-slate-600">{t('common.loading')}</p>
                     </div>
+
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
                             <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200 whitespace-nowrap">
                                 <tr>
-                                    <th className="px-6 py-4">Mã đơn vị</th>
-                                    <th className="px-6 py-4 min-w-[200px]">Tên đơn vị</th>
-                                    <th className="px-6 py-4 min-w-[120px]">Loại hình</th>
-                                    <th className="px-6 py-4">Diện tích (ha)</th>
-                                    <th className="px-6 py-4">Mô tả</th>
-                                    <th className="px-6 py-4 text-right">Thao tác</th>
+                                    <th className="px-6 py-4">{t('production_units.table.code')}</th>
+                                    <th className="px-6 py-4 min-w-[200px]">{t('production_units.table.name')}</th>
+                                    <th className="px-6 py-4 min-w-[120px]">{t('production_units.table.type')}</th>
+                                    <th className="px-6 py-4">{t('production_units.table.area')}</th>
+                                    <th className="px-6 py-4">{t('production_units.table.desc')}</th>
+                                    <th className="px-6 py-4 text-right">{t('production_units.table.actions')}</th>
                                 </tr>
                             </thead>
+
                             <tbody className="divide-y divide-slate-100 text-sm">
                                 {filteredUnits.length === 0 ? (
                                     <tr>
                                         <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
-                                            {searchTerm ? 'Không tìm thấy đơn vị sản xuất nào' : 'Chưa có đơn vị sản xuất nào'}
+                                            {searchTerm ? t('production_units.messages.not_found') : t('production_units.messages.empty')}
                                         </td>
                                     </tr>
                                 ) : (
+
                                     filteredUnits.map((unit) => (
                                         <tr
                                             key={unit.id}
@@ -250,11 +265,12 @@ const ProductionUnits: React.FC = () => {
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
                         <h2 className="text-2xl font-bold mb-6 text-slate-900">
-                            {editingUnit ? 'Sửa đơn vị sản xuất' : 'Thêm đơn vị sản xuất mới'}
+                            {editingUnit ? t('production_units.modal.edit_title') : t('production_units.modal.add_title')}
                         </h2>
+
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Mã đơn vị *</label>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">{t('production_units.modal.code')}</label>
                                 <input
                                     type="text"
                                     required
@@ -262,53 +278,58 @@ const ProductionUnits: React.FC = () => {
                                     value={formData.unit_code}
                                     onChange={(e) => setFormData({ ...formData, unit_code: e.target.value })}
                                     className="w-full border border-slate-300 rounded-lg px-4 py-2.5 disabled:bg-slate-100 focus:ring-2 focus:ring-[#13ec49]/30 outline-none"
-                                    placeholder="VD: UNIT-VU-A"
+                                    placeholder={t('production_units.modal.code_placeholder')}
                                 />
                             </div>
+
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Tên đơn vị *</label>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">{t('production_units.modal.name')}</label>
                                 <input
                                     type="text"
                                     required
                                     value={formData.unit_name}
                                     onChange={(e) => setFormData({ ...formData, unit_name: e.target.value })}
                                     className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#13ec49]/30 outline-none"
-                                    placeholder="Nhập tên đơn vị"
+                                    placeholder={t('production_units.modal.name_placeholder')}
                                 />
                             </div>
+
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Loại hình *</label>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">{t('production_units.modal.type')}</label>
                                 <select
                                     required
                                     value={formData.type}
                                     onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
                                     className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#13ec49]/30 outline-none"
                                 >
-                                    <option value="CROP">Trồng trọt</option>
-                                    <option value="LIVESTOCK">Chăn nuôi</option>
+                                    <option value="CROP">{t('production_units.types.crop')}</option>
+                                    <option value="LIVESTOCK">{t('production_units.types.livestock')}</option>
                                 </select>
                             </div>
+
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Diện tích (ha)</label>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">{t('production_units.modal.area')}</label>
                                 <input
                                     type="number"
                                     step="0.1"
                                     value={formData.area_size || ''}
                                     onChange={(e) => setFormData({ ...formData, area_size: e.target.value ? parseFloat(e.target.value) : undefined })}
                                     className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#13ec49]/30 outline-none"
-                                    placeholder="VD: 2.5"
+                                    placeholder={t('production_units.modal.area_placeholder')}
                                 />
                             </div>
+
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Mô tả</label>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">{t('production_units.modal.desc')}</label>
                                 <textarea
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#13ec49]/30 outline-none"
                                     rows={3}
-                                    placeholder="Nhập mô tả"
+                                    placeholder={t('production_units.modal.desc_placeholder')}
                                 />
                             </div>
+
                             <div className="flex justify-end gap-3 mt-6">
                                 <button
                                     type="button"
@@ -318,14 +339,16 @@ const ProductionUnits: React.FC = () => {
                                     }}
                                     className="px-6 py-2.5 border border-slate-300 rounded-lg hover:bg-slate-50 font-medium transition-all"
                                 >
-                                    Hủy
+                                    {t('common.cancel')}
                                 </button>
+
                                 <button
                                     type="submit"
                                     className="px-6 py-2.5 bg-[#13ec49] text-black font-bold rounded-lg hover:bg-[#13ec49]/90 transition-all active:scale-95"
                                 >
-                                    {editingUnit ? 'Cập nhật' : 'Tạo mới'}
+                                    {editingUnit ? t('common.save') : t('common.create')}
                                 </button>
+
                             </div>
                         </form>
                     </div>
@@ -342,10 +365,17 @@ const ProductionUnits: React.FC = () => {
                 open={showImportModal}
                 onClose={() => setShowImportModal(false)}
                 onImport={handleImport}
-                entityName="đơn vị sản xuất"
-                columnGuide={['Mã đơn vị', 'Tên đơn vị', 'Loại hình (CROP/LIVESTOCK)', 'Diện tích', 'Mô tả']}
+                entityName={t('production_units.title').toLowerCase()}
+                columnGuide={[
+                    t('production_units.table.code'),
+                    t('production_units.table.name'),
+                    t('production_units.table.type') + ' (CROP/LIVESTOCK)',
+                    t('production_units.table.area'),
+                    t('production_units.table.desc')
+                ]}
                 onDownloadTemplate={handleDownloadTemplate}
             />
+
         </div>
     );
 };

@@ -3,14 +3,14 @@ import {
     generateCalendarDays,
     getMonthName,
     isSameDay,
-    CalendarDay,
-    formatDate
+    CalendarDay
 } from '@/src/utils/calendar.utils';
 import { EventType } from '@/src/@types/schedule.types';
 import { getPartners, Partner } from '../api/partner.api';
 import { getWorkShifts, WorkShift } from '../api/work-shift.api';
 import { getJobTypes, JobType } from '../api/job-type.api';
 import { getSchedulesByMonth, ScheduleEvent as APIScheduleEvent } from '../api/schedule.api';
+import { useTranslation } from 'react-i18next';
 
 // Interface để map dữ liệu từ API sang format hiện tại
 interface ScheduleEvent {
@@ -39,6 +39,7 @@ const Schedule: React.FC = () => {
     const [jobTypes, setJobTypes] = useState<JobType[]>([]);
     const [loadingData, setLoadingData] = useState(false);
     const [loadingSchedules, setLoadingSchedules] = useState(false);
+    const { t, i18n } = useTranslation();
 
     const [formShift, setFormShift] = useState({
         worker_id: '',
@@ -114,7 +115,7 @@ const Schedule: React.FC = () => {
     };
 
     const handleRemoveEvent = (eventId: string) => {
-        if (window.confirm('Bạn có chắc chắn muốn gỡ sự kiện này khỏi lịch?')) {
+        if (window.confirm(t('schedule.delete_confirm'))) {
             setEvents(prev => prev.filter(event => event.id !== eventId));
         }
     };
@@ -130,7 +131,7 @@ const Schedule: React.FC = () => {
 
         const newEvent: ScheduleEvent = {
             id: Date.now().toString(),
-            title: `${worker.partner_name} - ${shift.shift_name} (${job?.job_name || 'Công việc'})`,
+            title: `${worker.partner_name} - ${shift.shift_name} (${job?.job_name || t('schedule.legend.other')})`,
             type: 'staff',
             date: new Date(formShift.date),
             startTime: shift.start_time,
@@ -174,12 +175,12 @@ const Schedule: React.FC = () => {
 
     const getEventLabel = (type: EventType): string => {
         switch (type) {
-            case 'staff': return 'Nhân viên';
-            case 'task': return 'Công việc';
-            case 'harvest': return 'Thu hoạch';
-            case 'issue': return 'Vấn đề';
-            case 'maintenance': return 'Bảo trì';
-            default: return 'Khác';
+            case 'staff': return t('schedule.legend.staff');
+            case 'task': return t('schedule.legend.task');
+            case 'harvest': return t('schedule.legend.harvest');
+            case 'issue': return t('schedule.legend.issue');
+            case 'maintenance': return t('schedule.legend.maintenance');
+            default: return t('schedule.legend.other');
         }
     };
 
@@ -195,19 +196,10 @@ const Schedule: React.FC = () => {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
                     <h1 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 drop-shadow-sm">
-                        Lịch làm việc
+                        {t('schedule.title')}
                     </h1>
-                    <p className="text-slate-400 mt-1 font-medium text-xs">Quản lý ca làm việc và sự kiện trang trại hàng tháng</p>
+                    <p className="text-slate-400 mt-1 font-medium text-xs">{t('schedule.subtitle')}</p>
                 </div>
-                {/* 
-                <button
-                    onClick={() => setShowAddShiftModal(true)}
-                    className="flex items-center gap-2 bg-[#13ec49] hover:bg-[#10d63f] text-black font-black h-12 px-8 rounded-2xl shadow-xl shadow-[#13ec49]/30 transition-all active:scale-95 group"
-                >
-                    <span className="material-symbols-outlined font-black text-[22px] group-hover:rotate-90 transition-transform">add</span>
-                    <span>Thêm ca làm việc</span>
-                </button>
-                */}
             </div>
 
             {/* Calendar Card */}
@@ -218,19 +210,19 @@ const Schedule: React.FC = () => {
                     <div className="hidden sm:flex flex-wrap items-center gap-3 text-[10px] font-black uppercase tracking-wider">
                         <div className="flex items-center gap-1.5 text-blue-600/80">
                             <div className="size-2 rounded-full bg-blue-500 ring-2 ring-blue-50"></div>
-                            <span>Nhân viên</span>
+                            <span>{t('schedule.legend.staff')}</span>
                         </div>
                         <div className="flex items-center gap-1.5 text-green-600/80">
                             <div className="size-2 rounded-full bg-green-500 ring-2 ring-green-50"></div>
-                            <span>Công việc</span>
+                            <span>{t('schedule.legend.task')}</span>
                         </div>
                         <div className="flex items-center gap-1.5 text-yellow-600/80">
                             <div className="size-2 rounded-full bg-yellow-500 ring-2 ring-yellow-50"></div>
-                            <span>Thu hoạch</span>
+                            <span>{t('schedule.legend.harvest')}</span>
                         </div>
                         <div className="flex items-center gap-1.5 text-red-600/80">
                             <div className="size-2 rounded-full bg-red-500 ring-2 ring-red-50"></div>
-                            <span>Vấn đề</span>
+                            <span>{t('schedule.legend.issue')}</span>
                         </div>
                     </div>
 
@@ -240,7 +232,7 @@ const Schedule: React.FC = () => {
                             onClick={goToToday}
                             className="text-[10px] font-black uppercase tracking-widest text-[#13ec49] hover:text-[#10d63f] transition-colors whitespace-nowrap"
                         >
-                            Hôm nay
+                            {t('schedule.today')}
                         </button>
                         <div className="flex items-center bg-slate-50 rounded-xl md:rounded-2xl p-1 md:p-1.5 border border-slate-100 relative">
                             <button
@@ -291,7 +283,7 @@ const Schedule: React.FC = () => {
                                                         : 'hover:bg-slate-50 text-slate-500'
                                                         }`}
                                                 >
-                                                    T{i + 1}
+                                                    {i + 1}
                                                 </button>
                                             ))}
                                         </div>
@@ -300,7 +292,7 @@ const Schedule: React.FC = () => {
                                                 onClick={() => setIsYearPickerOpen(false)}
                                                 className="w-full py-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-300 hover:text-slate-900 transition-colors"
                                             >
-                                                Đóng
+                                                {t('schedule.close')}
                                             </button>
                                         </div>
                                     </div>
@@ -321,7 +313,7 @@ const Schedule: React.FC = () => {
                 <div className="w-full">
                     {/* Day Headers */}
                     <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50/30">
-                        {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'].map((day, idx) => (
+                        {(i18n.language === 'vi' ? ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'] : ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']).map((day, idx) => (
                             <div
                                 key={idx}
                                 className="py-2 md:p-4 text-center text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-wider md:tracking-widest border-r border-slate-200 last:border-r-0"
@@ -391,9 +383,9 @@ const Schedule: React.FC = () => {
                     <div className="bg-white rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
                         <div className="p-8 pb-4 flex justify-between items-center border-b border-slate-50">
                             <div>
-                                <h2 className="text-2xl font-black text-slate-900">Sự kiện ngày</h2>
+                                <h2 className="text-2xl font-black text-slate-900">{t('schedule.day_modal.title')}</h2>
                                 <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-1">
-                                    {formatDate(selectedDay.date)}
+                                    {selectedDay.date.toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}
                                 </p>
                             </div>
                             <button
@@ -410,7 +402,7 @@ const Schedule: React.FC = () => {
                                     <div className="size-20 bg-slate-50 rounded-[28px] flex items-center justify-center mx-auto mb-4 border border-slate-100">
                                         <span className="material-symbols-outlined text-slate-200 text-5xl">event_busy</span>
                                     </div>
-                                    <p className="text-slate-400 font-bold italic">Không có sự kiện</p>
+                                    <p className="text-slate-400 font-bold italic">{t('schedule.day_modal.no_events')}</p>
                                 </div>
                             ) : (
                                 <div className="space-y-4">
@@ -434,7 +426,7 @@ const Schedule: React.FC = () => {
                                             <button
                                                 onClick={() => handleRemoveEvent(event.id)}
                                                 className="size-10 rounded-[14px] bg-white border border-slate-100 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm group-hover/item:scale-110"
-                                                title="Gỡ sự kiện"
+                                                title={t('schedule.day_modal.delete_tooltip')}
                                             >
                                                 <span className="material-symbols-outlined text-lg">delete_sweep</span>
                                             </button>
@@ -449,21 +441,8 @@ const Schedule: React.FC = () => {
                                 onClick={() => setShowDayModal(false)}
                                 className="flex-1 py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-black transition-all active:scale-95 shadow-xl shadow-slate-900/20"
                             >
-                                Đóng
+                                {t('schedule.close')}
                             </button>
-                            {/* 
-                            <button
-                                onClick={() => {
-                                    setFormShift({ ...formShift, date: selectedDay.date.toISOString().split('T')[0] });
-                                    setShowDayModal(false);
-                                    setShowAddShiftModal(true);
-                                }}
-                                className="px-6 py-4 bg-[#13ec49] text-black font-black rounded-2xl hover:bg-[#10d63f] transition-all flex items-center gap-2 active:scale-95 shadow-xl shadow-[#13ec49]/20"
-                            >
-                                <span className="material-symbols-outlined font-black">add</span>
-                                <span>Thêm mới</span>
-                            </button>
-                            */}
                         </div>
                     </div>
                 </div>
@@ -476,9 +455,9 @@ const Schedule: React.FC = () => {
                         <form onSubmit={handleAddShiftSubmit}>
                             <div className="p-8 pb-4 flex justify-between items-center border-b border-slate-50">
                                 <div>
-                                    <h2 className="text-2xl font-black text-slate-900">Lên lịch làm việc</h2>
+                                    <h2 className="text-2xl font-black text-slate-900">{t('schedule.add_shift_modal.title')}</h2>
                                     <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-1">
-                                        Phân công ca làm cho nhân viên
+                                        {t('schedule.add_shift_modal.subtitle')}
                                     </p>
                                 </div>
                                 <button
@@ -493,48 +472,48 @@ const Schedule: React.FC = () => {
                             <div className="p-8 space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label className="block text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2">Chọn nhân viên</label>
+                                        <label className="block text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2">{t('schedule.add_shift_modal.worker')}</label>
                                         <select
                                             required
                                             value={formShift.worker_id}
                                             onChange={e => setFormShift({ ...formShift, worker_id: e.target.value })}
                                             className="w-full bg-slate-50 border-2 border-transparent focus:border-[#13ec49]/30 focus:bg-white rounded-2xl px-5 py-4 outline-none font-bold transition-all appearance-none"
                                         >
-                                            <option value="">-- Chọn nhân sự --</option>
+                                            <option value="">{t('schedule.add_shift_modal.worker_placeholder')}</option>
                                             {workers.map(w => (
                                                 <option key={w.id} value={w.id}>{w.partner_name}</option>
                                             ))}
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2">Chọn ca làm</label>
+                                        <label className="block text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2">{t('schedule.add_shift_modal.shift')}</label>
                                         <select
                                             required
                                             value={formShift.shift_id}
                                             onChange={e => setFormShift({ ...formShift, shift_id: e.target.value })}
                                             className="w-full bg-slate-50 border-2 border-transparent focus:border-[#13ec49]/30 focus:bg-white rounded-2xl px-5 py-4 outline-none font-bold transition-all appearance-none"
                                         >
-                                            <option value="">-- Chọn ca --</option>
+                                            <option value="">{t('schedule.add_shift_modal.shift_placeholder')}</option>
                                             {shiftTemplates.map(s => (
                                                 <option key={s.id} value={s.id}>{s.shift_name} ({s.start_time}-{s.end_time})</option>
                                             ))}
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2">Loại công việc</label>
+                                        <label className="block text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2">{t('schedule.add_shift_modal.job')}</label>
                                         <select
                                             value={formShift.job_id}
                                             onChange={e => setFormShift({ ...formShift, job_id: e.target.value })}
                                             className="w-full bg-slate-50 border-2 border-transparent focus:border-[#13ec49]/30 focus:bg-white rounded-2xl px-5 py-4 outline-none font-bold transition-all appearance-none"
                                         >
-                                            <option value="">-- Chọn loại việc --</option>
+                                            <option value="">{t('schedule.add_shift_modal.job_placeholder')}</option>
                                             {jobTypes.map(j => (
                                                 <option key={j.id} value={j.id}>{j.job_name}</option>
                                             ))}
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2">Ngày làm việc</label>
+                                        <label className="block text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2">{t('schedule.add_shift_modal.date')}</label>
                                         <input
                                             type="date"
                                             required
@@ -545,12 +524,12 @@ const Schedule: React.FC = () => {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2">Ghi chú công việc</label>
+                                    <label className="block text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2">{t('schedule.add_shift_modal.note')}</label>
                                     <textarea
                                         rows={3}
                                         value={formShift.note}
                                         onChange={e => setFormShift({ ...formShift, note: e.target.value })}
-                                        placeholder="Giao nhiệm vụ cụ thể cho nhân viên..."
+                                        placeholder={t('schedule.add_shift_modal.note_placeholder')}
                                         className="w-full bg-slate-50 border-2 border-transparent focus:border-[#13ec49]/30 focus:bg-white rounded-2xl px-5 py-4 outline-none font-medium transition-all"
                                     ></textarea>
                                 </div>
@@ -562,14 +541,14 @@ const Schedule: React.FC = () => {
                                     onClick={() => setShowAddShiftModal(false)}
                                     className="flex-1 py-4 font-black text-slate-500 hover:bg-slate-100 rounded-2xl transition-all"
                                 >
-                                    Hủy bỏ
+                                    {t('schedule.add_shift_modal.cancel')}
                                 </button>
                                 <button
                                     type="submit"
                                     className="flex-[2] py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-black transition-all active:scale-95 shadow-2xl shadow-slate-900/30 flex items-center justify-center gap-3"
                                 >
                                     <span className="material-symbols-outlined font-black">calendar_add_on</span>
-                                    <span>Xác nhận lên lịch</span>
+                                    <span>{t('schedule.add_shift_modal.confirm')}</span>
                                 </button>
                             </div>
                         </form>
@@ -581,7 +560,7 @@ const Schedule: React.FC = () => {
             <div className="bg-white border border-slate-200 rounded-2xl md:rounded-[32px] shadow-xl shadow-slate-200/50 p-3 md:p-8">
                 <h3 className="text-sm md:text-xl font-black text-slate-900 mb-3 md:mb-8 flex items-center gap-2 md:gap-3">
                     <span className="material-symbols-outlined text-[#13ec49] text-lg md:text-2xl">analytics</span>
-                    Thống kê tháng {getMonthName(currentMonth)}
+                    {t('schedule.stats.title')} {i18n.language === 'vi' ? getMonthName(currentMonth) : new Date(0, currentMonth).toLocaleString('en-US', { month: 'long' })}
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-6">
                     {(['staff', 'task', 'harvest', 'issue'] as EventType[]).map((type) => {
@@ -600,7 +579,7 @@ const Schedule: React.FC = () => {
                                 </div>
                                 <div className="flex items-baseline gap-1 md:gap-2 md:mt-2 ml-auto md:ml-0">
                                     <p className="text-xl md:text-4xl font-black text-slate-900">{count}</p>
-                                    <span className="text-[9px] md:text-[11px] font-black uppercase opacity-40">SK</span>
+                                    <span className="text-[9px] md:text-[11px] font-black uppercase opacity-40">{t('schedule.stats.events_unit')}</span>
                                 </div>
                             </div>
                         );

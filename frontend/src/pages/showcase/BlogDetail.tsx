@@ -3,8 +3,10 @@ import { useParams, Link } from 'react-router-dom';
 import ShowcaseHeader from '../../templates/ShowcaseHeader';
 import { getBlogPostBySlug, getBlogPosts, BlogPost } from '../../services/blog.service';
 import { getMediaUrl } from '../../services/products.service';
+import { useTranslation } from 'react-i18next';
 
 const BlogDetail: React.FC = () => {
+    const { t } = useTranslation();
     const { slug } = useParams<{ slug: string }>();
     const [post, setPost] = useState<BlogPost | null>(null);
     const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
@@ -58,11 +60,11 @@ const BlogDetail: React.FC = () => {
     };
 
     const getReadTime = (content?: string) => {
-        if (!content) return '5 phút đọc';
+        if (!content) return t('showcase_blog_detail.default_read_time');
         const wordsPerMinute = 200;
         const wordCount = content.split(/\s+/).length;
         const minutes = Math.ceil(wordCount / wordsPerMinute);
-        return `${minutes} phút đọc`;
+        return t('showcase_blog_detail.read_time_minutes', { minutes });
     };
 
     if (loading) {
@@ -71,12 +73,12 @@ const BlogDetail: React.FC = () => {
                 <ShowcaseHeader
                     searchTerm={searchTerm}
                     setSearchTerm={setSearchTerm}
-                    placeholder="Tìm bài viết..."
+                    placeholder={t('showcase_blog.search_placeholder')}
                 />
                 <div className="flex-1 flex items-center justify-center">
                     <div className="text-center">
                         <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#13ec49]"></div>
-                        <p className="text-gray-500 mt-4">Đang tải bài viết...</p>
+                        <p className="text-gray-500 mt-4">{t('showcase_blog_detail.loading_post')}</p>
                     </div>
                 </div>
             </div>
@@ -89,14 +91,14 @@ const BlogDetail: React.FC = () => {
                 <ShowcaseHeader
                     searchTerm={searchTerm}
                     setSearchTerm={setSearchTerm}
-                    placeholder="Tìm bài viết..."
+                    placeholder={t('showcase_blog.search_placeholder')}
                 />
                 <div className="flex-1 flex items-center justify-center">
                     <div className="text-center">
                         <span className="material-symbols-outlined text-6xl text-gray-300">article_shortcut</span>
-                        <p className="text-xl font-bold text-gray-400 mt-4">Không tìm thấy bài viết</p>
+                        <p className="text-xl font-bold text-gray-400 mt-4">{t('showcase_blog_detail.post_not_found')}</p>
                         <Link to="/showcase/blog" className="text-[#13ec49] font-bold hover:underline mt-2 inline-block">
-                            Quay lại danh sách
+                            {t('showcase_blog_detail.back_to_list')}
                         </Link>
                     </div>
                 </div>
@@ -109,7 +111,7 @@ const BlogDetail: React.FC = () => {
             <ShowcaseHeader
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-                placeholder="Tìm bài viết..."
+                placeholder={t('showcase_blog.search_placeholder')}
             />
 
             <div className="layout-container flex h-full grow flex-col">
@@ -120,7 +122,7 @@ const BlogDetail: React.FC = () => {
                         <div className="flex-1">
                             {/* Breadcrumb */}
                             <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-                                <Link to="/showcase/blog" className="hover:text-[#13ec49]">Tin tức</Link>
+                                <Link to="/showcase/blog" className="hover:text-[#13ec49]">{t('showcase_blog_detail.breadcrumb_news')}</Link>
                                 <span className="material-symbols-outlined text-xs">chevron_right</span>
                                 {post.category_name && (
                                     <>
@@ -154,7 +156,7 @@ const BlogDetail: React.FC = () => {
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <span className="material-symbols-outlined text-sm">visibility</span>
-                                            <span>{post.view_count || 0} lượt xem</span>
+                                            <span>{t('showcase_blog_detail.views', { count: post.view_count || 0 })}</span>
                                         </div>
                                     </div>
                                 </header>
@@ -191,7 +193,7 @@ const BlogDetail: React.FC = () => {
                                 <footer className="mt-12 pt-8 border-t border-gray-200">
                                     <div className="flex flex-wrap items-center justify-between gap-4">
                                         <div className="flex items-center gap-4">
-                                            <span className="text-sm font-semibold">Chia sẻ bài viết:</span>
+                                            <span className="text-sm font-semibold">{t('showcase_blog_detail.share_post')}</span>
                                             <div className="flex gap-2">
                                                 <button className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:bg-[#13ec49] hover:text-white hover:border-[#13ec49] transition-all">
                                                     <span className="material-symbols-outlined text-lg">share</span>
@@ -218,7 +220,7 @@ const BlogDetail: React.FC = () => {
                                     className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 rounded-xl font-bold text-gray-700 hover:bg-gray-50 transition-colors"
                                 >
                                     <span className="material-symbols-outlined">arrow_back</span>
-                                    Quay lại danh sách tin tức
+                                    {t('showcase_blog_detail.back_to_news_list')}
                                 </Link>
                             </div>
                         </div>
@@ -229,13 +231,13 @@ const BlogDetail: React.FC = () => {
                                 <div className="sticky top-24">
                                     <div className="bg-white rounded-2xl border border-[#dbe6de] shadow-sm p-6">
                                         <div className="flex items-center justify-between mb-6">
-                                            <h3 className="text-lg font-bold text-[#111813]">Bài viết liên quan</h3>
+                                            <h3 className="text-lg font-bold text-[#111813]">{t('showcase_blog_detail.related_posts')}</h3>
                                             {post.category_id && (
                                                 <Link
                                                     to={`/showcase/blog?category=${post.category_id}`}
                                                     className="text-[#13ec49] text-sm font-bold hover:underline"
                                                 >
-                                                    Xem tất cả
+                                                    {t('showcase_blog_detail.view_all')}
                                                 </Link>
                                             )}
                                         </div>

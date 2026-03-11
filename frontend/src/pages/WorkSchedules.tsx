@@ -1,10 +1,11 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getWorkSchedules, createWorkSchedule, updateWorkSchedule, deleteWorkSchedule, WorkSchedule } from '../api/work-schedule.api';
 import { getPartners, Partner } from '../api/partner.api';
 import { getWorkShifts, WorkShift } from '../api/work-shift.api';
 import { getJobTypes, JobType } from '../api/job-type.api';
 import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../components';
 import { getSeasons, Season } from '../api/season.api';
+import { useTranslation } from 'react-i18next';
 
 const WorkSchedules: React.FC = () => {
     const [schedules, setSchedules] = useState<WorkSchedule[]>([]);
@@ -24,6 +25,7 @@ const WorkSchedules: React.FC = () => {
     const [deleteTarget, setDeleteTarget] = useState<WorkSchedule | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
+    const { t, i18n } = useTranslation();
 
     const [formData, setFormData] = useState({
         partner_id: '',
@@ -124,9 +126,9 @@ const WorkSchedules: React.FC = () => {
 
     const getStatusLabel = (status: string) => {
         switch (status) {
-            case 'CONFIRMED': return 'Đã chốt';
-            case 'CANCELLED': return 'Đã hủy';
-            default: return 'Dự kiến';
+            case 'CONFIRMED': return t('work_schedules.status.confirmed');
+            case 'CANCELLED': return t('work_schedules.status.cancelled');
+            default: return t('work_schedules.status.planned');
         }
     };
 
@@ -180,8 +182,8 @@ const WorkSchedules: React.FC = () => {
         <div className="p-6 md:p-8 space-y-8 max-w-[1440px] mx-auto bg-slate-50/50 min-h-screen">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">Kế hoạch Làm việc</h1>
-                    <p className="text-slate-500 mt-2 font-medium">Lập kế hoạch và bàn giao công việc cho nhân sự nông trại.</p>
+                    <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">{t('work_schedules.title')}</h1>
+                    <p className="text-slate-500 mt-2 font-medium">{t('work_schedules.subtitle')}</p>
                 </div>
             </div>
 
@@ -191,7 +193,7 @@ const WorkSchedules: React.FC = () => {
                         <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
                         <input
                             type="text"
-                            placeholder="Tìm nhân viên, công việc..."
+                            placeholder={t('work_schedules.search_placeholder')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-[#13ec49]/30 outline-none font-medium transition-all"
@@ -207,7 +209,7 @@ const WorkSchedules: React.FC = () => {
                             });
                             setShowModal(true);
                         }}
-                        addLabel="Thêm lịch mới"
+                        addLabel={t('work_schedules.add_btn')}
                         onEdit={() => selectedSchedule && setEditingItem(selectedSchedule) && setShowModal(true)}
                         editDisabled={!selectedSchedule || selectedSchedule.has_payroll}
                         onDelete={() => selectedSchedule && setDeleteTarget(selectedSchedule)}
@@ -229,11 +231,11 @@ const WorkSchedules: React.FC = () => {
                         <table className="w-full text-left">
                             <thead className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] whitespace-nowrap">
                                 <tr>
-                                    <th className="px-8 py-5 min-w-[250px]">Nhân sự & Ca</th>
-                                    <th className="px-8 py-5">Công việc</th>
-                                    <th className="px-8 py-5">Ngày làm việc</th>
-                                    <th className="px-8 py-5">Trạng thái</th>
-                                    <th className="px-8 py-5 text-right">Thao tác</th>
+                                    <th className="px-8 py-5 min-w-[250px]">{t('work_schedules.table.worker_shift')}</th>
+                                    <th className="px-8 py-5">{t('work_schedules.table.job')}</th>
+                                    <th className="px-8 py-5">{t('work_schedules.table.date')}</th>
+                                    <th className="px-8 py-5">{t('work_schedules.table.status')}</th>
+                                    <th className="px-8 py-5 text-right">{t('work_schedules.table.actions')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -251,7 +253,7 @@ const WorkSchedules: React.FC = () => {
                                                 <div>
                                                     <p className="font-extrabold text-slate-900">{item.partner_name}</p>
                                                     <div className="flex items-center gap-2">
-                                                        <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">{item.shift_name || 'Chưa chọn ca'}</p>
+                                                        <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">{item.shift_name || t('work_schedules.table.no_shift')}</p>
                                                         {item.season_name && (
                                                             <>
                                                                 <span className="text-slate-300">•</span>
@@ -265,12 +267,12 @@ const WorkSchedules: React.FC = () => {
                                         <td className="px-8 py-5">
                                             <div className="flex items-center gap-2">
                                                 <span className="material-symbols-outlined text-slate-400 text-[20px]">work</span>
-                                                <span className="font-bold text-slate-700 whitespace-nowrap">{item.job_name || 'Khác'}</span>
+                                                <span className="font-bold text-slate-700 whitespace-nowrap">{item.job_name || t('work_schedules.table.other_job')}</span>
                                             </div>
                                             {item.note && <p className="text-xs text-slate-400 mt-1 italic">"{item.note}"</p>}
                                         </td>
                                         <td className="px-8 py-5 font-black text-slate-900">
-                                            {new Date(item.work_date).toLocaleDateString('vi-VN')}
+                                            {new Date(item.work_date).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}
                                         </td>
                                         <td className="px-8 py-5">
                                             <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 whitespace-nowrap ${getStatusStyle(item.status)}`}>
@@ -280,9 +282,9 @@ const WorkSchedules: React.FC = () => {
                                         <td className="px-8 py-5 text-right">
                                             <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
                                                 {item.has_payroll ? (
-                                                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-400 rounded-xl cursor-not-allowed" title="Đã tính lương, không thể sửa/xóa">
+                                                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-400 rounded-xl cursor-not-allowed" title={t('work_schedules.table.lock_tooltip')}>
                                                         <span className="material-symbols-outlined text-[18px]">lock</span>
-                                                        <span className="text-[10px] font-black uppercase">Đã tính lương</span>
+                                                        <span className="text-[10px] font-black uppercase">{t('work_schedules.table.payroll_calculated')}</span>
                                                     </div>
                                                 ) : (
                                                     <>
@@ -328,7 +330,7 @@ const WorkSchedules: React.FC = () => {
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-[32px] p-8 max-w-xl w-full shadow-2xl animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-8">
-                            <h2 className="text-2xl font-black text-slate-900">{editingItem ? 'Sửa kế hoạch' : 'Lên kế hoạch mới'}</h2>
+                            <h2 className="text-2xl font-black text-slate-900">{editingItem ? t('work_schedules.modal.edit_title') : t('work_schedules.modal.add_title')}</h2>
                             <button onClick={() => setShowModal(false)} className="size-10 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all">
                                 <span className="material-symbols-outlined">close</span>
                             </button>
@@ -338,8 +340,8 @@ const WorkSchedules: React.FC = () => {
                             <div className="col-span-full">
                                 <CustomSelect
                                     id="worker"
-                                    label="Nhân sự"
-                                    placeholder="-- Chọn nhân viên --"
+                                    label={t('work_schedules.modal.worker')}
+                                    placeholder={t('work_schedules.modal.worker_placeholder')}
                                     value={formData.partner_id}
                                     onChange={(val: string) => setFormData({ ...formData, partner_id: val })}
                                     options={workers.map(w => ({ value: w.id, label: w.partner_name }))}
@@ -349,8 +351,8 @@ const WorkSchedules: React.FC = () => {
                             <div>
                                 <CustomSelect
                                     id="shift"
-                                    label="Ca làm việc"
-                                    placeholder="-- Chọn ca --"
+                                    label={t('work_schedules.modal.shift')}
+                                    placeholder={t('work_schedules.modal.shift_placeholder')}
                                     value={formData.shift_id}
                                     onChange={(val: string) => setFormData({ ...formData, shift_id: val })}
                                     options={shifts.map(s => ({ value: s.id, label: s.shift_name }))}
@@ -360,8 +362,8 @@ const WorkSchedules: React.FC = () => {
                             <div>
                                 <CustomSelect
                                     id="job"
-                                    label="Dự kiến công việc"
-                                    placeholder="-- Loại công việc --"
+                                    label={t('work_schedules.modal.job')}
+                                    placeholder={t('work_schedules.modal.job_placeholder')}
                                     value={formData.job_type_id}
                                     onChange={(val: string) => setFormData({ ...formData, job_type_id: val })}
                                     options={jobTypes.map(j => ({ value: j.id, label: j.job_name }))}
@@ -371,8 +373,8 @@ const WorkSchedules: React.FC = () => {
                             <div className="col-span-full">
                                 <CustomSelect
                                     id="season"
-                                    label="Vụ mùa"
-                                    placeholder="-- Chọn vụ mùa (không bắt buộc) --"
+                                    label={t('work_schedules.modal.season')}
+                                    placeholder={t('work_schedules.modal.season_placeholder')}
                                     value={formData.season_id}
                                     onChange={(val: string) => setFormData({ ...formData, season_id: val })}
                                     options={seasons.map(s => ({ value: s.id, label: s.season_name, sublabel: s.status }))}
@@ -380,7 +382,7 @@ const WorkSchedules: React.FC = () => {
                             </div>
 
                             <div>
-                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Ngày làm</label>
+                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{t('work_schedules.modal.date')}</label>
                                 <input
                                     type="date"
                                     required
@@ -393,26 +395,26 @@ const WorkSchedules: React.FC = () => {
                             <div>
                                 <CustomSelect
                                     id="status"
-                                    label="Trạng thái"
-                                    placeholder="Trạng thái"
+                                    label={t('work_schedules.modal.status')}
+                                    placeholder={t('work_schedules.modal.status')}
                                     value={formData.status}
                                     onChange={(val: string) => setFormData({ ...formData, status: val })}
                                     options={[
-                                        { value: 'PLANNED', label: 'Dự kiến (PLANNED)' },
-                                        { value: 'CONFIRMED', label: 'Đã chốt (CONFIRMED)' },
-                                        { value: 'CANCELLED', label: 'Hủy bỏ (CANCELLED)' }
+                                        { value: 'PLANNED', label: `${t('work_schedules.status.planned')} (PLANNED)` },
+                                        { value: 'CONFIRMED', label: `${t('work_schedules.status.confirmed')} (CONFIRMED)` },
+                                        { value: 'CANCELLED', label: `${t('work_schedules.status.cancelled')} (CANCELLED)` }
                                     ]}
                                 />
                             </div>
 
                             <div className="col-span-full">
-                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Ghi chú</label>
+                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{t('work_schedules.modal.note')}</label>
                                 <textarea
                                     rows={3}
                                     value={formData.note}
                                     onChange={e => setFormData({ ...formData, note: e.target.value })}
                                     className="w-full bg-slate-50 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#13ec49]/30 outline-none font-medium transition-all border-none"
-                                    placeholder="Nhiệm vụ cụ thể hoặc lưu ý cho nhân viên..."
+                                    placeholder={t('work_schedules.modal.note_placeholder')}
                                 ></textarea>
                             </div>
 
@@ -422,13 +424,13 @@ const WorkSchedules: React.FC = () => {
                                     onClick={() => setShowModal(false)}
                                     className="px-8 py-4 font-black text-slate-500 hover:bg-slate-100 rounded-2xl transition-all"
                                 >
-                                    Hủy bỏ
+                                    {t('work_schedules.modal.cancel')}
                                 </button>
                                 <button
                                     type="submit"
                                     className="px-10 py-4 bg-[#13ec49] text-black font-black rounded-2xl hover:bg-[#10d63f] active:scale-95 transition-all shadow-xl shadow-[#13ec49]/20"
                                 >
-                                    {editingItem ? 'Lưu thay đổi' : 'Xác nhận lên lịch'}
+                                    {editingItem ? t('work_schedules.modal.save') : t('work_schedules.modal.create')}
                                 </button>
                             </div>
                         </form>
@@ -440,14 +442,14 @@ const WorkSchedules: React.FC = () => {
                 onClose={() => setDeleteTarget(null)}
                 onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
                 isDeleting={isDeleting}
-                itemName={`Kế hoạch ngày ${deleteTarget ? new Date(deleteTarget.work_date).toLocaleDateString('vi-VN') : ''} cho ${deleteTarget?.partner_name}`}
+                itemName={`${t('work_schedules.modal.edit_title')} ${deleteTarget ? new Date(deleteTarget.work_date).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US') : ''} for ${deleteTarget?.partner_name}`}
             />
             <ImportDataModal
                 open={showImportModal}
                 onClose={() => setShowImportModal(false)}
                 onImport={handleImport}
-                entityName="kế hoạch làm việc"
-                columnGuide={['Nhân sự (ID/Tên)', 'Ca làm việc (ID/Tên)', 'Công việc (ID/Tên)', 'Vụ mùa (ID/Tên)', 'Ngày làm', 'Trạng thái', 'Ghi chú']}
+                entityName={t('work_schedules.import.entity_name')}
+                columnGuide={t('work_schedules.import.columns', { returnObjects: true }) as string[]}
                 onDownloadTemplate={handleDownloadTemplate}
             />
         </div>

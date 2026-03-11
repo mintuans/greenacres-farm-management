@@ -1,9 +1,10 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getInventory, getInventoryStats, createItem, updateItem, deleteItem, InventoryItem, bulkImportItems } from '../api/inventory.api';
 import { getCategoryTree, Category } from '../api/category.api';
 import { getMediaFiles, MediaFile } from '../services/media.service';
 import { getMediaUrl } from '../services/products.service';
 import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../components';
+import { useTranslation } from 'react-i18next';
 
 const Inventory: React.FC = () => {
   const [items, setItems] = useState<InventoryItem[]>([]);
@@ -14,10 +15,12 @@ const Inventory: React.FC = () => {
   const [filterCategory, setFilterCategory] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
+  const [isViewOnly, setIsViewOnly] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<InventoryItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [showImportModal, setShowImportModal] = useState(false);
+  const { t, i18n } = useTranslation();
 
   // Media Selection State
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
@@ -106,6 +109,7 @@ const Inventory: React.FC = () => {
         await createItem(dataToSave);
       }
       setShowModal(false);
+      setIsViewOnly(false);
       fetchData();
     } catch (error) {
       console.error('Error saving item:', error);
@@ -120,14 +124,14 @@ const Inventory: React.FC = () => {
       fetchData();
     } catch (error) {
       console.error('Error deleting item:', error);
-      alert('Không thể xóa vật tư này');
+      alert(t('inventory.messages.delete_error'));
     } finally {
       setIsDeleting(false);
     }
   };
 
   const handleExport = () => {
-    const headers = ['SKU', 'Tên vật tư', 'Danh mục', 'Đơn vị tính', 'Số lượng', 'Mức tối thiểu', 'Giá nhập', 'Ngày nhập', 'Ghi chú'];
+    const headers = t('inventory.import.columns', { returnObjects: true }) as string[];
     const csvData = filteredItems.map(item => [
       item.inventory_code,
       item.inventory_name,
@@ -136,7 +140,7 @@ const Inventory: React.FC = () => {
       item.stock_quantity,
       item.min_stock_level,
       item.last_import_price,
-      item.import_date ? new Date(item.import_date).toLocaleDateString('vi-VN') : '',
+      item.import_date ? new Date(item.import_date).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US') : '',
       item.note || ''
     ]);
 
@@ -150,18 +154,37 @@ const Inventory: React.FC = () => {
 
   const downloadTemplate = () => {
     const csv = [
-      'SKU,Tên vật tư,Danh mục,Đơn vị tính,Số lượng,Mức tối thiểu,Giá nhập,Ngày nhập,Ghi chú',
+      (t('inventory.import.columns', { returnObjects: true }) as string[]).join(','),
       'VT-001,Phân bón NPK,Phân bón,Kg,100,20,50000,2024-01-01,Mẫu vật tư',
     ].join('\n');
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'MauNhap_VatTu.csv';
+    link.download = t('inventory.import.entity_name') + '_template.csv';
     link.click();
   };
 
   const handleEditItem = (item: InventoryItem) => {
     setEditingItem(item);
+    setIsViewOnly(false);
+    setFormData({
+      inventory_code: item.inventory_code,
+      inventory_name: item.inventory_name,
+      category_id: item.category_id || '',
+      unit_of_measure: item.unit_of_measure || '',
+      stock_quantity: item.stock_quantity,
+      min_stock_level: item.min_stock_level,
+      last_import_price: item.last_import_price || 0,
+      import_date: item.import_date ? new Date(item.import_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      thumbnail_id: item.thumbnail_id || '',
+      note: item.note || ''
+    });
+    setShowModal(true);
+  };
+
+  const handleViewItem = (item: InventoryItem) => {
+    setEditingItem(item);
+    setIsViewOnly(true);
     setFormData({
       inventory_code: item.inventory_code,
       inventory_name: item.inventory_name,
@@ -195,7 +218,7 @@ const Inventory: React.FC = () => {
 
             return {
               inventory_code: row[0] || generateRandomSKU(),
-              inventory_name: row[1] || 'Vật tư mới',
+              inventory_name: row[1] || t('inventory.messages.new_item'),
               unit_of_measure: row[3] || 'Kg',
               stock_quantity: Number(row[4]) || 0,
               min_stock_level: Number(row[5]) || 0,
@@ -206,15 +229,15 @@ const Inventory: React.FC = () => {
           });
 
           await bulkImportItems(data);
-          alert(`Đã nhập thành công ${data.length} mặt hàng!`);
+          alert(t('inventory.import.success', { count: data.length }));
           fetchData();
           resolve();
         } catch (error) {
           console.error('Error importing data:', error);
-          reject(new Error('Lỗi khi nhập dữ liệu. Vui lòng kiểm tra định dạng file CSV.'));
+          reject(new Error(t('inventory.import.error')));
         }
       };
-      reader.onerror = () => reject(new Error('Lỗi khi đọc file'));
+      reader.onerror = () => reject(new Error(t('inventory.import.read_error')));
       reader.readAsText(file);
     });
   };
@@ -241,7 +264,7 @@ const Inventory: React.FC = () => {
 
           return {
             inventory_code: row[0] || generateRandomSKU(),
-            inventory_name: row[1] || 'Vật tư mới',
+            inventory_name: row[1] || t('inventory.messages.new_item'),
             unit_of_measure: row[3] || 'Kg',
             stock_quantity: Number(row[4]) || 0,
             min_stock_level: Number(row[5]) || 0,
@@ -252,11 +275,11 @@ const Inventory: React.FC = () => {
         });
 
         await bulkImportItems(data);
-        alert(`Đã nhập thành công ${data.length} mặt hàng!`);
+        alert(t('inventory.import.success', { count: data.length }));
         fetchData();
       } catch (error) {
         console.error('Error importing data:', error);
-        alert('Lỗi khi nhập dữ liệu. Vui lòng kiểm tra định dạng file CSV.');
+        alert(t('inventory.import.error'));
       }
     };
     reader.readAsText(file);
@@ -264,13 +287,13 @@ const Inventory: React.FC = () => {
   };
 
   const formatVND = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+    return new Intl.NumberFormat(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { style: 'currency', currency: 'VND' }).format(amount);
   };
 
   const getStockStatus = (item: InventoryItem) => {
-    if (item.stock_quantity <= 0) return { label: 'HẾT HÀNG', color: 'bg-red-100 text-red-700' };
-    if (item.stock_quantity <= item.min_stock_level) return { label: 'SẮP HẾT', color: 'bg-orange-100 text-orange-700' };
-    return { label: 'CÒN HÀNG', color: 'bg-emerald-100 text-emerald-700' };
+    if (item.stock_quantity <= 0) return { label: t('inventory.stock_status.out_of_stock'), color: 'bg-red-100 text-red-700' };
+    if (item.stock_quantity <= item.min_stock_level) return { label: t('inventory.stock_status.low_stock'), color: 'bg-orange-100 text-orange-700' };
+    return { label: t('inventory.stock_status.in_stock'), color: 'bg-emerald-100 text-emerald-700' };
   };
 
   const getProgressColor = (item: InventoryItem) => {
@@ -281,7 +304,7 @@ const Inventory: React.FC = () => {
   };
 
   const getSelectedCategoryName = () => {
-    if (!formData.category_id) return '-- Không có danh mục --';
+    if (!formData.category_id) return '-- ' + t('inventory.table.category') + ' --';
     const findInTree = (cats: Category[]): string | null => {
       for (const cat of cats) {
         if (cat.id === formData.category_id) return cat.category_name;
@@ -292,7 +315,7 @@ const Inventory: React.FC = () => {
       }
       return null;
     };
-    return findInTree(categories) || '-- Không có danh mục --';
+    return findInTree(categories) || '-- ' + t('inventory.table.category') + ' --';
   };
 
   const renderCategoryOptions = (cats: Category[], level = 0): React.ReactNode[] => {
@@ -331,9 +354,9 @@ const Inventory: React.FC = () => {
       {/* Header */}
       <div>
         <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
-          Quản lý kho vật tư
+          {t('inventory.title')}
         </h1>
-        <p className="text-slate-500 mt-1 text-sm">Theo dõi phân bón, thuốc bảo vệ thực vật và thức ăn chăn nuôi.</p>
+        <p className="text-slate-500 mt-1 text-sm">{t('inventory.subtitle')}</p>
       </div>
       <input
         type="file"
@@ -346,9 +369,9 @@ const Inventory: React.FC = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
         {[
-          { label: 'Tổng số mặt hàng', value: stats.total_items, icon: 'inventory_2', color: 'text-blue-600', bg: 'bg-blue-50', fullWidth: false },
-          { label: 'Cảnh báo hết hàng', value: stats.low_stock_items, icon: 'warning', color: 'text-orange-600', bg: 'bg-orange-50', sub: 'Cần xử lý', fullWidth: false },
-          { label: 'Tổng giá trị tồn kho', value: formatVND(stats.total_value), icon: 'payments', color: 'text-emerald-600', bg: 'bg-emerald-50', fullWidth: true }
+          { label: t('inventory.stats.total_items'), value: stats.total_items, icon: 'inventory_2', color: 'text-blue-600', bg: 'bg-blue-50', fullWidth: false },
+          { label: t('inventory.stats.low_stock'), value: stats.low_stock_items, icon: 'warning', color: 'text-orange-600', bg: 'bg-orange-50', sub: t('inventory.stats.action_needed'), fullWidth: false },
+          { label: t('inventory.stats.total_value'), value: formatVND(stats.total_value), icon: 'payments', color: 'text-emerald-600', bg: 'bg-emerald-50', fullWidth: true }
         ].map((s, i) => (
           <div key={i} className={`bg-white p-3 md:p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3 md:gap-4 hover:shadow-md transition-all ${s.fullWidth ? 'col-span-2 md:col-span-1' : ''}`}>
             <div className={`${s.bg} ${s.color} p-2 md:p-3 rounded-xl shrink-0`}>
@@ -372,7 +395,7 @@ const Inventory: React.FC = () => {
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
             <input
               type="text"
-              placeholder="Tìm tên vật tư, SKU..."
+              placeholder={t('inventory.search_placeholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#13ec49]/30 outline-none transition-all text-sm"
@@ -381,6 +404,7 @@ const Inventory: React.FC = () => {
           <ActionToolbar
             onAdd={() => {
               setEditingItem(null);
+              setIsViewOnly(false);
               setFormData({
                 inventory_code: generateRandomSKU(),
                 inventory_name: '', category_id: '',
@@ -389,7 +413,7 @@ const Inventory: React.FC = () => {
               });
               setShowModal(true);
             }}
-            addLabel="Thêm vật tư"
+            addLabel={t('inventory.add_btn')}
             onEdit={() => selectedItem && handleEditItem(selectedItem)}
             editDisabled={!selectedItem}
             onDelete={() => selectedItem && setDeleteTarget(selectedItem)}
@@ -406,13 +430,13 @@ const Inventory: React.FC = () => {
           <table className="w-full text-left">
             <thead className="bg-slate-50/50 text-[11px] font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">
               <tr>
-                <th className="px-4 py-3">Sản phẩm</th>
-                <th className="px-4 py-3 min-w-[120px]">Danh mục</th>
-                <th className="px-4 py-3">Số lượng</th>
-                <th className="px-4 py-3">Giá nhập</th>
-                <th className="px-4 py-3">Ngày nhập</th>
-                <th className="px-4 py-3">Trạng thái</th>
-                <th className="px-4 py-3 text-right">Thao tác</th>
+                <th className="px-4 py-3">{t('inventory.table.product')}</th>
+                <th className="px-4 py-3 min-w-[120px]">{t('inventory.table.category')}</th>
+                <th className="px-4 py-3">{t('inventory.table.quantity')}</th>
+                <th className="px-4 py-3">{t('inventory.table.price')}</th>
+                <th className="px-4 py-3">{t('inventory.table.date')}</th>
+                <th className="px-4 py-3">{t('inventory.table.status')}</th>
+                <th className="px-4 py-3 text-right">{t('inventory.table.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -452,7 +476,7 @@ const Inventory: React.FC = () => {
                     </td>
                     <td className="px-4 py-2.5">
                       <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-bold uppercase border border-blue-100 whitespace-nowrap">
-                        {item.category_name || 'Khác'}
+                        {item.category_name || t('inventory.table.category')}
                       </span>
                     </td>
                     <td className="px-4 py-2.5">
@@ -471,7 +495,7 @@ const Inventory: React.FC = () => {
                     </td>
                     <td className="px-4 py-2.5">
                       <p className="text-[13px] text-slate-600">
-                        {item.import_date ? new Date(item.import_date).toLocaleDateString('vi-VN') : '-'}
+                        {item.import_date ? new Date(item.import_date).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US') : '-'}
                       </p>
                     </td>
                     <td className="px-4 py-2.5">
@@ -481,6 +505,12 @@ const Inventory: React.FC = () => {
                     </td>
                     <td className="px-4 py-2.5 text-right">
                       <div className="flex justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-all">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleViewItem(item); }}
+                          className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">visibility</span>
+                        </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleEditItem(item); }}
                           className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
@@ -517,7 +547,7 @@ const Inventory: React.FC = () => {
           <div className="bg-white rounded-3xl p-8 max-w-2xl w-full shadow-2xl animate-in fade-in zoom-in duration-200 my-auto">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-black text-slate-900">
-                {editingItem ? 'Cập nhật vật tư' : 'Thêm vật tư mới'}
+                {isViewOnly ? t('inventory.modal.view_title') : editingItem ? t('inventory.modal.edit_title') : t('inventory.modal.add_title')}
               </h2>
               <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600">
                 <span className="material-symbols-outlined">close</span>
@@ -526,10 +556,12 @@ const Inventory: React.FC = () => {
 
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Image Picker */}
-              <div className="col-span-full flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-100 rounded-3xl bg-slate-50/50 hover:border-[#13ec49]/50 transition-all cursor-pointer group"
+              <div className={`col-span-full flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-100 rounded-3xl bg-slate-50/50 hover:border-[#13ec49]/50 transition-all cursor-pointer group ${isViewOnly ? 'opacity-80 pointer-events-none' : ''}`}
                 onClick={() => {
-                  setShowMediaPicker(true);
-                  loadMedia();
+                  if (!isViewOnly) {
+                    setShowMediaPicker(true);
+                    loadMedia();
+                  }
                 }}
               >
                 {formData.thumbnail_id ? (
@@ -540,35 +572,36 @@ const Inventory: React.FC = () => {
                       className="w-32 h-32 object-cover rounded-2xl shadow-lg"
                     />
                     <div className="absolute inset-0 bg-black/40 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
-                      <span className="text-white text-xs font-bold uppercase tracking-widest">Thay đổi</span>
+                      <span className="text-white text-xs font-bold uppercase tracking-widest">{t('inventory.modal.change_image')}</span>
                     </div>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-2 text-slate-400 group-hover:text-[#13ec49]">
                     <span className="material-symbols-outlined text-4xl">add_photo_alternate</span>
-                    <p className="text-sm font-bold uppercase tracking-wider">Chọn hình ảnh</p>
+                    <p className="text-sm font-bold uppercase tracking-wider">{t('inventory.modal.select_image')}</p>
                   </div>
                 )}
               </div>
 
               <div className="col-span-full">
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Tên vật tư</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">{t('inventory.modal.item_name')}</label>
                 <input
                   required
+                  disabled={isViewOnly}
                   value={formData.inventory_name}
                   onChange={e => setFormData({ ...formData, inventory_name: e.target.value })}
-                  className="w-full bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#13ec49]/30 outline-none font-bold"
+                  className="w-full bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#13ec49]/30 outline-none font-bold disabled:bg-slate-50 disabled:text-slate-500"
                   placeholder="Ví dụ: Phân bón NPK 20-20-15"
                 />
               </div>
 
               <div className="relative" ref={dropdownRef}>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Danh mục</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">{t('inventory.table.category')}</label>
                 <div
-                  onClick={() => setShowCatDropdown(!showCatDropdown)}
-                  className="w-full bg-slate-50 rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer border-2 border-transparent hover:border-[#13ec49]/30 transition-all"
+                  onClick={() => !isViewOnly && setShowCatDropdown(!showCatDropdown)}
+                  className={`w-full bg-slate-50 rounded-xl px-4 py-3 flex items-center justify-between transition-all border-2 border-transparent ${isViewOnly ? 'cursor-default' : 'cursor-pointer hover:border-[#13ec49]/30'}`}
                 >
-                  <span className={`text-sm ${formData.category_id ? 'text-slate-900 font-bold' : 'text-slate-400'}`}>
+                  <span className={`text-sm ${formData.category_id ? 'text-slate-900 font-bold' : 'text-slate-400'} ${isViewOnly ? 'text-slate-500' : ''}`}>
                     {getSelectedCategoryName()}
                   </span>
                   <span className={`material-symbols-outlined text-slate-400 transition-transform ${showCatDropdown ? 'rotate-180' : ''}`}>
@@ -583,44 +616,49 @@ const Inventory: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Mã SKU</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">{t('inventory.modal.sku')}</label>
                 <div className="flex gap-2">
                   <input
                     required
+                    disabled={isViewOnly}
                     value={formData.inventory_code}
                     onChange={e => setFormData({ ...formData, inventory_code: e.target.value })}
-                    className="flex-1 bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#13ec49]/30 outline-none font-mono"
+                    className="flex-1 bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#13ec49]/30 outline-none font-mono disabled:text-slate-500"
                     placeholder="SKU-001"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, inventory_code: generateRandomSKU() })}
-                    className="p-3 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200"
-                    title="Tạo mã mới"
-                  >
-                    <span className="material-symbols-outlined">autorenew</span>
-                  </button>
+                  {!isViewOnly && (
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, inventory_code: generateRandomSKU() })}
+                      className="p-3 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200"
+                      title={t('inventory.modal.gen_code')}
+                    >
+                      <span className="material-symbols-outlined">autorenew</span>
+                    </button>
+                  )}
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Giá nhập (VNĐ)</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">{t('inventory.modal.import_price')}</label>
                 <input
                   type="number"
+                  disabled={isViewOnly}
                   value={formData.last_import_price}
                   onChange={e => setFormData({ ...formData, last_import_price: Number(e.target.value) })}
-                  className="w-full bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#13ec49]/30 outline-none font-black text-emerald-600"
+                  className="w-full bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#13ec49]/30 outline-none font-black text-emerald-600 disabled:opacity-70"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Đơn vị tính</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">{t('inventory.modal.unit')}</label>
                 <select
+                  disabled={isViewOnly}
                   value={formData.unit_of_measure}
                   onChange={e => setFormData({ ...formData, unit_of_measure: e.target.value })}
-                  className="w-full bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#13ec49]/30 outline-none appearance-none font-bold"
+                  className="w-full bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#13ec49]/30 outline-none appearance-none font-bold disabled:text-slate-500"
                 >
-                  <option value="">-- Chọn đơn vị --</option>
+                  <option value="">{t('inventory.modal.select_unit')}</option>
                   {['Kg', 'Bao', 'Chai', 'Lít', 'Gói', 'Tấn', 'Thùng', 'Túi', 'Mét', 'Cuộn', 'Hộp', 'Viên'].map(unit => (
                     <option key={unit} value={unit}>{unit}</option>
                   ))}
@@ -628,32 +666,35 @@ const Inventory: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Tồn kho hiện tại</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">{t('inventory.modal.current_stock')}</label>
                 <input
                   type="number"
+                  disabled={isViewOnly}
                   value={formData.stock_quantity}
                   onChange={e => setFormData({ ...formData, stock_quantity: Number(e.target.value) })}
-                  className="w-full bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#13ec49]/30 outline-none font-bold"
+                  className="w-full bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#13ec49]/30 outline-none font-bold disabled:text-slate-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Mức tối thiểu</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">{t('inventory.modal.min_stock')}</label>
                 <input
                   type="number"
+                  disabled={isViewOnly}
                   value={formData.min_stock_level}
                   onChange={e => setFormData({ ...formData, min_stock_level: Number(e.target.value) })}
-                  className="w-full bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#13ec49]/30 outline-none font-bold text-orange-600"
+                  className="w-full bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#13ec49]/30 outline-none font-bold text-orange-600 disabled:opacity-70"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Ngày nhập</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase mb-2">{t('inventory.modal.import_date')}</label>
                 <input
                   type="date"
+                  disabled={isViewOnly}
                   value={formData.import_date}
                   onChange={e => setFormData({ ...formData, import_date: e.target.value })}
-                  className="w-full bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#13ec49]/30 outline-none font-bold"
+                  className="w-full bg-slate-50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#13ec49]/30 outline-none font-bold disabled:text-slate-500"
                 />
               </div>
 
@@ -661,16 +702,18 @@ const Inventory: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-6 py-3 font-bold text-slate-500 hover:bg-slate-50 rounded-xl transition-all"
+                  className={`px-6 py-3 font-bold text-slate-500 hover:bg-slate-50 rounded-xl transition-all ${isViewOnly ? 'w-full bg-slate-900 text-white hover:bg-black font-black' : ''}`}
                 >
-                  Hủy bỏ
+                  {isViewOnly ? t('inventory.modal.close') : t('inventory.modal.cancel')}
                 </button>
-                <button
-                  type="submit"
-                  className="px-8 py-3 bg-slate-900 text-white font-black rounded-xl hover:bg-black active:scale-95 transition-all shadow-lg"
-                >
-                  {editingItem ? 'Lưu thay đổi' : 'Tạo vật tư'}
-                </button>
+                {!isViewOnly && (
+                  <button
+                    type="submit"
+                    className="px-8 py-3 bg-slate-900 text-white font-black rounded-xl hover:bg-black active:scale-95 transition-all shadow-lg"
+                  >
+                    {editingItem ? t('inventory.modal.save') : t('inventory.modal.create')}
+                  </button>
+                )}
               </div>
             </form>
           </div>
@@ -684,7 +727,7 @@ const Inventory: React.FC = () => {
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
                 <span className="material-symbols-outlined">perm_media</span>
-                Thư viện hình ảnh
+                {t('inventory.media.title')}
               </h3>
               <button onClick={() => setShowMediaPicker(false)} className="text-slate-400 hover:text-slate-600">
                 <span className="material-symbols-outlined">close</span>
@@ -698,7 +741,7 @@ const Inventory: React.FC = () => {
             ) : mediaFiles.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center py-20 text-slate-400 italic">
                 <span className="material-symbols-outlined text-6xl mb-4">image_not_supported</span>
-                <p>Bạn chưa có ảnh nào trong thư viện (phần Product)</p>
+                <p>{t('inventory.media.empty')}</p>
               </div>
             ) : (
               <div className="flex-1 overflow-y-auto pr-2">
@@ -733,7 +776,7 @@ const Inventory: React.FC = () => {
                 onClick={() => setShowMediaPicker(false)}
                 className="px-10 py-3 bg-slate-900 text-white font-black rounded-xl hover:bg-black transition-all"
               >
-                Xong
+                {t('inventory.media.done')}
               </button>
             </div>
           </div>
@@ -743,8 +786,8 @@ const Inventory: React.FC = () => {
         open={showImportModal}
         onClose={() => setShowImportModal(false)}
         onImport={handleImport}
-        entityName="vật tư"
-        columnGuide={['SKU', 'Tên vật tư', 'Danh mục', 'Đơn vị tính', 'Số lượng', 'Mức tối thiểu', 'Giá nhập', 'Ngày nhập', 'Ghi chú']}
+        entityName={t('inventory.import.entity_name')}
+        columnGuide={t('inventory.import.columns', { returnObjects: true }) as string[]}
         onDownloadTemplate={downloadTemplate}
       />
     </div>

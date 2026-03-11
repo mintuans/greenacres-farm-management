@@ -6,6 +6,7 @@ import { getSeasons, Season } from '../api/season.api';
 import { getCategories, Category } from '../api/category.api';
 import { getPartners, Partner } from '../api/partner.api';
 import { ActionToolbar, ConfirmDeleteModal } from '../components';
+import { useTranslation } from 'react-i18next';
 
 // --- CustomSelect Component (Premium Style) ---
 interface CustomSelectProps {
@@ -18,6 +19,7 @@ interface CustomSelectProps {
 }
 
 const CustomSelect: React.FC<CustomSelectProps> = ({ label, value, options, onChange, placeholder, icon = 'stat_0' }) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const selectedOption = options.find(opt => opt.id === value);
@@ -54,7 +56,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({ label, value, options, onCh
         <div className="absolute z-50 w-full mt-2 bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="max-h-60 overflow-y-auto p-2 custom-scrollbar">
             {options.length === 0 ? (
-              <div className="p-4 text-center text-slate-400 text-xs font-bold italic">Không có dữ liệu</div>
+              <div className="p-4 text-center text-slate-400 text-xs font-bold italic">{t('common.no_data') || 'Không có dữ liệu'}</div>
             ) : (
               options.map((opt) => (
                 <div
@@ -83,6 +85,7 @@ const Transactions: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { t, i18n } = useTranslation();
 
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -156,10 +159,7 @@ const Transactions: React.FC = () => {
     }
   };
 
-  const months = [
-    'Tháng 01', 'Tháng 02', 'Tháng 03', 'Tháng 04', 'Tháng 05', 'Tháng 06',
-    'Tháng 07', 'Tháng 08', 'Tháng 09', 'Tháng 10', 'Tháng 11', 'Tháng 12'
-  ];
+  const months = t('transactions.months', { returnObjects: true }) as string[];
 
   const loadMetadata = async () => {
     try {
@@ -219,7 +219,7 @@ const Transactions: React.FC = () => {
       fetchData();
     } catch (error) {
       console.error('Error deleting transaction:', error);
-      console.error('Không thể xóa giao dịch này');
+      alert(t('transactions.messages.delete_error') || 'Không thể xóa giao dịch này');
     } finally {
       setIsDeleting(false);
     }
@@ -227,17 +227,18 @@ const Transactions: React.FC = () => {
 
   const downloadTemplate = async () => {
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Giao dịch mẫu');
+    const worksheet = workbook.addWorksheet(t('transactions.import.sheet_name') || 'Giao dịch mẫu');
+    const columns = t('transactions.import.columns', { returnObjects: true }) as any;
     worksheet.columns = [
-      { header: 'Ngày (YYYY-MM-DD)', key: 'date', width: 20 },
-      { header: 'Loại (INCOME/EXPENSE)', key: 'type', width: 25 },
-      { header: 'Số tiền', key: 'amount', width: 15 },
-      { header: 'Nội dung', key: 'note', width: 30 },
-      { header: 'Mã vụ mùa', key: 'season_code', width: 15 },
+      { header: columns.date, key: 'date', width: 20 },
+      { header: columns.type, key: 'type', width: 25 },
+      { header: columns.amount, key: 'amount', width: 15 },
+      { header: columns.note, key: 'note', width: 30 },
+      { header: columns.season_code, key: 'season_code', width: 15 },
     ];
-    worksheet.addRow({ date: '2024-03-05', type: 'INCOME', amount: 1000000, note: 'Bán nông sản', season_code: '' });
+    worksheet.addRow({ date: '2024-03-05', type: 'INCOME', amount: 1000000, note: t('transactions.template.note_example') || 'Bán nông sản', season_code: '' });
     const buffer = await workbook.xlsx.writeBuffer();
-    saveAs(new Blob([buffer]), 'Mau_Nhap_Giao_Dich.xlsx');
+    saveAs(new Blob([buffer]), t('transactions.import.template_name'));
   };
 
   const [isEditing, setIsEditing] = useState(false);
@@ -285,33 +286,27 @@ const Transactions: React.FC = () => {
 
   const handleExport = async () => {
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Giao dịch');
+    const worksheet = workbook.addWorksheet(t('transactions.export.sheet_name'));
 
-    worksheet.columns = [
-      { header: 'Ngày giao dịch', key: 'date', width: 20 },
-      { header: 'Nội dung / Chi tiết', key: 'note', width: 40 },
-      { header: 'Vụ mùa / Đối tác', key: 'context', width: 35 },
-      { header: 'Phân loại', key: 'category', width: 20 },
-      { header: 'Số lượng', key: 'quantity', width: 15 },
-      { header: 'Đơn vị', key: 'unit', width: 10 },
-      { header: 'Đơn giá', key: 'unit_price', width: 15 },
-      { header: 'Loại', key: 'type', width: 12 },
-      { header: 'Số tiền (VNĐ)', key: 'amount', width: 20 },
-      { header: 'Trạng thái', key: 'status', width: 15 },
-    ];
+    const columns = t('transactions.export.columns', { returnObjects: true }) as string[];
+    worksheet.columns = columns.map((col, idx) => ({
+      header: col,
+      key: ['date', 'note', 'context', 'category', 'quantity', 'unit', 'unit_price', 'type', 'amount', 'status'][idx],
+      width: [20, 40, 35, 20, 15, 10, 15, 12, 20, 15][idx]
+    }));
 
     filteredTransactions.forEach(t => {
       const row = worksheet.addRow({
-        date: new Date(t.transaction_date).toLocaleDateString('vi-VN'),
-        note: t.note || 'Không có tiêu đề',
-        context: `${t.season_name ? t.season_name : 'Chi tiêu chung'}${t.partner_name ? ' - ' + t.partner_name : ''}`,
-        category: t.category_name || 'Khác',
+        date: new Date(t.transaction_date).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US'),
+        note: t.note || t('transactions.table.no_title'),
+        context: `${t.season_name ? t.season_name : t('transactions.table.general')}${t.partner_name ? ' - ' + t.partner_name : ''}`,
+        category: t.category_name || t('transactions.table.other'),
         quantity: t.quantity ? Number(t.quantity) : null,
         unit: t.unit || null,
         unit_price: t.unit_price ? Number(t.unit_price) : null,
-        type: t.type === 'INCOME' ? 'Thu' : 'Chi',
+        type: t.type === 'INCOME' ? t('transactions.filter.income') : t('transactions.filter.expense'),
         amount: Number(t.amount),
-        status: 'Hoàn tất'
+        status: t('transactions.table.completed')
       });
 
       const amountCell = row.getCell('amount');
@@ -358,7 +353,7 @@ const Transactions: React.FC = () => {
 
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    saveAs(blob, `Bao_cao_giao_dich_${new Date().toISOString().split('T')[0]}.xlsx`);
+    saveAs(blob, t('transactions.export.filename', { date: new Date().toISOString().split('T')[0] }));
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -404,7 +399,7 @@ const Transactions: React.FC = () => {
           category_id: category?.id || '',
           season_id: season?.id || '',
           partner_id: partner?.id || '',
-          type: typeStr === 'Thu' ? 'INCOME' : 'EXPENSE',
+          type: (typeStr === 'Thu' || typeStr === 'INCOME' || typeStr === t('transactions.filter.income')) ? 'INCOME' : 'EXPENSE',
           amount: amount,
           paid_amount: amount,
           quantity: quantity > 0 ? quantity : null,
@@ -417,10 +412,10 @@ const Transactions: React.FC = () => {
       setLoading(true);
       await Promise.all(transactionsToCreate.map(t => createTransaction(t)));
       await fetchData();
-      alert(`Đã nhập thành công ${transactionsToCreate.length} giao dịch!`);
+      alert(t('transactions.import.success', { count: transactionsToCreate.length }));
     } catch (error) {
       console.error('Error importing excel:', error);
-      alert('Có lỗi xảy ra khi nhập file. Vui lòng kiểm tra lại định dạng file.');
+      alert(t('transactions.import.error'));
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = '';
       setLoading(false);
@@ -432,8 +427,8 @@ const Transactions: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-1">
-          <h1 className="text-2xl font-black tracking-tight text-slate-900">Sổ nhật ký giao dịch</h1>
-          <p className="text-slate-500 text-sm font-medium">Quản lý thu nhập và chi phí hàng ngày của trang trại.</p>
+          <h1 className="text-2xl font-black tracking-tight text-slate-900">{t('transactions.title')}</h1>
+          <p className="text-slate-500 text-sm font-medium">{t('transactions.subtitle')}</p>
         </div>
         <div className="flex items-center bg-white border border-slate-200 rounded-xl p-1 shadow-sm shrink-0 relative" ref={monthPickerRef}>
           <button onClick={handlePrevMonth} className="p-2 hover:bg-slate-50 rounded-lg text-slate-400 transition-colors">
@@ -464,7 +459,7 @@ const Transactions: React.FC = () => {
                 ))}
               </div>
               <div className="mt-6 pt-4 border-t border-slate-50 flex justify-center">
-                <button onClick={() => { const today = new Date(); setCurrentMonth(today.getMonth() + 1); setCurrentYear(today.getFullYear()); setShowMonthPicker(false); }} className="text-[10px] font-black text-[#13ec49] uppercase tracking-widest hover:underline">Về tháng hiện tại</button>
+                <button onClick={() => { const today = new Date(); setCurrentMonth(today.getMonth() + 1); setCurrentYear(today.getFullYear()); setShowMonthPicker(false); }} className="text-[10px] font-black text-[#13ec49] uppercase tracking-widest hover:underline">{t('transactions.back_to_current')}</button>
               </div>
             </div>
           )}
@@ -475,9 +470,9 @@ const Transactions: React.FC = () => {
       <div className="overflow-x-auto pb-1 -mx-3 px-3 md:mx-0 md:px-0 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
         <div className="flex gap-3 md:gap-4" style={{ WebkitOverflowScrolling: 'touch' }}>
           {[
-            { l: 'Tổng thu', v: totalIncome.toLocaleString('vi-VN') + 'đ', c: 'bg-green-50 text-green-700', i: 'payments' },
-            { l: 'Tổng chi', v: totalExpense.toLocaleString('vi-VN') + 'đ', c: 'bg-red-50 text-red-700', i: 'shopping_cart' },
-            { l: 'Lợi nhuận', v: profit.toLocaleString('vi-VN') + 'đ', c: 'bg-blue-50 text-blue-700', i: 'savings' }
+            { l: t('transactions.stats.income'), v: totalIncome.toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US') + 'đ', c: 'bg-green-50 text-green-700', i: 'payments' },
+            { l: t('transactions.stats.expense'), v: totalExpense.toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US') + 'đ', c: 'bg-red-50 text-red-700', i: 'shopping_cart' },
+            { l: t('transactions.stats.profit'), v: profit.toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US') + 'đ', c: 'bg-blue-50 text-blue-700', i: 'savings' }
           ].map((s, i) => (
             <div key={i} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md flex-1 min-w-[200px]">
               <div className="flex items-center gap-2 mb-2">
@@ -494,17 +489,17 @@ const Transactions: React.FC = () => {
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm border-t-4 border-t-[#13ec49]">
         <div className="p-4 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2 w-full md:w-auto">
-            <button className="bg-slate-50 text-slate-700 px-3 py-1.5 rounded-xl text-[9px] font-black flex items-center gap-1.5 border border-slate-200 uppercase tracking-widest hover:bg-slate-100 transition-all"><span className="material-symbols-outlined text-[16px]">filter_list</span> Lọc</button>
+            <button className="bg-slate-50 text-slate-700 px-3 py-1.5 rounded-xl text-[9px] font-black flex items-center gap-1.5 border border-slate-200 uppercase tracking-widest hover:bg-slate-100 transition-all"><span className="material-symbols-outlined text-[16px]">filter_list</span> {t('transactions.filter.label')}</button>
             <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-100">
               {['ALL', 'INCOME', 'EXPENSE'].map(f => (
-                <button key={f} onClick={() => setFilter(f as any)} className={`${filter === f ? 'bg-white text-[#13ec49] shadow-sm' : 'text-slate-400'} text-[9px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest transition-all`}>{f === 'ALL' ? 'Tất cả' : f === 'INCOME' ? 'Thu' : 'Chi'}</button>
+                <button key={f} onClick={() => setFilter(f as any)} className={`${filter === f ? 'bg-white text-[#13ec49] shadow-sm' : 'text-slate-400'} text-[9px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest transition-all`}>{f === 'ALL' ? t('transactions.filter.all') : f === 'INCOME' ? t('transactions.filter.income') : t('transactions.filter.expense')}</button>
               ))}
             </div>
           </div>
           <input type="file" ref={fileInputRef} onChange={handleImport} className="hidden" accept=".xlsx" />
           <ActionToolbar
             onAdd={() => { setIsEditing(false); setShowModal(true); }}
-            addLabel="Thêm mới"
+            addLabel={t('common.add_new') || 'Thêm mới'}
             onEdit={() => selectedTransaction && handleEdit(selectedTransaction)}
             editDisabled={!selectedTransaction}
             onDelete={() => selectedTransaction && setDeleteTarget(selectedTransaction)}
@@ -528,16 +523,16 @@ const Transactions: React.FC = () => {
             <thead className="whitespace-nowrap">
               <tr className="bg-slate-50/50 text-[9px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
                 <th className="px-4 py-3 w-10 text-center"><input type="checkbox" className="rounded border-slate-200 text-[#13ec49] focus:ring-[#13ec49]" /></th>
-                <th className="px-4 py-3 text-xs">Ngày</th>
-                <th className="px-4 py-3">Nội dung / Chi tiết</th>
-                <th className="px-4 py-3 min-w-[140px]">Phân loại</th>
-                <th className="px-4 py-3 text-right">Số tiền</th>
-                <th className="px-4 py-3 text-center">Trạng thái</th>
+                <th className="px-4 py-3 text-xs">{t('transactions.table.date')}</th>
+                <th className="px-4 py-3">{t('transactions.table.content')}</th>
+                <th className="px-4 py-3 min-w-[140px]">{t('transactions.table.category')}</th>
+                <th className="px-4 py-3 text-right">{t('transactions.table.amount')}</th>
+                <th className="px-4 py-3 text-center">{t('transactions.table.status')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 text-sm font-medium">
               {loading ? (
-                <tr><td colSpan={6} className="px-8 py-20 text-center"><div className="flex flex-col items-center gap-3"><div className="w-10 h-10 border-4 border-[#13ec49] border-t-transparent rounded-full animate-spin"></div><p className="text-slate-400 text-xs font-black uppercase tracking-widest">Đang tải...</p></div></td></tr>
+                <tr><td colSpan={6} className="px-8 py-20 text-center"><div className="flex flex-col items-center gap-3"><div className="w-10 h-10 border-4 border-[#13ec49] border-t-transparent rounded-full animate-spin"></div><p className="text-slate-400 text-xs font-black uppercase tracking-widest">{t('common.loading') || 'Đang tải...'}</p></div></td></tr>
               ) : filteredTransactions.length > 0 ? (
                 filteredTransactions.map((t) => (
                   <tr
@@ -553,18 +548,18 @@ const Transactions: React.FC = () => {
                         className="rounded border-slate-200 text-[#13ec49] focus:ring-[#13ec49]"
                       />
                     </td>
-                    <td className="px-4 py-3 font-bold text-slate-400">{new Date(t.transaction_date).toLocaleDateString('vi-VN')}</td>
+                    <td className="px-4 py-3 font-bold text-slate-400">{new Date(t.transaction_date).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</td>
                     <td className="px-4 py-3">
-                      <div className="font-extrabold text-slate-900 group-hover:text-[#13ec49] transition-colors">{t.note || 'Không có tiêu đề'}</div>
-                      <div className="text-[9px] text-slate-400 uppercase tracking-widest mt-0.5">{t.season_name ? `⚡ ${t.season_name}` : '🏠 Chi tiêu chung'}{t.partner_name ? ` • 👤 ${t.partner_name}` : ''}</div>
+                      <div className="font-extrabold text-slate-900 group-hover:text-[#13ec49] transition-colors">{t.note || t('transactions.table.no_title')}</div>
+                      <div className="text-[9px] text-slate-400 uppercase tracking-widest mt-0.5">{t.season_name ? `⚡ ${t.season_name}` : `🏠 ${t('transactions.table.general')}`}{t.partner_name ? ` • 👤 ${t.partner_name}` : ''}</div>
                     </td>
-                    <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider whitespace-nowrap ${t.type === 'INCOME' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{t.category_name || 'Khác'}</span></td>
-                    <td className={`px-4 py-3 text-right font-black text-sm ${t.type === 'EXPENSE' ? 'text-red-500' : 'text-green-600'}`}>{t.type === 'EXPENSE' ? '-' : '+'}{Number(t.amount).toLocaleString('vi-VN')}đ</td>
+                    <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider whitespace-nowrap ${t.type === 'INCOME' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{t.category_name || t('transactions.table.other')}</span></td>
+                    <td className={`px-4 py-3 text-right font-black text-sm ${t.type === 'EXPENSE' ? 'text-red-500' : 'text-green-600'}`}>{t.type === 'EXPENSE' ? '-' : '+'}{Number(t.amount).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}đ</td>
                     <td className="px-4 py-3 text-center"><div className="flex items-center justify-center gap-1.5 text-green-600"><span className="material-symbols-outlined text-[14px]">check_circle</span><span className="text-[9px] font-black uppercase tracking-widest">OK</span></div></td>
                   </tr>
                 ))
               ) : (
-                <tr><td colSpan={6} className="px-8 py-20 text-center text-slate-300 italic font-bold">Chưa có giao dịch nào được ghi lại</td></tr>
+                <tr><td colSpan={6} className="px-8 py-20 text-center text-slate-300 italic font-bold">{t('transactions.table.empty')}</td></tr>
               )}
             </tbody>
           </table>
@@ -576,25 +571,25 @@ const Transactions: React.FC = () => {
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-[32px] p-6 md:p-8 max-w-lg w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div className="flex justify-between items-center mb-6">
-              <div><h2 className="text-2xl font-black text-slate-900 tracking-tight">{isEditing ? 'Cập nhật giao dịch' : 'Ghi chép giao dịch'}</h2><p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-0.5">{isEditing ? `Đang chỉnh sửa ID: ${selectedTransaction?.id.slice(0, 8).toUpperCase()}` : 'Cập nhập dòng tiền mới nhất'}</p></div>
+              <div><h2 className="text-2xl font-black text-slate-900 tracking-tight">{isEditing ? t('transactions.modal.edit_title') : t('transactions.modal.add_title')}</h2><p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-0.5">{isEditing ? `${t('transactions.modal.editing_id')} ${selectedTransaction?.id.slice(0, 8).toUpperCase()}` : t('transactions.modal.add_subtitle')}</p></div>
               <button onClick={() => { setShowModal(false); setIsEditing(false); }} className="size-10 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"><span className="material-symbols-outlined text-[20px]">close</span></button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 mb-2">
-                <button type="button" onClick={() => setFormData({ ...formData, type: 'INCOME' })} className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${formData.type === 'INCOME' ? 'bg-white text-green-600 shadow-sm' : 'text-slate-400'}`}><span className="material-symbols-outlined text-[18px]">add_circle</span> Thu vào</button>
-                <button type="button" onClick={() => setFormData({ ...formData, type: 'EXPENSE' })} className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${formData.type === 'EXPENSE' ? 'bg-white text-red-600 shadow-sm' : 'text-slate-400'}`}><span className="material-symbols-outlined text-[18px]">do_not_disturb_on</span> Chi ra</button>
+                <button type="button" onClick={() => setFormData({ ...formData, type: 'INCOME' })} className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${formData.type === 'INCOME' ? 'bg-white text-green-600 shadow-sm' : 'text-slate-400'}`}><span className="material-symbols-outlined text-[18px]">add_circle</span> {t('transactions.modal.type_income')}</button>
+                <button type="button" onClick={() => setFormData({ ...formData, type: 'EXPENSE' })} className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${formData.type === 'EXPENSE' ? 'bg-white text-red-600 shadow-sm' : 'text-slate-400'}`}><span className="material-symbols-outlined text-[18px]">do_not_disturb_on</span> {t('transactions.modal.type_expense')}</button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
-                <div className="col-span-full"><label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Mô tả giao dịch</label><input required value={formData.note} onChange={e => setFormData({ ...formData, note: e.target.value })} className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 focus:ring-4 focus:ring-[#13ec49]/20 outline-none font-bold text-slate-900 transition-all text-sm" placeholder="Ví dụ: Bán 10 tấn mận, mua phân bón..." /></div>
-                <div><label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Số lượng</label><div className="flex gap-2"><input type="number" value={formData.quantity || ''} onChange={e => { const qty = Number(e.target.value); const total = qty * formData.unit_price; setFormData({ ...formData, quantity: qty, amount: total > 0 ? total : formData.amount, paid_amount: total > 0 ? total : formData.paid_amount }); }} className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 focus:ring-4 focus:ring-[#13ec49]/20 outline-none font-bold text-slate-900 transition-all font-mono text-sm" placeholder="0" /><select value={formData.unit} onChange={e => setFormData({ ...formData, unit: e.target.value })} className="bg-slate-50 border-none rounded-2xl px-3 py-3 focus:ring-4 focus:ring-[#13ec49]/20 outline-none font-bold text-slate-900 transition-all text-sm"><option value="">Đơn vị</option><option value="kg">kg</option><option value="tấn">tấn</option><option value="bao">bao</option><option value="chai">chai</option><option value="thùng">thùng</option></select></div></div>
-                <div><label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Đơn giá</label><input type="number" value={formData.unit_price || ''} onChange={e => { const price = Number(e.target.value); const total = formData.quantity * price; setFormData({ ...formData, unit_price: price, amount: total > 0 ? total : formData.amount, paid_amount: total > 0 ? total : formData.paid_amount }); }} className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 focus:ring-4 focus:ring-[#13ec49]/20 outline-none font-bold text-slate-900 transition-all font-mono text-sm" placeholder="0" /></div>
-                <div className="col-span-full"><label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Tổng tiền (VNĐ)</label><input type="number" required value={formData.amount} onChange={e => setFormData({ ...formData, amount: Number(e.target.value), paid_amount: Number(e.target.value) })} className="w-full bg-[#13ec49]/5 border-2 border-[#13ec49]/20 rounded-2xl px-4 py-3 focus:ring-4 focus:ring-[#13ec49]/20 outline-none font-black text-slate-900 transition-all font-mono text-lg" placeholder="0" /></div>
-                <div><label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Ngày giao dịch</label><input type="date" required value={formData.transaction_date} onChange={e => setFormData({ ...formData, transaction_date: e.target.value })} className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 focus:ring-4 focus:ring-[#13ec49]/20 outline-none font-bold text-slate-900 transition-all text-sm" /></div>
-                <CustomSelect label="Phân loại" value={formData.category_id} onChange={(val) => setFormData({ ...formData, category_id: val })} placeholder="Chọn danh mục" icon="category" options={categories.map(c => ({ id: c.id, name: c.category_name }))} />
-                <CustomSelect label="Vụ mùa" value={formData.season_id} onChange={(val) => setFormData({ ...formData, season_id: val })} placeholder="Vụ mùa" icon="temp_preferences_custom" options={seasons.map(s => ({ id: s.id, name: s.season_name }))} />
-                <CustomSelect label="Đối tác" value={formData.partner_id} onChange={(val) => setFormData({ ...formData, partner_id: val })} placeholder="Đối tác" icon="person" options={partners.map(p => ({ id: p.id, name: p.partner_name }))} />
+                <div className="col-span-full"><label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('transactions.modal.note')}</label><input required value={formData.note} onChange={e => setFormData({ ...formData, note: e.target.value })} className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 focus:ring-4 focus:ring-[#13ec49]/20 outline-none font-bold text-slate-900 transition-all text-sm" placeholder={t('transactions.modal.note_placeholder')} /></div>
+                <div><label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('transactions.modal.quantity')}</label><div className="flex gap-2"><input type="number" value={formData.quantity || ''} onChange={e => { const qty = Number(e.target.value); const total = qty * formData.unit_price; setFormData({ ...formData, quantity: qty, amount: total > 0 ? total : formData.amount, paid_amount: total > 0 ? total : formData.paid_amount }); }} className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 focus:ring-4 focus:ring-[#13ec49]/20 outline-none font-bold text-slate-900 transition-all font-mono text-sm" placeholder="0" /><select value={formData.unit} onChange={e => setFormData({ ...formData, unit: e.target.value })} className="bg-slate-50 border-none rounded-2xl px-3 py-3 focus:ring-4 focus:ring-[#13ec49]/20 outline-none font-bold text-slate-900 transition-all text-sm"><option value="">{t('transactions.modal.unit')}</option><option value="kg">kg</option><option value="tấn">tấn</option><option value="bao">bao</option><option value="chai">chai</option><option value="thùng">thùng</option></select></div></div>
+                <div><label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('transactions.modal.unit_price')}</label><input type="number" value={formData.unit_price || ''} onChange={e => { const price = Number(e.target.value); const total = formData.quantity * price; setFormData({ ...formData, unit_price: price, amount: total > 0 ? total : formData.amount, paid_amount: total > 0 ? total : formData.paid_amount }); }} className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 focus:ring-4 focus:ring-[#13ec49]/20 outline-none font-bold text-slate-900 transition-all font-mono text-sm" placeholder="0" /></div>
+                <div className="col-span-full"><label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('transactions.modal.total')}</label><input type="number" required value={formData.amount} onChange={e => setFormData({ ...formData, amount: Number(e.target.value), paid_amount: Number(e.target.value) })} className="w-full bg-[#13ec49]/5 border-2 border-[#13ec49]/20 rounded-2xl px-4 py-3 focus:ring-4 focus:ring-[#13ec49]/20 outline-none font-black text-slate-900 transition-all font-mono text-lg" placeholder="0" /></div>
+                <div><label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('transactions.modal.date')}</label><input type="date" required value={formData.transaction_date} onChange={e => setFormData({ ...formData, transaction_date: e.target.value })} className="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 focus:ring-4 focus:ring-[#13ec49]/20 outline-none font-bold text-slate-900 transition-all text-sm" /></div>
+                <CustomSelect label={t('transactions.modal.category')} value={formData.category_id} onChange={(val) => setFormData({ ...formData, category_id: val })} placeholder={t('transactions.modal.category')} icon="category" options={categories.map(c => ({ id: c.id, name: c.category_name }))} />
+                <CustomSelect label={t('transactions.modal.season')} value={formData.season_id} onChange={(val) => setFormData({ ...formData, season_id: val })} placeholder={t('transactions.modal.season')} icon="temp_preferences_custom" options={seasons.map(s => ({ id: s.id, name: s.season_name }))} />
+                <CustomSelect label={t('transactions.modal.partner')} value={formData.partner_id} onChange={(val) => setFormData({ ...formData, partner_id: val })} placeholder={t('transactions.modal.partner')} icon="person" options={partners.map(p => ({ id: p.id, name: p.partner_name }))} />
               </div>
-              <button type="submit" className={`w-full py-4 rounded-[18px] font-black uppercase tracking-widest text-xs transition-all shadow-2xl flex items-center justify-center gap-3 ${formData.type === 'INCOME' ? 'bg-green-500 text-white shadow-green-500/20 hover:bg-green-600' : 'bg-red-500 text-white shadow-red-500/20 hover:bg-red-600'}`}><span className="material-symbols-outlined text-[18px]">save</span> Lưu giao dịch</button>
+              <button type="submit" className={`w-full py-4 rounded-[18px] font-black uppercase tracking-widest text-xs transition-all shadow-2xl flex items-center justify-center gap-3 ${formData.type === 'INCOME' ? 'bg-green-500 text-white shadow-green-500/20 hover:bg-green-600' : 'bg-red-500 text-white shadow-red-500/20 hover:bg-red-600'}`}><span className="material-symbols-outlined text-[18px]">save</span> {t('transactions.modal.save')}</button>
             </form>
           </div>
         </div>
@@ -606,15 +601,15 @@ const Transactions: React.FC = () => {
           <div className="bg-white rounded-[32px] p-6 md:p-8 max-w-lg w-full shadow-[0_50px_100px_rgba(0,0,0,0.3)] animate-in fade-in zoom-in-95 duration-300 relative overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div className="flex justify-between items-start mb-6 relative z-10">
               <div>
-                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest mb-3 ${selectedTransaction.type === 'INCOME' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}><span className="material-symbols-outlined text-[12px]">{selectedTransaction.type === 'INCOME' ? 'arrow_downward' : 'arrow_upward'}</span>{selectedTransaction.type === 'INCOME' ? 'Thu nhập' : 'Chi phí'}</div>
-                <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">{selectedTransaction.note || 'Không có tiêu đề'}</h2>
+                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest mb-3 ${selectedTransaction.type === 'INCOME' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}><span className="material-symbols-outlined text-[12px]">{selectedTransaction.type === 'INCOME' ? 'arrow_downward' : 'arrow_upward'}</span>{selectedTransaction.type === 'INCOME' ? t('transactions.detail.income') : t('transactions.detail.expense')}</div>
+                <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">{selectedTransaction.note || t('transactions.table.no_title')}</h2>
                 <p className="text-slate-400 text-xs font-bold mt-1">ID: <span className="font-mono text-slate-900">{selectedTransaction.id.slice(0, 8).toUpperCase()}</span></p>
               </div>
               <button onClick={() => setShowDetailModal(false)} className="size-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all duration-300"><span className="material-symbols-outlined text-[24px]">close</span></button>
             </div>
             <div className="grid grid-cols-2 gap-4 mb-6 relative z-10">
-              <div className="bg-slate-50 p-4 rounded-[24px] border border-slate-100"><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Số tiền</p><h3 className={`text-xl font-black ${selectedTransaction.type === 'INCOME' ? 'text-green-600' : 'text-red-500'}`}>{selectedTransaction.type === 'EXPENSE' ? '-' : '+'}{Number(selectedTransaction.amount).toLocaleString('vi-VN')}đ</h3></div>
-              <div className="bg-slate-50 p-4 rounded-[24px] border border-slate-100"><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Ngày thực hiện</p><h3 className="text-lg font-black text-slate-900">{new Date(selectedTransaction.transaction_date).toLocaleDateString('vi-VN')}</h3></div>
+              <div className="bg-slate-50 p-4 rounded-[24px] border border-slate-100"><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('transactions.table.amount')}</p><h3 className={`text-xl font-black ${selectedTransaction.type === 'INCOME' ? 'text-green-600' : 'text-red-500'}`}>{selectedTransaction.type === 'EXPENSE' ? '-' : '+'}{Number(selectedTransaction.amount).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}đ</h3></div>
+              <div className="bg-slate-50 p-4 rounded-[24px] border border-slate-100"><p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('transactions.detail.date')}</p><h3 className="text-lg font-black text-slate-900">{new Date(selectedTransaction.transaction_date).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</h3></div>
 
               {/* Special display for Seed/Plant category (GCT) */}
               {(selectedTransaction.category_code === 'GCT' || (selectedTransaction.quantity && selectedTransaction.unit_price)) && (
@@ -625,24 +620,24 @@ const Transactions: React.FC = () => {
                         <span className="material-symbols-outlined text-white text-[22px]">{selectedTransaction.category_code === 'GCT' ? 'eco' : 'inventory_2'}</span>
                       </div>
                       <div>
-                        <p className={`text-[9px] font-black ${selectedTransaction.category_code === 'GCT' ? 'text-emerald-600' : 'text-blue-600'} uppercase tracking-widest leading-none`}>{selectedTransaction.category_name || 'Chi tiết hàng hóa'}</p>
-                        <h4 className={`text-base font-black ${selectedTransaction.category_code === 'GCT' ? 'text-emerald-900' : 'text-blue-900'} mt-0.5`}>Thông tin số lượng & giá</h4>
+                        <p className={`text-[9px] font-black ${selectedTransaction.category_code === 'GCT' ? 'text-emerald-600' : 'text-blue-600'} uppercase tracking-widest leading-none`}>{selectedTransaction.category_name || t('transactions.detail.item_details')}</p>
+                        <h4 className={`text-base font-black ${selectedTransaction.category_code === 'GCT' ? 'text-emerald-900' : 'text-blue-900'} mt-0.5`}>{t('transactions.detail.pricing_info')}</h4>
                       </div>
                     </div>
                     <div className="grid grid-cols-3 gap-3">
                       <div className="bg-white/80 backdrop-blur p-3 rounded-xl border border-white text-center shadow-sm">
-                        <p className={`text-[8px] font-black ${selectedTransaction.category_code === 'GCT' ? 'text-emerald-500' : 'text-blue-500'} uppercase tracking-widest mb-1`}>Số lượng</p>
-                        <p className={`text-lg font-black ${selectedTransaction.category_code === 'GCT' ? 'text-emerald-700' : 'text-blue-700'} leading-none`}>{selectedTransaction.quantity ? Number(selectedTransaction.quantity).toLocaleString('vi-VN') : '0'}</p>
+                        <p className={`text-[8px] font-black ${selectedTransaction.category_code === 'GCT' ? 'text-emerald-500' : 'text-blue-500'} uppercase tracking-widest mb-1`}>{t('transactions.modal.quantity')}</p>
+                        <p className={`text-lg font-black ${selectedTransaction.category_code === 'GCT' ? 'text-emerald-700' : 'text-blue-700'} leading-none`}>{selectedTransaction.quantity ? Number(selectedTransaction.quantity).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US') : '0'}</p>
                         <p className={`text-[10px] font-bold ${selectedTransaction.category_code === 'GCT' ? 'text-emerald-600' : 'text-blue-600'} mt-1`}>{selectedTransaction.unit || 'kg'}</p>
                       </div>
                       <div className="bg-white/80 backdrop-blur p-3 rounded-xl border border-white text-center shadow-sm">
-                        <p className={`text-[8px] font-black ${selectedTransaction.category_code === 'GCT' ? 'text-emerald-500' : 'text-blue-500'} uppercase tracking-widest mb-1`}>Đơn giá</p>
-                        <p className={`text-lg font-black ${selectedTransaction.category_code === 'GCT' ? 'text-emerald-700' : 'text-blue-700'} leading-none`}>{selectedTransaction.unit_price ? Number(selectedTransaction.unit_price).toLocaleString('vi-VN') : '0'}</p>
+                        <p className={`text-[8px] font-black ${selectedTransaction.category_code === 'GCT' ? 'text-emerald-500' : 'text-blue-500'} uppercase tracking-widest mb-1`}>{t('transactions.modal.unit_price')}</p>
+                        <p className={`text-lg font-black ${selectedTransaction.category_code === 'GCT' ? 'text-emerald-700' : 'text-blue-700'} leading-none`}>{selectedTransaction.unit_price ? Number(selectedTransaction.unit_price).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US') : '0'}</p>
                         <p className={`text-[10px] font-bold ${selectedTransaction.category_code === 'GCT' ? 'text-emerald-600' : 'text-blue-600'} mt-1`}>/{selectedTransaction.unit || 'kg'}</p>
                       </div>
                       <div className={`${selectedTransaction.category_code === 'GCT' ? 'bg-emerald-500' : 'bg-blue-500'} p-3 rounded-xl shadow-md text-center`}>
-                        <p className="text-[8px] font-black text-white uppercase tracking-widest mb-1">Tổng tiền</p>
-                        <p className="text-lg font-black text-white leading-none">{Number(selectedTransaction.amount).toLocaleString('vi-VN')}</p>
+                        <p className="text-[8px] font-black text-white uppercase tracking-widest mb-1">{t('transactions.modal.total')}</p>
+                        <p className="text-lg font-black text-white leading-none">{Number(selectedTransaction.amount).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</p>
                         <p className="text-[10px] font-bold text-white/80 mt-1">VNĐ</p>
                       </div>
                     </div>
@@ -650,17 +645,17 @@ const Transactions: React.FC = () => {
                 </div>
               )}
               <div className="space-y-4">
-                <div><label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Vụ mùa</label><div className="flex items-center gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100 font-bold text-slate-900">{selectedTransaction.season_name || 'Chi tiêu chung'}</div></div>
-                <div><label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Danh mục</label><div className="flex items-center gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100 font-bold text-slate-900">{selectedTransaction.category_name || 'Khác'}</div></div>
+                <div><label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('transactions.modal.season')}</label><div className="flex items-center gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100 font-bold text-slate-900">{selectedTransaction.season_name || t('transactions.table.general')}</div></div>
+                <div><label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('transactions.modal.category')}</label><div className="flex items-center gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100 font-bold text-slate-900">{selectedTransaction.category_name || t('transactions.table.other')}</div></div>
               </div>
               <div className="space-y-4">
-                <div><label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Đối tác</label><div className="flex items-center gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100 font-bold text-slate-900">{selectedTransaction.partner_name || 'Giao dịch vặt'}</div></div>
-                <div><label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Trạng thái</label><div className="flex items-center gap-3 bg-green-50 p-4 rounded-2xl border border-green-100 text-green-600 font-black uppercase tracking-widest text-[10px]">Đã thanh toán</div></div>
+                <div><label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('transactions.modal.partner')}</label><div className="flex items-center gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100 font-bold text-slate-900">{selectedTransaction.partner_name || t('transactions.detail.petty_transaction')}</div></div>
+                <div><label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('transactions.table.status')}</label><div className="flex items-center gap-3 bg-green-50 p-4 rounded-2xl border border-green-100 text-green-600 font-black uppercase tracking-widest text-[10px]">{t('transactions.detail.paid')}</div></div>
               </div>
             </div>
             <div className="pt-8 border-t border-slate-100 flex gap-4 relative z-10">
-              <button onClick={() => handleEdit(selectedTransaction)} className="flex-1 py-4 rounded-[20px] bg-[#13ec49] text-black font-black uppercase tracking-widest text-xs hover:bg-[#11d440] transition-all flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[18px]">edit</span> Chỉnh sửa</button>
-              <button onClick={() => setShowDetailModal(false)} className="flex-1 py-4 rounded-[20px] bg-slate-100 text-slate-600 font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all">Đóng</button>
+              <button onClick={() => handleEdit(selectedTransaction)} className="flex-1 py-4 rounded-[20px] bg-[#13ec49] text-black font-black uppercase tracking-widest text-xs hover:bg-[#11d440] transition-all flex items-center justify-center gap-2"><span className="material-symbols-outlined text-[18px]">edit</span> {t('transactions.detail.edit')}</button>
+              <button onClick={() => setShowDetailModal(false)} className="flex-1 py-4 rounded-[20px] bg-slate-100 text-slate-600 font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all">{t('transactions.modal.close')}</button>
             </div>
           </div>
         </div>
@@ -670,8 +665,8 @@ const Transactions: React.FC = () => {
         onClose={() => setDeleteTarget(null)}
         onConfirm={() => deleteTarget && handleDelete(deleteTarget.id)}
         isDeleting={isDeleting}
-        itemName={deleteTarget?.note || 'Giao dịch này'}
-        description="Dữ liệu tài chính liên quan sẽ bị ảnh hưởng."
+        itemName={deleteTarget?.note || t('transactions.delete.item_name')}
+        description={t('transactions.delete.description')}
       />
     </div>
   );

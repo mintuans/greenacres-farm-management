@@ -5,8 +5,10 @@ import { uploadMedia } from '../services/media.service';
 import { updateMyProfile } from '../services/profile.service';
 import { getMediaUrl } from '../services/products.service';
 import logoWeb from '../assets/logo_web.png';
+import { useTranslation } from 'react-i18next';
 
 const UserProfile: React.FC = () => {
+    const { t } = useTranslation();
     const { user, login, logout } = useAuth();
     const navigate = useNavigate();
     const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -35,9 +37,9 @@ const UserProfile: React.FC = () => {
     }, [user, isEditing]);
 
     // Default values if data is missing
-    const displayName = user?.full_name || user?.name || 'Cây mận của bạn';
+    const displayName = user?.full_name || user?.name || t('user_profile.your_plum_tree');
     const email = user?.email || 'user@example.com';
-    const role = user?.role || 'Du khách';
+    const role = user?.role || t('user_profile.guest');
 
     // Determine avatar URL
     const avatarUrl = user?.avatar_id
@@ -61,11 +63,11 @@ const UserProfile: React.FC = () => {
 
             if (updateResult.success) {
                 login({ ...user!, avatar_id: newAvatarId });
-                alert('Thay đổi ảnh đại diện thành công!');
+                alert(t('user_profile.change_avatar_success'));
             }
         } catch (error) {
             console.error('Lỗi khi thay đổi avatar:', error);
-            alert('Không thể thay đổi ảnh đại diện. Vui lòng thử lại.');
+            alert(t('user_profile.change_avatar_error'));
         } finally {
             setIsUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
@@ -84,11 +86,11 @@ const UserProfile: React.FC = () => {
             if (result.success) {
                 login({ ...user!, ...formData });
                 setIsEditing(false);
-                alert('Cập nhật thông tin thành công!');
+                alert(t('user_profile.update_success'));
             }
         } catch (error) {
             console.error('Save profile error:', error);
-            alert('Có lỗi xảy ra khi lưu thông tin.');
+            alert(t('user_profile.update_error'));
         } finally {
             setIsSaving(false);
         }
@@ -108,9 +110,9 @@ const UserProfile: React.FC = () => {
                 <div className="layout-content-container flex flex-col max-w-[1024px] flex-1 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     {/* Breadcrumbs */}
                     <div className="flex flex-wrap gap-2 items-center">
-                        <Link to="/showcase" className="text-slate-500 text-sm font-medium leading-normal hover:underline">Trang chủ</Link>
+                        <Link to="/showcase" className="text-slate-500 text-sm font-medium leading-normal hover:underline">{t('user_profile.home')}</Link>
                         <span className="text-slate-400 text-sm font-medium leading-normal">/</span>
-                        <span className="text-slate-900 text-sm font-medium leading-normal">Hồ sơ cá nhân</span>
+                        <span className="text-slate-900 text-sm font-medium leading-normal">{t('user_profile.title')}</span>
                     </div>
 
                     {/* Profile Header Card */}
@@ -142,7 +144,7 @@ const UserProfile: React.FC = () => {
                                             value={formData.full_name}
                                             onChange={handleInputChange}
                                             className="text-slate-900 text-3xl font-bold leading-tight tracking-[-0.015em] bg-slate-50 border-b-2 border-[#13ec49] focus:outline-none w-full"
-                                            placeholder="Họ và tên"
+                                            placeholder={t('user_profile.full_name')}
                                         />
                                     ) : (
                                         <h1 className="text-slate-900 text-3xl font-bold leading-tight tracking-[-0.015em]">{displayName}</h1>
@@ -156,14 +158,14 @@ const UserProfile: React.FC = () => {
                                                 value={formData.address}
                                                 onChange={handleInputChange}
                                                 className="text-sm bg-transparent border-b border-slate-200 focus:border-[#13ec49] focus:outline-none"
-                                                placeholder="Địa chỉ của bạn"
+                                                placeholder={t('user_profile.not_updated_address')}
                                             />
                                         ) : (
-                                            <span className="text-sm">{formData.address || 'Chưa cập nhật địa chỉ'}</span>
+                                            <span className="text-sm">{formData.address || t('user_profile.not_updated_address')}</span>
                                         )}
                                     </div>
                                     <div className="flex flex-wrap gap-2 mt-4 justify-center md:justify-start">
-                                        <span className="bg-[#13ec49]/10 text-slate-900 text-xs font-bold px-3 py-1 rounded-full border border-[#13ec49]/20 uppercase tracking-tighter">Verified Member</span>
+                                        <span className="bg-[#13ec49]/10 text-slate-900 text-xs font-bold px-3 py-1 rounded-full border border-[#13ec49]/20 uppercase tracking-tighter">{t('user_profile.verified_member')}</span>
                                     </div>
                                 </div>
                             </div>
@@ -176,14 +178,14 @@ const UserProfile: React.FC = () => {
                                             className="flex min-w-[120px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl h-12 px-5 bg-[#13ec49] text-slate-900 text-sm font-bold leading-normal tracking-[0.015em] hover:shadow-lg hover:shadow-[#13ec49]/30 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50"
                                         >
                                             <span className="material-symbols-outlined">{isSaving ? 'sync' : 'save'}</span>
-                                            <span className="truncate">{isSaving ? 'Đang lưu...' : 'Lưu thay đổi'}</span>
+                                            <span className="truncate">{isSaving ? t('user_profile.saving') : t('user_profile.save_changes')}</span>
                                         </button>
                                         <button
                                             onClick={() => setIsEditing(false)}
                                             className="flex min-w-[120px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl h-12 px-5 bg-slate-100 text-slate-600 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-slate-200 transition-all"
                                         >
                                             <span className="material-symbols-outlined">close</span>
-                                            <span className="truncate">Hủy</span>
+                                            <span className="truncate">{t('user_profile.cancel')}</span>
                                         </button>
                                     </>
                                 ) : (
@@ -192,7 +194,7 @@ const UserProfile: React.FC = () => {
                                         className="flex min-w-[120px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl h-12 px-5 bg-[#13ec49] text-slate-900 text-sm font-bold leading-normal tracking-[0.015em] hover:shadow-lg hover:shadow-[#13ec49]/30 transition-all hover:scale-[1.02] active:scale-95"
                                     >
                                         <span className="material-symbols-outlined">edit</span>
-                                        <span className="truncate">Chỉnh sửa hồ sơ</span>
+                                        <span className="truncate">{t('user_profile.edit_profile')}</span>
                                     </button>
                                 )}
                                 <button
@@ -203,7 +205,7 @@ const UserProfile: React.FC = () => {
                                     className="flex min-w-[120px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl h-12 px-5 bg-rose-50 text-rose-600 text-sm font-bold leading-normal tracking-[0.015em] border border-rose-100 hover:bg-rose-100 hover:scale-[1.02] active:scale-95 transition-all"
                                 >
                                     <span className="material-symbols-outlined">logout</span>
-                                    <span className="truncate">Đăng xuất</span>
+                                    <span className="truncate">{t('user_profile.logout')}</span>
                                 </button>
                             </div>
                         </div>
@@ -216,12 +218,12 @@ const UserProfile: React.FC = () => {
                             <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
                                 <h2 className="text-slate-900 text-xl font-bold mb-6 flex items-center gap-2">
                                     <span className="w-1.5 h-6 bg-[#13ec49] rounded-full"></span>
-                                    Thông tin cá nhân
+                                    {t('user_profile.personal_info')}
                                 </h2>
                                 <div className="space-y-6">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                         <div className="flex flex-col gap-1.5 group">
-                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider group-focus-within:text-[#13ec49] transition-colors">Họ và tên</label>
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider group-focus-within:text-[#13ec49] transition-colors">{t('user_profile.full_name')}</label>
                                             {isEditing ? (
                                                 <input
                                                     name="full_name"
@@ -236,7 +238,7 @@ const UserProfile: React.FC = () => {
                                             )}
                                         </div>
                                         <div className="flex flex-col gap-1.5 group">
-                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider group-focus-within:text-[#13ec49] transition-colors">Số điện thoại</label>
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider group-focus-within:text-[#13ec49] transition-colors">{t('user_profile.phone')}</label>
                                             {isEditing ? (
                                                 <input
                                                     name="phone"
@@ -246,23 +248,23 @@ const UserProfile: React.FC = () => {
                                                 />
                                             ) : (
                                                 <div className="text-slate-900 text-base font-medium p-3.5 bg-slate-50 rounded-xl border border-slate-100 group-hover:border-[#13ec49]/30 transition-colors shadow-inner">
-                                                    {formData.phone || 'Chưa cập nhật'}
+                                                    {formData.phone || t('user_profile.not_updated_address')}
                                                 </div>
                                             )}
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-1.5 group">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider group-focus-within:text-[#13ec49] transition-colors">Địa chỉ Email</label>
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider group-focus-within:text-[#13ec49] transition-colors">{t('user_profile.email')}</label>
                                         <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-100 group-hover:border-[#13ec49]/30 transition-colors shadow-inner">
                                             <span className="text-slate-900 text-base font-medium">{email}</span>
                                             <div className="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
                                                 <span className="material-symbols-outlined text-base">verified</span>
-                                                <span className="text-[10px] font-bold uppercase tracking-tight">Đã xác thực</span>
+                                                <span className="text-[10px] font-bold uppercase tracking-tight">{t('user_profile.verified')}</span>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-1.5 group">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider group-focus-within:text-[#13ec49] transition-colors">Tiểu sử / Ghi chú</label>
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider group-focus-within:text-[#13ec49] transition-colors">{t('user_profile.bio')}</label>
                                         {isEditing ? (
                                             <textarea
                                                 name="bio"
@@ -273,40 +275,14 @@ const UserProfile: React.FC = () => {
                                             />
                                         ) : (
                                             <div className="text-slate-600 text-sm leading-relaxed p-3.5 bg-slate-50 rounded-xl border border-slate-100 min-h-[100px] group-hover:border-[#13ec49]/30 transition-colors shadow-inner">
-                                                {formData.bio || 'Hãy chia sẻ đôi chút về bạn...'}
+                                                {formData.bio || t('user_profile.bio_placeholder')}
                                             </div>
                                         )}
                                     </div>
                                 </div>
                             </div>
 
-                            {/* System Management for Admins */}
-                            {user?.role === 'SUPER_ADMIN' && (
-                                <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow border-t-4 border-t-orange-500 animate-in fade-in slide-in-from-right-4 duration-700">
-                                    <h2 className="text-slate-900 text-xl font-bold mb-6 flex items-center gap-2">
-                                        <span className="w-1.5 h-6 bg-orange-500 rounded-full"></span>
-                                        Quản trị hệ thống
-                                    </h2>
-                                    <div className="bg-orange-50 rounded-2xl p-6 border border-orange-100 flex flex-col md:flex-row items-center justify-between gap-6">
-                                        <div className="flex items-center gap-4 text-center md:text-left flex-col md:flex-row">
-                                            <div className="size-16 rounded-2xl bg-white shadow-sm flex items-center justify-center text-orange-600">
-                                                <span className="material-symbols-outlined text-[32px]">admin_panel_settings</span>
-                                            </div>
-                                            <div>
-                                                <h3 className="text-slate-900 font-bold text-lg">Bảng điều khiển quản trị</h3>
-                                                <p className="text-slate-500 text-sm">Quản lý mùa vụ, nhân sự, tài chính và cấu hình hệ thống chuyên sâu.</p>
-                                            </div>
-                                        </div>
-                                        <button
-                                            onClick={() => navigate('/dashboard')}
-                                            className="flex min-w-[160px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl h-12 px-6 bg-slate-900 text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-slate-800 hover:shadow-lg transition-all hover:scale-105 active:scale-95 shadow-xl shadow-slate-200"
-                                        >
-                                            <span className="material-symbols-outlined">dashboard</span>
-                                            <span className="truncate">Vào Trang Quản Lý</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
+
                         </div>
                     </div>
                 </div>
@@ -318,7 +294,7 @@ const UserProfile: React.FC = () => {
                     <img src={logoWeb} alt="Logo" className="size-5 object-contain" />
                     <p className="text-sm font-medium">© 2026 Vườn Nhà Mình</p>
                 </div>
-                <p className="text-slate-300 text-xs">Empowering farmers with smart digital tools.</p>
+                <p className="text-slate-300 text-xs">{t('user_profile.footer')}</p>
             </footer>
         </div>
     );

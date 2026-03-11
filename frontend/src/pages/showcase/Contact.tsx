@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import ShowcaseHeader from '../../templates/ShowcaseHeader';
 import logoWeb from '../../assets/logo_web.png';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const Contact: React.FC = () => {
+    const { t } = useTranslation();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -35,9 +37,9 @@ const Contact: React.FC = () => {
 
                         {/* Heading Section */}
                         <div className="flex flex-col gap-4 text-center animate-in fade-in slide-in-from-top-4 duration-700">
-                            <h1 className="text-[#111813] text-4xl md:text-6xl font-black tracking-tight">Liên hệ với chúng tôi</h1>
+                            <h1 className="text-[#111813] text-4xl md:text-6xl font-black tracking-tight">{t('showcase_contact.title')}</h1>
                             <p className="text-[#61896b] text-lg max-w-2xl mx-auto">
-                                Chúng tôi luôn sẵn lòng lắng nghe ý kiến đóng góp, giải đáp thắc mắc hoặc hỗ trợ bạn trải nghiệm các sản phẩm từ Vườn Nhà Mình.
+                                {t('showcase_contact.description')}
                             </p>
                         </div>
 
@@ -46,7 +48,7 @@ const Contact: React.FC = () => {
                             {/* Left: Contact Info */}
                             <div className="lg:col-span-2 flex flex-col gap-6">
                                 <div className="bg-white rounded-[2.5rem] border border-[#dbe6de] shadow-sm p-8 flex flex-col gap-8 h-full">
-                                    <h2 className="text-2xl font-black text-[#111813]">Thông tin liên lạc</h2>
+                                    <h2 className="text-2xl font-black text-[#111813]">{t('showcase_contact.contact_info')}</h2>
 
                                     <div className="space-y-8">
                                         <div className="flex gap-4">
@@ -54,7 +56,7 @@ const Contact: React.FC = () => {
                                                 <span className="material-symbols-outlined text-3xl">location_on</span>
                                             </div>
                                             <div>
-                                                <h4 className="font-bold text-[#111813]">Địa chỉ vườn</h4>
+                                                <h4 className="font-bold text-[#111813]">{t('showcase_contact.address')}</h4>
                                                 <p className="text-[#61896b] text-sm mt-1 leading-relaxed">Đông Hòa, Thành phố Mỹ Tho, Tiền Giang, Việt Nam</p>
                                             </div>
                                         </div>
@@ -64,7 +66,7 @@ const Contact: React.FC = () => {
                                                 <span className="material-symbols-outlined text-3xl">call</span>
                                             </div>
                                             <div>
-                                                <h4 className="font-bold text-[#111813]">Số điện thoại</h4>
+                                                <h4 className="font-bold text-[#111813]">{t('showcase_contact.phone')}</h4>
                                                 <p className="text-[#61896b] text-sm mt-1">0384 396 100</p>
                                                 <p className="text-[#61896b] text-sm mt-1">0908 987 654</p>
                                             </div>
@@ -75,7 +77,7 @@ const Contact: React.FC = () => {
                                                 <span className="material-symbols-outlined text-3xl">mail</span>
                                             </div>
                                             <div>
-                                                <h4 className="font-bold text-[#111813]">Email hỗ trợ</h4>
+                                                <h4 className="font-bold text-[#111813]">{t('showcase_contact.email')}</h4>
                                                 <p className="text-[#61896b] text-sm mt-1">lmtuan21082003@gmail.com</p>
                                                 <p className="text-[#61896b] text-sm mt-1">support@greenacres.farm</p>
                                             </div>
@@ -86,16 +88,16 @@ const Contact: React.FC = () => {
                                                 <span className="material-symbols-outlined text-3xl">schedule</span>
                                             </div>
                                             <div>
-                                                <h4 className="font-bold text-[#111813]">Giờ mở cửa</h4>
-                                                <p className="text-[#61896b] text-sm mt-1">Sáng: 08:00 - 12:00</p>
-                                                <p className="text-[#61896b] text-sm mt-1">Chiều: 13:30 - 17:30 (T2 - T7)</p>
+                                                <h4 className="font-bold text-[#111813]">{t('showcase_contact.working_hours')}</h4>
+                                                <p className="text-[#61896b] text-sm mt-1">{t('showcase_contact.morning')}</p>
+                                                <p className="text-[#61896b] text-sm mt-1">{t('showcase_contact.afternoon')}</p>
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Social Links */}
                                     <div className="pt-8 border-t border-gray-100">
-                                        <h4 className="font-bold text-[#111813] mb-4">Theo dõi chúng tôi</h4>
+                                        <h4 className="font-bold text-[#111813] mb-4">{t('showcase_contact.follow_us')}</h4>
                                         <div className="flex gap-3">
                                             <a href="#" className="size-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-colors">
                                                 <span className="material-symbols-outlined text-xl">facebook</span>
@@ -114,27 +116,27 @@ const Contact: React.FC = () => {
                             {/* Right: Contact Form */}
                             <div className="lg:col-span-3">
                                 <div className="bg-white rounded-[2.5rem] border border-[#dbe6de] shadow-sm p-8 md:p-12 h-full">
-                                    <h2 className="text-2xl font-black text-[#111813] mb-8">Gửi tin nhắn cho chúng tôi</h2>
+                                    <h2 className="text-2xl font-black text-[#111813] mb-8">{t('showcase_contact.send_message')}</h2>
 
                                     <form onSubmit={handleSubmit} className="space-y-6">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-2">
-                                                <label className="text-sm font-bold text-[#111813] ml-1">Họ và tên *</label>
+                                                <label className="text-sm font-bold text-[#111813] ml-1">{t('showcase_contact.full_name')}</label>
                                                 <input
                                                     required
                                                     type="text"
-                                                    placeholder="VD: Nguyễn Văn A"
+                                                    placeholder={t('showcase_contact.full_name_placeholder')}
                                                     value={formData.name}
                                                     onChange={e => setFormData({ ...formData, name: e.target.value })}
                                                     className="w-full bg-[#f8faf8] border-2 border-transparent focus:border-primary focus:bg-white rounded-2xl px-6 py-4 outline-none transition-all"
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-sm font-bold text-[#111813] ml-1">Địa chỉ Email *</label>
+                                                <label className="text-sm font-bold text-[#111813] ml-1">{t('showcase_contact.email_address')}</label>
                                                 <input
                                                     required
                                                     type="email"
-                                                    placeholder="email@example.com"
+                                                    placeholder={t('showcase_contact.email_placeholder')}
                                                     value={formData.email}
                                                     onChange={e => setFormData({ ...formData, email: e.target.value })}
                                                     className="w-full bg-[#f8faf8] border-2 border-transparent focus:border-primary focus:bg-white rounded-2xl px-6 py-4 outline-none transition-all"
@@ -144,37 +146,37 @@ const Contact: React.FC = () => {
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-2">
-                                                <label className="text-sm font-bold text-[#111813] ml-1">Số điện thoại</label>
+                                                <label className="text-sm font-bold text-[#111813] ml-1">{t('showcase_contact.phone_number')}</label>
                                                 <input
                                                     type="tel"
-                                                    placeholder="09xx xxx xxx"
+                                                    placeholder={t('showcase_contact.phone_placeholder')}
                                                     value={formData.phone}
                                                     onChange={e => setFormData({ ...formData, phone: e.target.value })}
                                                     className="w-full bg-[#f8faf8] border-2 border-transparent focus:border-primary focus:bg-white rounded-2xl px-6 py-4 outline-none transition-all"
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-sm font-bold text-[#111813] ml-1">Chủ đề</label>
+                                                <label className="text-sm font-bold text-[#111813] ml-1">{t('showcase_contact.subject')}</label>
                                                 <select
                                                     value={formData.subject}
                                                     onChange={e => setFormData({ ...formData, subject: e.target.value })}
                                                     className="w-full bg-[#f8faf8] border-2 border-transparent focus:border-primary focus:bg-white rounded-2xl px-6 py-4 outline-none transition-all appearance-none cursor-pointer"
                                                 >
-                                                    <option value="">-- Chọn chủ đề --</option>
-                                                    <option value="Hợp tác kinh doanh">Hợp tác kinh doanh</option>
-                                                    <option value="Hỗ trợ kỹ thuật">Hỗ trợ kỹ thuật</option>
-                                                    <option value="Phản hồi sản phẩm">Phản hồi sản phẩm</option>
-                                                    <option value="Khác">Khác</option>
+                                                    <option value="">{t('showcase_contact.subject_placeholder')}</option>
+                                                    <option value={t('showcase_contact.subject_business')}>{t('showcase_contact.subject_business')}</option>
+                                                    <option value={t('showcase_contact.subject_support')}>{t('showcase_contact.subject_support')}</option>
+                                                    <option value={t('showcase_contact.subject_feedback')}>{t('showcase_contact.subject_feedback')}</option>
+                                                    <option value={t('showcase_contact.subject_other')}>{t('showcase_contact.subject_other')}</option>
                                                 </select>
                                             </div>
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label className="text-sm font-bold text-[#111813] ml-1">Nội dung tin nhắn *</label>
+                                            <label className="text-sm font-bold text-[#111813] ml-1">{t('showcase_contact.message_content')}</label>
                                             <textarea
                                                 required
                                                 rows={5}
-                                                placeholder="Bạn cần chúng tôi hỗ trợ điều gì?"
+                                                placeholder={t('showcase_contact.message_placeholder')}
                                                 value={formData.message}
                                                 onChange={e => setFormData({ ...formData, message: e.target.value })}
                                                 className="w-full bg-[#f8faf8] border-2 border-transparent focus:border-primary focus:bg-white rounded-2xl px-6 py-4 outline-none transition-all resize-none"
@@ -185,13 +187,13 @@ const Contact: React.FC = () => {
                                             type="submit"
                                             className="w-full bg-[#111813] text-white py-5 rounded-2xl font-black text-lg hover:bg-[#13ec49] hover:text-black transition-all shadow-xl active:scale-[0.98]"
                                         >
-                                            Gửi tin nhắn liên hệ
+                                            {t('showcase_contact.submit_button')}
                                         </button>
 
                                         {submitted && (
                                             <div className="bg-green-50 text-green-700 p-4 rounded-xl border border-green-100 flex items-center gap-3 animate-in zoom-in duration-300">
                                                 <span className="material-symbols-outlined">verified</span>
-                                                <p className="font-bold text-sm">Cảm ơn bạn! Tin nhắn của bạn đã được gửi thành công. Chúng tôi sẽ phản hồi sớm nhất có thể.</p>
+                                                <p className="font-bold text-sm">{t('showcase_contact.success_message')}</p>
                                             </div>
                                         )}
                                     </form>
@@ -220,9 +222,9 @@ const Contact: React.FC = () => {
                     <div className="max-w-[1200px] mx-auto flex justify-center items-center gap-4 text-[#61896b] text-sm">
                         <div className="flex items-center gap-2">
                             <img src={logoWeb} alt="Logo" className="size-6 object-contain" />
-                            <span className="font-bold text-[#111813]">Vườn Nhà Mình</span>
+                            <span className="font-bold text-[#111813]">{t('showcase_home.farm_name')}</span>
                             <span className="mx-2">|</span>
-                            <span>© {new Date().getFullYear()} Vườn Nhà Mình. Đã đăng ký bản quyền.</span>
+                            <span>{t('showcase_contact.copyright', { year: new Date().getFullYear() })}</span>
                         </div>
                     </div>
                 </footer>

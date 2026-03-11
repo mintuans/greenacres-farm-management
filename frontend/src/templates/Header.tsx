@@ -5,16 +5,23 @@ import { getMediaUrl } from '../services/products.service';
 import NotificationDropdown from '../components/NotificationDropdown';
 import { useSidebar } from '@/src/contexts/SidebarContext';
 
+import { useTranslation } from 'react-i18next';
+
 const Header: React.FC = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const { toggleCollapsed, toggleMobileMenu } = useSidebar();
+    const { t, i18n } = useTranslation();
+
+    const changeLanguage = (lng: string) => {
+        i18n.changeLanguage(lng);
+    };
 
     // Default values for Guest
-    const displayName = user?.full_name || user?.name || 'Du khách';
+    const displayName = user?.full_name || user?.name || t('header.guest');
     const avatarUrl = user?.avatar_id
         ? getMediaUrl(user.avatar_id)
-        : (user?.avatar || `https://ui-avatars.com/api/?name=Du+Khach&background=13ec49&color=fff`);
+        : (user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(t('header.guest'))}&background=13ec49&color=fff`);
 
     const handleProfileClick = () => {
         navigate('/profile');
@@ -47,7 +54,7 @@ const Header: React.FC = () => {
                     <input
                         type="text"
                         className="bg-slate-100/50 border-none rounded-2xl py-2.5 pl-11 pr-4 text-sm w-96 focus:ring-2 focus:ring-[#13ec49]/50 transition-all outline-none text-slate-600 placeholder:text-slate-400"
-                        placeholder="Search"
+                        placeholder={t('header.search_placeholder')}
                     />
                 </div>
             </div>
@@ -58,8 +65,27 @@ const Header: React.FC = () => {
                     className="flex items-center gap-2 px-2 md:px-3 py-1.5 md:py-2 bg-white border border-slate-200 text-slate-600 rounded-lg md:rounded-xl hover:border-[#13ec49] hover:text-[#13ec49] transition-all text-[10px] md:text-xs font-bold shrink-0"
                 >
                     <span className="material-symbols-outlined text-[18px] md:text-[20px]">visibility</span>
-                    <span className="hidden sm:inline">Trang Showcase</span>
+                    <span className="hidden sm:inline">{t('header.showcase_page')}</span>
                 </button>
+
+                {/* Language Switcher */}
+                <div className="flex items-center bg-slate-100 rounded-lg p-1">
+                    <button
+                        onClick={() => changeLanguage('vi')}
+                        className={`px-2 py-1 text-[10px] font-bold rounded-md transition-all flex items-center gap-1.5 ${i18n.language === 'vi' ? 'bg-white text-[#13ec49] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                        <img src="https://flagcdn.com/w20/vn.png" alt="Vietnam" className="w-4 h-2.5 object-cover rounded-[1px]" />
+                        <span>VI</span>
+                    </button>
+                    <button
+                        onClick={() => changeLanguage('en')}
+                        className={`px-2 py-1 text-[10px] font-bold rounded-md transition-all flex items-center gap-1.5 ${i18n.language === 'en' ? 'bg-white text-[#13ec49] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                        <img src="https://flagcdn.com/w20/us.png" alt="USA" className="w-4 h-2.5 object-cover rounded-[1px]" />
+                        <span>EN</span>
+                    </button>
+                </div>
+
                 <div className="relative">
                     <button
                         onClick={() => setIsNotifOpen(!isNotifOpen)}
@@ -84,7 +110,7 @@ const Header: React.FC = () => {
                 >
                     <div className="flex flex-col items-end">
                         <span className="text-sm font-semibold text-slate-700 leading-none group-hover:text-[#13ec49] transition-colors">{displayName}</span>
-                        <span className="text-[10px] text-slate-400 font-medium">{user?.role ? (user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase()) : 'Khách'}</span>
+                        <span className="text-[10px] text-slate-400 font-medium">{user?.role ? (user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase()) : t('header.guest')}</span>
                     </div>
                     <div className="size-10 rounded-full border-2 border-[#13ec49] p-0.5 shadow-sm overflow-hidden group-hover:scale-110 transition-all">
                         <img

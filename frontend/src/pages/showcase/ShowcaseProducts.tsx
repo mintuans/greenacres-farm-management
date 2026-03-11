@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { getProducts, getProductCategories, getMediaUrl, Product, ProductCategory } from '../../services/products.service';
 import ShowcaseHeader from '../../templates/ShowcaseHeader';
+import { useTranslation } from 'react-i18next';
 
 const ShowcaseProducts: React.FC = () => {
+    const { t } = useTranslation();
     const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<ProductCategory[]>([]);
     const [loading, setLoading] = useState(true);
@@ -45,7 +47,7 @@ const ShowcaseProducts: React.FC = () => {
             <ShowcaseHeader
                 searchTerm={searchQuery}
                 setSearchTerm={setSearchQuery}
-                placeholder="Tìm sản phẩm..."
+                placeholder={t('showcase_products.search_placeholder')}
             />
 
             <div className="max-w-7xl mx-auto px-3 md:px-4 py-4 md:py-8">
@@ -55,7 +57,7 @@ const ShowcaseProducts: React.FC = () => {
                     {/* Sidebar - Categories */}
                     <div className="shrink-0 w-[90px] md:w-auto md:col-span-1">
                         <div className="bg-white rounded-xl p-2 md:p-6 shadow-sm sticky top-[52px] md:top-[68px]">
-                            <h2 className="text-xs md:text-lg font-bold mb-2 md:mb-4 text-center md:text-left">Danh mục</h2>
+                            <h2 className="text-xs md:text-lg font-bold mb-2 md:mb-4 text-center md:text-left">{t('showcase_products.categories')}</h2>
                             <div className="flex flex-col gap-1">
                                 <button
                                     onClick={() => setSelectedCategory('')}
@@ -64,7 +66,7 @@ const ShowcaseProducts: React.FC = () => {
                                         : 'hover:bg-gray-100 text-gray-700'
                                         }`}
                                 >
-                                    Tất cả
+                                    {t('showcase_products.all')}
                                 </button>
                                 {categories.map((category) => (
                                     <button
@@ -98,7 +100,7 @@ const ShowcaseProducts: React.FC = () => {
                             </div>
                         ) : products.length === 0 ? (
                             <div className="bg-white rounded-xl p-8 text-center">
-                                <p className="text-gray-500 text-sm md:text-lg">Không tìm thấy sản phẩm nào</p>
+                                <p className="text-gray-500 text-sm md:text-lg">{t('showcase_products.no_products')}</p>
                             </div>
                         ) : (
                             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
@@ -130,7 +132,7 @@ const ShowcaseProducts: React.FC = () => {
                                             {/* Badge */}
                                             {product.is_featured && (
                                                 <span className="absolute top-2 left-2 bg-[#13ec49] text-[#102215] text-[9px] md:text-xs font-bold px-1.5 md:px-3 py-0.5 md:py-1 rounded-full">
-                                                    Nổi bật
+                                                    {t('showcase_products.featured')}
                                                 </span>
                                             )}
                                         </div>
@@ -164,7 +166,7 @@ const ShowcaseProducts: React.FC = () => {
                                                     <span>{product.avg_rating ? Number(product.avg_rating).toFixed(1) : '0.0'}</span>
                                                 </div>
                                                 <span className={`text-[9px] md:text-sm ${product.stock_quantity > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                                    {product.stock_quantity > 0 ? `Còn ${product.stock_quantity}` : 'Hết hàng'}
+                                                    {product.stock_quantity > 0 ? t('showcase_products.in_stock', { count: product.stock_quantity }) : t('showcase_products.out_of_stock')}
                                                 </span>
                                             </div>
                                         </div>

@@ -5,6 +5,7 @@ import { getTransactions, Transaction } from '../api/transaction.api';
 import { getMedicineUsageStats, logUsage, InventoryUsage } from '../api/inventory-usage.api';
 import { getInventory, InventoryItem } from '../api/inventory.api';
 import { getPayrollsBySeason, Payroll } from '../api/payroll.api';
+import { useTranslation } from 'react-i18next';
 
 interface CleanSelectProps {
   label?: string;
@@ -69,7 +70,7 @@ const CleanSelect: React.FC<CleanSelectProps> = ({ value, onChange, options, pla
             </button>
           ))}
           {options.length === 0 && (
-            <div className="py-8 text-center text-slate-400 text-xs italic font-bold">Không có dữ liệu</div>
+            <div className="py-8 text-center text-slate-400 text-xs italic font-bold">Chưa có dữ liệu</div>
           )}
         </div>
       )}
@@ -90,6 +91,7 @@ const Seasons: React.FC = () => {
   const [showUsageModal, setShowUsageModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedSeason, setSelectedSeason] = useState<Season | null>(null);
+  const { t, i18n } = useTranslation();
 
   // Form state for new season
   const [formData, setFormData] = useState({
@@ -267,24 +269,24 @@ const Seasons: React.FC = () => {
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-[#13ec49] text-[10px] font-black uppercase tracking-widest">
             <span className="material-symbols-outlined text-[14px]">home</span>
-            Trang chủ / Mùa vụ
+            {t('seasons.breadcrumb')}
           </div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tighter">Quản lý mùa vụ</h1>
-          <p className="text-slate-500 text-sm max-w-xl">Theo dõi chu kỳ cây trồng, giám sát sức khỏe tài chính và báo cáo năng suất.</p>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tighter">{t('seasons.title')}</h1>
+          <p className="text-slate-500 text-sm max-w-xl">{t('seasons.subtitle')}</p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
           <div className="w-full sm:w-72">
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Chọn vụ mùa hiển thị</label>
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('seasons.select_label')}</label>
             <CleanSelect
               value={currentSeason?.id || ''}
               onChange={(val) => setActiveSeasonId(val)}
               options={seasons.map(s => ({
                 value: s.id,
                 label: s.season_name,
-                sublabel: s.status === 'ACTIVE' ? 'Đang hoạt động' : 'Đã kết thúc'
+                sublabel: s.status === 'ACTIVE' ? t('seasons.status.active') : t('seasons.status.ended')
               }))}
-              placeholder="Chọn vụ mùa..."
+              placeholder={t('seasons.select_label') + "..."}
             />
           </div>
 
@@ -297,7 +299,7 @@ const Seasons: React.FC = () => {
             className="w-full sm:w-auto bg-[#13ec49] text-black px-4 py-2 rounded-xl text-sm font-black shadow-lg shadow-[#13ec49]/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 h-10"
           >
             <span className="material-symbols-outlined text-[20px]">add_circle</span>
-            Bắt đầu vụ mới
+            {t('seasons.start_new')}
           </button>
         </div>
       </div>
@@ -322,21 +324,28 @@ const Seasons: React.FC = () => {
                       <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${currentSeason.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'
                         }`}>
                         <span className={`size-2 rounded-full ${currentSeason.status === 'ACTIVE' ? 'bg-green-600 animate-pulse' : 'bg-slate-400'}`}></span>
-                        {currentSeason.status === 'ACTIVE' ? 'Đang diễn ra' : 'Đã kết thúc'}
+                        {currentSeason.status === 'ACTIVE' ? t('seasons.status.ongoing') : t('seasons.status.ended')}
                       </span>
                       <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">
-                        • Từ {new Date(currentSeason.start_date).toLocaleDateString('vi-VN')}
+                        • {t('seasons.table.time')} {new Date(currentSeason.start_date).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}
                       </span>
                     </div>
                   </div>
                 </div>
                 <div className="flex gap-2 w-full md:w-auto">
                   <button
+                    onClick={() => currentSeason && handleEditClick(currentSeason)}
+                    className="flex-1 md:flex-none bg-white border border-slate-200 text-slate-900 px-4 py-2 rounded-xl font-black text-xs hover:bg-slate-50 transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">edit</span>
+                    {t('seasons.edit_season')}
+                  </button>
+                  <button
                     onClick={() => setShowUsageModal(true)}
                     className="flex-1 md:flex-none bg-white border border-slate-200 text-slate-900 px-4 py-2 rounded-xl font-black text-xs hover:bg-slate-50 transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2"
                   >
                     <span className="material-symbols-outlined text-[16px]">vaccines</span>
-                    Ghi nhận sử dụng
+                    {t('seasons.record_usage')}
                   </button>
                 </div>
               </div>
@@ -344,27 +353,27 @@ const Seasons: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-100 font-bold">
                 <div className="p-4 hover:bg-slate-50/50 transition-colors">
                   <div className="flex justify-between items-start mb-2">
-                    <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest">Dự kiến thu</p>
+                    <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest">{t('seasons.expected_revenue')}</p>
                     <span className="material-symbols-outlined text-green-500 bg-green-50 p-1.5 rounded-lg text-[16px]">payments</span>
                   </div>
                   <h3 className="text-lg font-black text-slate-900">
-                    {Number(currentSeason.expected_revenue || 0).toLocaleString('vi-VN')}đ
+                    {Number(currentSeason.expected_revenue || 0).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}đ
                   </h3>
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-2">Mục tiêu tài chính</p>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-2">{t('seasons.financial_goal')}</p>
                 </div>
                 <div className="p-4 hover:bg-slate-50/50 transition-colors">
                   <div className="flex justify-between items-start mb-2">
-                    <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest">Đơn vị canh tác</p>
+                    <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest">{t('seasons.production_unit')}</p>
                     <span className="material-symbols-outlined text-blue-500 bg-blue-50 p-1.5 rounded-lg text-[16px]">agriculture</span>
                   </div>
                   <h3 className="text-lg font-black text-slate-900">{currentSeason.unit_name || 'N/A'}</h3>
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-2">Khu vực sản xuất chính</p>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-2">{t('seasons.primary_unit')}</p>
                 </div>
 
                 <div className="p-4 bg-[#13ec49]/5 relative overflow-hidden">
                   <div className="relative z-10">
-                    <p className="text-slate-500 text-[9px] font-black uppercase tracking-widest mb-2">Hiệu quả đầu tư</p>
-                    <h3 className="text-xl font-black text-slate-900">Chưa có số liệu</h3>
+                    <p className="text-slate-500 text-[9px] font-black uppercase tracking-widest mb-2">{t('seasons.investment_efficiency')}</p>
+                    <h3 className="text-xl font-black text-slate-900">{t('seasons.no_data')}</h3>
                     <div className="w-full bg-slate-200/50 rounded-full h-1.5 mt-3 overflow-hidden shadow-inner">
                       <div className="bg-[#13ec49] h-full rounded-full shadow-lg" style={{ width: '0%' }}></div>
                     </div>
@@ -377,8 +386,8 @@ const Seasons: React.FC = () => {
           {/* Stats Overview - moved to top */}
           <div className="space-y-3">
             <div className="flex items-center justify-between px-1">
-              <h3 className="text-lg font-black text-slate-900 tracking-tight">Thống kê tổng quát</h3>
-              <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Toàn bộ quá trình canh tác</p>
+              <h3 className="text-lg font-black text-slate-900 tracking-tight">{t('seasons.general_stats')}</h3>
+              <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">{t('seasons.entire_process')}</p>
             </div>
             <div className="grid grid-cols-2 gap-3 md:gap-4">
               <div className="bg-white p-4 md:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3 md:gap-5">
@@ -386,7 +395,7 @@ const Seasons: React.FC = () => {
                   <span className="material-symbols-outlined text-xl md:text-2xl">deployed_code</span>
                 </div>
                 <div>
-                  <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">Tổng số vụ</p>
+                  <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('seasons.total_seasons')}</p>
                   <h4 className="text-2xl md:text-3xl font-black text-slate-900">{seasons.length}</h4>
                 </div>
               </div>
@@ -396,7 +405,7 @@ const Seasons: React.FC = () => {
                   <span className="material-symbols-outlined text-xl md:text-2xl">task_alt</span>
                 </div>
                 <div>
-                  <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">Đang hoạt động</p>
+                  <p className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('seasons.status.active')}</p>
                   <h4 className="text-2xl md:text-3xl font-black text-slate-900">
                     {seasons.filter(s => s.status === 'ACTIVE').length}
                   </h4>
@@ -412,21 +421,22 @@ const Seasons: React.FC = () => {
               {/* History List */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between px-2">
-                  <h3 className="text-lg font-black text-slate-900 tracking-tight">Danh sách mùa vụ</h3>
+                  <h3 className="text-lg font-black text-slate-900 tracking-tight">{t('seasons.list_title')}</h3>
                 </div>
                 <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
                   <table className="w-full text-left">
                     <thead>
                       <tr className="bg-slate-50/50 border-b border-slate-100 text-[9px] font-black uppercase tracking-widest text-slate-400">
-                        <th className="px-4 py-3">Tên mùa vụ</th>
-                        <th className="px-4 py-3">Đơn vị</th>
-                        <th className="px-4 py-3">Thời gian</th>
-                        <th className="px-4 py-3 text-right">Dự kiến thu</th>
+                        <th className="px-4 py-3">{t('seasons.table.name')}</th>
+                        <th className="px-4 py-3">{t('seasons.table.unit')}</th>
+                        <th className="px-4 py-3">{t('seasons.table.time')}</th>
+                        <th className="px-4 py-3 text-right whitespace-nowrap">{t('seasons.expected_revenue')}</th>
+                        <th className="px-4 py-3 text-right">{t('seasons.table.actions')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50 text-[13px] font-bold text-slate-600">
                       {seasons.map((s) => (
-                        <tr key={s.id} className="hover:bg-slate-50/80 transition-all group cursor-pointer">
+                        <tr key={s.id} onClick={() => setActiveSeasonId(s.id)} className={`hover:bg-slate-50/80 transition-all group cursor-pointer ${activeSeasonId === s.id ? 'bg-[#13ec49]/5' : ''}`}>
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-2">
                               <div className={`size-7 rounded-lg flex items-center justify-center text-[16px] ${s.status === 'ACTIVE' ? 'bg-[#13ec49]/10 text-[#13ec49]' : 'bg-slate-100 text-slate-400'
@@ -437,9 +447,21 @@ const Seasons: React.FC = () => {
                             </div>
                           </td>
                           <td className="px-4 py-3 text-slate-500">{s.unit_name}</td>
-                          <td className="px-4 py-3">{new Date(s.start_date).toLocaleDateString('vi-VN')}</td>
-                          <td className="px-4 py-3 text-right font-black text-slate-900">
-                            {Number(s.expected_revenue || 0).toLocaleString('vi-VN')}đ
+                          <td className="px-4 py-3">{new Date(s.start_date).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</td>
+                          <td className="px-4 py-3 text-right font-black text-slate-900 whitespace-nowrap">
+                            {Number(s.expected_revenue || 0).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}đ
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditClick(s);
+                              }}
+                              className="p-1.5 text-slate-400 hover:text-[#13ec49] hover:bg-[#13ec49]/10 rounded-lg transition-all"
+                              title="Chỉnh sửa"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">edit</span>
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -451,39 +473,39 @@ const Seasons: React.FC = () => {
               {/* Transactions Section */}
               <div className="space-y-6">
                 <div className="flex items-center justify-between px-2">
-                  <h3 className="text-2xl font-black text-slate-900 tracking-tight">Giao dịch gần đây</h3>
-                  <button className="text-[#13ec49] font-black text-sm uppercase tracking-widest hover:underline">Xem tất cả</button>
+                  <h3 className="text-2xl font-black text-slate-900 tracking-tight">{t('seasons.recent_transactions')}</h3>
+                  <button className="text-[#13ec49] font-black text-sm uppercase tracking-widest hover:underline">{t('seasons.view_all')}</button>
                 </div>
-                <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
+                 <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
                   <table className="w-full text-left">
                     <thead>
                       <tr className="bg-slate-50/50 border-b border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                        <th className="px-8 py-5">Ngày</th>
-                        <th className="px-8 py-5">Nội dung</th>
-                        <th className="px-8 py-5">Loại</th>
-                        <th className="px-8 py-5 text-right">Số tiền</th>
+                        <th className="px-8 py-5">{t('seasons.transactions_table.date')}</th>
+                        <th className="px-8 py-5">{t('seasons.transactions_table.content')}</th>
+                        <th className="px-8 py-5">{t('seasons.transactions_table.type')}</th>
+                        <th className="px-8 py-5 text-right">{t('seasons.transactions_table.amount')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50 text-sm font-bold text-slate-600">
-                      {transactions.slice(0, 5).map((t) => (
-                        <tr key={t.id} className="hover:bg-slate-50/80 transition-all">
+                      {transactions.slice(0, 5).map((tItem) => (
+                        <tr key={tItem.id} className="hover:bg-slate-50/80 transition-all">
                           <td className="px-8 py-5 text-slate-500 font-medium">
-                            {new Date(t.transaction_date).toLocaleDateString('vi-VN')}
+                            {new Date(tItem.transaction_date).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}
                           </td>
-                          <td className="px-8 py-5 font-black text-slate-900">{t.note || 'Không có ghi chú'}</td>
+                          <td className="px-8 py-5 font-black text-slate-900">{tItem.note || t('seasons.transactions_table.no_notes')}</td>
                           <td className="px-8 py-5">
                             <span className="bg-slate-100 px-3 py-1 rounded-full text-[10px] font-black uppercase text-slate-500">
-                              {t.category_name || 'Khác'}
+                              {tItem.category_name || t('seasons.transactions_table.other')}
                             </span>
                           </td>
-                          <td className={`px-8 py-5 text-right font-black ${t.type === 'EXPENSE' ? 'text-red-500' : 'text-green-600'}`}>
-                            {t.type === 'EXPENSE' ? '-' : '+'}{Number(t.amount).toLocaleString('vi-VN')}đ
+                          <td className={`px-8 py-5 text-right font-black ${tItem.type === 'EXPENSE' ? 'text-red-500' : 'text-green-600'}`}>
+                            {tItem.type === 'EXPENSE' ? '-' : '+'}{Number(tItem.amount).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}đ
                           </td>
                         </tr>
                       ))}
                       {transactions.length === 0 && (
                         <tr>
-                          <td colSpan={4} className="px-8 py-10 text-center text-slate-300 italic">Chưa có giao dịch nào được ghi lại</td>
+                          <td colSpan={4} className="px-8 py-10 text-center text-slate-300 italic">{t('seasons.transactions_table.empty')}</td>
                         </tr>
                       )}
                     </tbody>
@@ -498,8 +520,8 @@ const Seasons: React.FC = () => {
               <div className="bg-white p-6 md:p-8 rounded-[32px] border border-slate-200 shadow-sm space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vật tư đã dùng</p>
-                    <h4 className="text-xl font-black text-slate-900 mt-1">Sử dụng trong vụ</h4>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('seasons.materials_used')}</p>
+                    <h4 className="text-xl font-black text-slate-900 mt-1">{t('seasons.usage_in_season')}</h4>
                   </div>
                   <div className="size-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
                     <span className="material-symbols-outlined">science</span>
@@ -524,7 +546,7 @@ const Seasons: React.FC = () => {
                     ))
                   ) : (
                     <div className="py-6 text-center">
-                      <p className="text-slate-400 text-xs italic">Chưa ghi nhận sử dụng thuốc</p>
+                      <p className="text-slate-400 text-xs italic">{t('seasons.no_medicine')}</p>
                     </div>
                   )}
                 </div>
@@ -535,18 +557,18 @@ const Seasons: React.FC = () => {
           {/* Employee Payrolls List */}
           <div className="space-y-6">
             <div className="flex items-center justify-between px-2">
-              <h3 className="text-2xl font-black text-slate-900 tracking-tight">Chi phí nhân công</h3>
-              <p className="text-[#13ec49] text-xs font-black uppercase tracking-widest">Phiếu lương trong vụ</p>
+              <h3 className="text-2xl font-black text-slate-900 tracking-tight">{t('seasons.labor_costs')}</h3>
+              <p className="text-[#13ec49] text-xs font-black uppercase tracking-widest">{t('seasons.payrolls_in_season')}</p>
             </div>
             <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-slate-50/50 border-b border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                    <th className="px-8 py-5">Mã phiếu</th>
-                    <th className="px-8 py-5">Nhân viên</th>
-                    <th className="px-8 py-5">Ngày lập</th>
-                    <th className="px-8 py-5">Trạng thái</th>
-                    <th className="px-8 py-5 text-right">Thực nhận</th>
+                    <th className="px-8 py-5">{t('seasons.payrolls_table.code')}</th>
+                    <th className="px-8 py-5">{t('seasons.payrolls_table.employee')}</th>
+                    <th className="px-8 py-5">{t('seasons.payrolls_table.date')}</th>
+                    <th className="px-8 py-5">{t('seasons.payrolls_table.status')}</th>
+                    <th className="px-8 py-5 text-right">{t('seasons.payrolls_table.amount')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50 text-sm font-bold text-slate-600">
@@ -555,24 +577,24 @@ const Seasons: React.FC = () => {
                       <td className="px-8 py-5 font-mono text-[11px] text-[#13ec49] font-black">{p.payroll_code}</td>
                       <td className="px-8 py-5 font-black text-slate-900">{p.partner_name}</td>
                       <td className="px-8 py-5 text-slate-500">
-                        {new Date(p.created_at).toLocaleDateString('vi-VN')}
+                        {new Date(p.created_at).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}
                       </td>
                       <td className="px-8 py-5">
                         <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${p.status === 'PAID' ? 'bg-green-100 text-green-700' :
                           p.status === 'APPROVED' ? 'bg-blue-100 text-blue-700' :
                             'bg-slate-100 text-slate-500'
                           }`}>
-                          {p.status === 'PAID' ? 'Đã trả' : p.status === 'APPROVED' ? 'Đã duyệt' : 'Dự thảo'}
+                          {p.status === 'PAID' ? t('seasons.status.paid') : p.status === 'APPROVED' ? t('seasons.status.approved') : t('seasons.status.draft')}
                         </span>
                       </td>
                       <td className="px-8 py-5 text-right font-black text-slate-900">
-                        {Number(p.final_amount).toLocaleString('vi-VN')}đ
+                        {Number(p.final_amount).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}đ
                       </td>
                     </tr>
                   ))}
                   {payrolls.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="px-8 py-10 text-center text-slate-300 italic">Chưa có phiếu lương nào cho vụ này</td>
+                      <td colSpan={5} className="px-8 py-10 text-center text-slate-300 italic">{t('seasons.payrolls_table.empty')}</td>
                     </tr>
                   )}
                 </tbody>
@@ -580,7 +602,8 @@ const Seasons: React.FC = () => {
             </div>
           </div>
         </>
-      )}
+      )
+      }
 
       {/* Add Season Modal */}
       {
@@ -589,8 +612,8 @@ const Seasons: React.FC = () => {
             <div className="bg-white rounded-[40px] p-10 max-w-xl w-full shadow-2xl animate-in zoom-in-95 duration-200">
               <div className="flex justify-between items-center mb-10">
                 <div>
-                  <h2 className="text-3xl font-black text-slate-900 tracking-tight">Thiết lập vụ mới</h2>
-                  <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Khởi tạo chu kỳ canh tác</p>
+                  <h2 className="text-3xl font-black text-slate-900 tracking-tight">{t('seasons.modal.new_title')}</h2>
+                  <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">{t('seasons.modal.new_subtitle')}</p>
                 </div>
                 <button onClick={() => setShowModal(false)} className="size-12 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all">
                   <span className="material-symbols-outlined">close</span>
@@ -600,31 +623,31 @@ const Seasons: React.FC = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-2 gap-6">
                   <div className="col-span-full">
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">Tên mùa vụ</label>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">{t('seasons.table.name')}</label>
                     <input
                       required
                       value={formData.season_name}
                       onChange={e => setFormData({ ...formData, season_name: e.target.value })}
                       className="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 focus:ring-4 focus:ring-[#13ec49]/20 outline-none font-bold text-slate-900 transition-all"
-                      placeholder="VD: Lúa Đông Xuân 2025"
+                      placeholder={t('seasons.table.name') + "..."}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">Mã vụ mùa</label>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">{t('seasons.modal.code')}</label>
                     <input
                       required
                       value={formData.season_code}
                       onChange={e => setFormData({ ...formData, season_code: e.target.value })}
                       className="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 focus:ring-4 focus:ring-[#13ec49]/20 outline-none font-bold text-slate-900 transition-all uppercase"
-                      placeholder="VD: DX2025"
+                      placeholder={t('seasons.modal.code') + "..."}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">Khu vực sản xuất</label>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">{t('seasons.modal.area')}</label>
                     <CleanSelect
-                      placeholder="Chọn đơn vị..."
+                      placeholder={t('seasons.modal.area') + "..."}
                       value={formData.unit_id}
                       onChange={val => setFormData({ ...formData, unit_id: val })}
                       options={units.map(u => ({ value: u.id, label: u.unit_name }))}
@@ -632,7 +655,7 @@ const Seasons: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">Ngày bắt đầu</label>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">{t('seasons.modal.start_date')}</label>
                     <input
                       type="date"
                       required
@@ -643,7 +666,7 @@ const Seasons: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">Dự thu (VNĐ)</label>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">{t('seasons.modal.revenue')}</label>
                     <input
                       type="number"
                       value={formData.expected_revenue}
@@ -660,13 +683,13 @@ const Seasons: React.FC = () => {
                     onClick={() => setShowModal(false)}
                     className="flex-1 py-5 font-black text-slate-400 hover:bg-slate-50 rounded-2xl transition-all uppercase tracking-widest text-xs"
                   >
-                    Hủy bỏ
+                    {t('seasons.modal.cancel')}
                   </button>
                   <button
                     type="submit"
                     className="flex-[2] bg-[#13ec49] text-black font-black rounded-2xl hover:bg-[#10d63f] hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-[#13ec49]/30 uppercase tracking-widest text-xs py-5"
                   >
-                    Khởi tạo vụ mùa
+                    {t('seasons.modal.init_btn')}
                   </button>
                 </div>
               </form>
@@ -682,8 +705,8 @@ const Seasons: React.FC = () => {
             <div className="bg-white rounded-[40px] p-10 max-w-xl w-full shadow-2xl animate-in zoom-in-95 duration-200">
               <div className="flex justify-between items-center mb-10">
                 <div>
-                  <h2 className="text-3xl font-black text-slate-900 tracking-tight">Chỉnh sửa vụ mùa</h2>
-                  <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Cập nhật thông tin {selectedSeason.season_code}</p>
+                  <h2 className="text-3xl font-black text-slate-900 tracking-tight">{t('seasons.modal.edit_title')}</h2>
+                  <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">{t('seasons.modal.edit_subtitle', { code: selectedSeason.season_code })}</p>
                 </div>
                 <button onClick={() => setShowEditModal(false)} className="size-12 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all">
                   <span className="material-symbols-outlined">close</span>
@@ -693,7 +716,7 @@ const Seasons: React.FC = () => {
               <form onSubmit={handleUpdateSubmit} className="space-y-6">
                 <div className="grid grid-cols-2 gap-6">
                   <div className="col-span-full">
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">Tên mùa vụ</label>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">{t('seasons.table.name')}</label>
                     <input
                       required
                       value={editFormData.season_name}
@@ -703,7 +726,7 @@ const Seasons: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">Khu vực sản xuất</label>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">{t('seasons.modal.area')}</label>
                     <CleanSelect
                       value={editFormData.unit_id}
                       onChange={val => setEditFormData({ ...editFormData, unit_id: val })}
@@ -712,19 +735,19 @@ const Seasons: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">Trạng thái</label>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">{t('seasons.payrolls_table.status')}</label>
                     <CleanSelect
                       value={editFormData.status}
                       onChange={val => setEditFormData({ ...editFormData, status: val })}
                       options={[
-                        { value: 'ACTIVE', label: 'Đang diễn ra' },
-                        { value: 'CLOSED', label: 'Đã kết thúc' }
+                        { value: 'ACTIVE', label: t('seasons.status.ongoing') },
+                        { value: 'CLOSED', label: t('seasons.status.ended') }
                       ]}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">Ngày bắt đầu</label>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">{t('seasons.modal.start_date')}</label>
                     <input
                       type="date"
                       required
@@ -735,7 +758,7 @@ const Seasons: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">Dự thu (VNĐ)</label>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">{t('seasons.modal.revenue')}</label>
                     <input
                       type="number"
                       value={editFormData.expected_revenue}
@@ -751,13 +774,13 @@ const Seasons: React.FC = () => {
                     onClick={() => setShowEditModal(false)}
                     className="flex-1 py-5 font-black text-slate-400 hover:bg-slate-50 rounded-2xl transition-all uppercase tracking-widest text-xs"
                   >
-                    Hủy bỏ
+                    {t('seasons.modal.cancel')}
                   </button>
                   <button
                     type="submit"
-                    className="flex-[2] bg-[#13ec49] text-black font-black rounded-2xl hover:bg-[#10d63f] hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-[#13ec49]/30 uppercase tracking-widest text-xs py-5"
+                    className="flex-[2] bg-[#13ec49] text-black font-black rounded-2xl hover:bg-[#10d63f] hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-[#13ec49]/20 uppercase tracking-widest text-xs py-5"
                   >
-                    Lưu thay đổi
+                    {t('seasons.modal.save_btn')}
                   </button>
                 </div>
               </form>
@@ -773,8 +796,8 @@ const Seasons: React.FC = () => {
             <div className="bg-white rounded-[40px] p-10 max-w-xl w-full shadow-2xl animate-in zoom-in-95 duration-200">
               <div className="flex justify-between items-center mb-10">
                 <div>
-                  <h2 className="text-3xl font-black text-slate-900 tracking-tight">Ghi nhận sử dụng</h2>
-                  <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Xuất kho vật tư cho mùa vụ</p>
+                  <h2 className="text-3xl font-black text-slate-900 tracking-tight">{t('seasons.usage_modal.title')}</h2>
+                  <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">{t('seasons.usage_modal.subtitle')}</p>
                 </div>
                 <button onClick={() => setShowUsageModal(false)} className="size-12 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all">
                   <span className="material-symbols-outlined">close</span>
@@ -784,22 +807,22 @@ const Seasons: React.FC = () => {
               <form onSubmit={handleUsageSubmit} className="space-y-6">
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">Chọn loại vật tư / thuốc</label>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">{t('seasons.usage_modal.select_label')}</label>
                     <CleanSelect
-                      placeholder="Chọn thuốc hoặc phân bón..."
+                      placeholder={t('seasons.usage_modal.select_placeholder')}
                       value={usageData.inventory_id}
                       onChange={val => setUsageData({ ...usageData, inventory_id: val })}
                       options={inventory.map(item => ({
                         value: item.id,
                         label: item.inventory_name,
-                        sublabel: `Tồn kho: ${item.stock_quantity} ${item.unit_of_measure}`
+                        sublabel: `${t('inventory.modal.current_stock')}: ${item.stock_quantity} ${item.unit_of_measure}`
                       }))}
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">Số lượng sử dụng</label>
+                      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">{t('seasons.usage_modal.quantity')}</label>
                       <input
                         type="number"
                         required
@@ -811,7 +834,7 @@ const Seasons: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">Ngày sử dụng</label>
+                      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">{t('seasons.usage_modal.date')}</label>
                       <input
                         type="date"
                         required
@@ -823,12 +846,12 @@ const Seasons: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">Mục đích sử dụng</label>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5 ml-1">{t('seasons.usage_modal.purpose')}</label>
                     <textarea
                       value={usageData.purpose}
                       onChange={e => setUsageData({ ...usageData, purpose: e.target.value })}
                       className="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 focus:ring-4 focus:ring-[#13ec49]/20 outline-none font-bold text-slate-900 transition-all resize-none h-24"
-                      placeholder="VD: Phun thuốc trị nấm lần 1, bón lót..."
+                      placeholder={t('seasons.usage_modal.purpose_placeholder')}
                     />
                   </div>
                 </div>
@@ -839,13 +862,13 @@ const Seasons: React.FC = () => {
                     onClick={() => setShowUsageModal(false)}
                     className="flex-1 py-5 font-black text-slate-400 hover:bg-slate-50 rounded-2xl transition-all uppercase tracking-widest text-xs"
                   >
-                    Hủy bỏ
+                    {t('seasons.usage_modal.cancel')}
                   </button>
                   <button
                     type="submit"
                     className="flex-[2] bg-slate-900 text-white font-black rounded-2xl hover:bg-black hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-slate-900/30 uppercase tracking-widest text-xs py-5"
                   >
-                    Xác nhận sử dụng
+                    {t('seasons.usage_modal.confirm')}
                   </button>
                 </div>
               </form>

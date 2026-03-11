@@ -1,8 +1,9 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Partner, getPartners, createPartner, updatePartner, deletePartner, CreatePartnerInput, getNextPartnerCode } from '../api/partner.api';
 import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../components';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import { useTranslation } from 'react-i18next';
 
 const Workers: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -25,6 +26,7 @@ const Workers: React.FC = () => {
     const [selectedWorker, setSelectedWorker] = useState<Partner | null>(null);
     const [showImportModal, setShowImportModal] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { t, i18n } = useTranslation();
 
     useEffect(() => {
         loadWorkers();
@@ -45,7 +47,7 @@ const Workers: React.FC = () => {
             setWorkers(data);
         } catch (error) {
             console.error('Error loading workers:', error);
-            console.error('Không thể tải danh sách nhân viên');
+            console.error(t('partners.status.load_error') || 'Không thể tải danh sách nhân viên');
         } finally {
             setLoading(false);
         }
@@ -64,7 +66,7 @@ const Workers: React.FC = () => {
             loadWorkers();
         } catch (error: any) {
             console.error('Error saving worker:', error);
-            console.error(error.response?.data?.message || 'Không thể lưu nhân viên');
+            alert(error.response?.data?.message || t('partners.messages.save_error') || 'Không thể lưu nhân viên');
         }
     };
 
@@ -88,7 +90,7 @@ const Workers: React.FC = () => {
             loadWorkers();
         } catch (error: any) {
             console.error('Error deleting worker:', error);
-            console.error(error.response?.data?.message || 'Không thể xóa đối tác');
+            alert(error.response?.data?.message || t('partners.messages.delete_error') || 'Không thể xóa đối tác');
         } finally {
             setIsDeleting(false);
         }
@@ -96,14 +98,14 @@ const Workers: React.FC = () => {
 
     const handleExport = async () => {
         const workbook = new ExcelJS.Workbook();
-        const ws = workbook.addWorksheet('Danh sách đối tác');
+        const ws = workbook.addWorksheet(t('partners.export.sheet_name') || 'Danh sách đối tác');
         ws.columns = [
-            { header: 'Mã đối tác', key: 'code', width: 16 },
-            { header: 'Tên đối tác', key: 'name', width: 30 },
-            { header: 'Loại', key: 'type', width: 16 },
-            { header: 'Điện thoại', key: 'phone', width: 16 },
-            { header: 'Địa chỉ', key: 'address', width: 36 },
-            { header: 'Số dư hiện tại', key: 'balance', width: 20 },
+            { header: t('partners.table.code'), key: 'code', width: 16 },
+            { header: t('partners.table.name'), key: 'name', width: 30 },
+            { header: t('partners.table.type'), key: 'type', width: 16 },
+            { header: t('partners.table.phone'), key: 'phone', width: 16 },
+            { header: t('partners.table.address'), key: 'address', width: 36 },
+            { header: t('partners.table.balance'), key: 'balance', width: 20 },
         ];
         const headerRow = ws.getRow(1);
         headerRow.eachCell(cell => {
@@ -114,19 +116,20 @@ const Workers: React.FC = () => {
         filteredWorkers.forEach(w => ws.addRow({
             code: w.partner_code,
             name: w.partner_name,
-            type: w.type === 'WORKER' ? 'Nhân viên' : w.type === 'SUPPLIER' ? 'Nhà cung cấp' : w.type === 'BUYER' ? 'Người mua' : 'Gia đình',
+            type: w.type === 'WORKER' ? t('partners.types.worker') : w.type === 'SUPPLIER' ? t('partners.types.supplier') : w.type === 'BUYER' ? t('partners.types.buyer') : t('partners.types.family'),
             phone: w.phone || '',
             address: w.address || '',
             balance: Number(w.current_balance),
         }));
         const buffer = await workbook.xlsx.writeBuffer();
-        saveAs(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `DanhSach_DoiTac_${new Date().toISOString().split('T')[0]}.xlsx`);
+        const filename = t('partners.export.filename', { date: new Date().toISOString().split('T')[0] }) || `DanhSach_DoiTac_${new Date().toISOString().split('T')[0]}.xlsx`;
+        saveAs(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), filename);
     };
 
     const handleImport = async (file: File) => {
         const text = await file.text();
         const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-        if (lines.length <= 1) throw new Error('File không có dữ liệu');
+        if (lines.length <= 1) throw new Error(t('common.no_data') || 'File không có dữ liệu');
         const rows = lines.slice(1);
         for (const line of rows) {
             const cols = line.split(',').map(c => c.replace(/^"|"$/g, '').trim());
@@ -144,11 +147,11 @@ const Workers: React.FC = () => {
 
     const downloadTemplate = () => {
         const csv = [
-            'Mã đối tác,Tên đối tác,Loại (WORKER/SUPPLIER/BUYER/FAMILY),Điện thoại,Địa chỉ',
+            (t('partners.import.columns', { returnObjects: true }) as string[]).join(','),
             'NV-001,Nguyễn Văn A,WORKER,0901234567,Hà Nội',
         ].join('\n');
         const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-        saveAs(blob, 'MauNhap_DoiTac.csv');
+        saveAs(blob, t('partners.template.filename') || 'MauNhap_DoiTac.csv');
     };
 
     const handleTypeChange = async (type: 'SUPPLIER' | 'BUYER' | 'WORKER' | 'FAMILY') => {
@@ -186,7 +189,7 @@ const Workers: React.FC = () => {
     };
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+        return new Intl.NumberFormat(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { style: 'currency', currency: 'VND' }).format(amount);
     };
 
     // Custom Select Component
@@ -240,9 +243,9 @@ const Workers: React.FC = () => {
         <div className="p-3 md:p-4 space-y-4 w-full">
             <div>
                 <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
-                    Quản lý Đối tác
+                    {t('partners.title')}
                 </h1>
-                <p className="text-slate-500 text-sm mt-1">Danh sách nhân viên, nhà cung cấp và người mua</p>
+                <p className="text-slate-500 text-sm mt-1">{t('partners.subtitle')}</p>
             </div>
 
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
@@ -254,12 +257,12 @@ const Workers: React.FC = () => {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full bg-slate-50 border-none rounded-lg py-2.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-[#13ec49]/30 transition-all outline-none"
-                            placeholder="Tìm kiếm đối tác..."
+                            placeholder={t('partners.search_placeholder')}
                         />
                     </div>
                     <ActionToolbar
                         onAdd={() => { resetForm(); setShowModal(true); }}
-                        addLabel="Thêm đối tác"
+                        addLabel={t('partners.add_btn')}
                         onEdit={() => selectedWorker && handleEdit(selectedWorker)}
                         editDisabled={!selectedWorker}
                         onDelete={() => selectedWorker && setDeleteTarget(selectedWorker)}
@@ -275,27 +278,27 @@ const Workers: React.FC = () => {
                 {loading ? (
                     <div className="text-center py-12">
                         <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#13ec49]"></div>
-                        <p className="mt-4 text-slate-600">Đang tải...</p>
+                        <p className="mt-4 text-slate-600">{t('partners.status.loading')}</p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
                             <thead className="bg-slate-50 text-[10px] font-bold text-slate-500 border-b border-slate-200 uppercase tracking-widest whitespace-nowrap">
                                 <tr>
-                                    <th className="px-4 py-3">Mã đối tác</th>
-                                    <th className="px-4 py-3">Tên đối tác</th>
-                                    <th className="px-4 py-3 min-w-[120px]">Loại</th>
-                                    <th className="px-4 py-3">Điện thoại</th>
-                                    <th className="px-4 py-3">Địa chỉ</th>
-                                    <th className="px-4 py-3">Số dư</th>
-                                    <th className="px-4 py-3 text-right">Thao tác</th>
+                                    <th className="px-4 py-3">{t('partners.table.code')}</th>
+                                    <th className="px-4 py-3">{t('partners.table.name')}</th>
+                                    <th className="px-4 py-3 min-w-[120px]">{t('partners.table.type')}</th>
+                                    <th className="px-4 py-3">{t('partners.table.phone')}</th>
+                                    <th className="px-4 py-3">{t('partners.table.address')}</th>
+                                    <th className="px-4 py-3">{t('partners.table.balance')}</th>
+                                    <th className="px-4 py-3 text-right">{t('partners.table.actions')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 text-sm">
                                 {filteredWorkers.length === 0 ? (
                                     <tr>
                                         <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
-                                            {searchTerm ? 'Không tìm thấy đối tác nào' : 'Chưa có đối tác nào'}
+                                            {searchTerm ? t('partners.status.not_found') : t('partners.status.empty')}
                                         </td>
                                     </tr>
                                 ) : (
@@ -324,9 +327,9 @@ const Workers: React.FC = () => {
                                                         worker.type === 'FAMILY' ? 'bg-orange-100 text-orange-800' :
                                                             'bg-purple-100 text-purple-800'
                                                     }`}>
-                                                    {worker.type === 'SUPPLIER' ? 'Nhà cung cấp' :
-                                                        worker.type === 'BUYER' ? 'Người mua' :
-                                                            worker.type === 'FAMILY' ? 'Gia đình' : 'Nhân viên'}
+                                                    {worker.type === 'SUPPLIER' ? t('partners.types.supplier') :
+                                                        worker.type === 'BUYER' ? t('partners.types.buyer') :
+                                                            worker.type === 'FAMILY' ? t('partners.types.family') : t('partners.types.worker')}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-3 text-slate-600 text-[13px]">{worker.phone || '-'}</td>
@@ -346,14 +349,14 @@ const Workers: React.FC = () => {
                                                     <button
                                                         onClick={() => handleEdit(worker)}
                                                         className="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all"
-                                                        title="Sửa"
+                                                        title={t('common.edit')}
                                                     >
                                                         <span className="material-symbols-outlined text-[18px]">edit</span>
                                                     </button>
                                                     <button
                                                         onClick={() => setDeleteTarget(worker)}
                                                         className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-all"
-                                                        title="Xóa"
+                                                        title={t('common.delete')}
                                                     >
                                                         <span className="material-symbols-outlined text-[18px]">delete</span>
                                                     </button>
@@ -373,11 +376,11 @@ const Workers: React.FC = () => {
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
                         <h2 className="text-2xl font-bold mb-6 text-slate-900">
-                            {editingWorker ? 'Sửa đối tác' : 'Thêm đối tác mới'}
+                            {editingWorker ? t('partners.modal.edit_title') : t('partners.modal.add_title')}
                         </h2>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Mã đối tác *</label>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">{t('partners.modal.code')}</label>
                                 <input
                                     type="text"
                                     required
@@ -385,53 +388,53 @@ const Workers: React.FC = () => {
                                     value={formData.partner_code}
                                     onChange={(e) => setFormData({ ...formData, partner_code: e.target.value })}
                                     className="w-full border border-slate-300 rounded-lg px-4 py-2.5 disabled:bg-slate-100 focus:ring-2 focus:ring-[#13ec49]/30 outline-none"
-                                    placeholder="VD: NV-001"
+                                    placeholder={t('partners.modal.placeholder.code')}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Tên đối tác *</label>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">{t('partners.modal.name')}</label>
                                 <input
                                     type="text"
                                     required
                                     value={formData.partner_name}
                                     onChange={(e) => setFormData({ ...formData, partner_name: e.target.value })}
                                     className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#13ec49]/30 outline-none"
-                                    placeholder="Nhập tên đối tác"
+                                    placeholder={t('partners.modal.placeholder.name')}
                                 />
                             </div>
                             <div>
                                 <CustomSelect
                                     id="partner_type"
-                                    label="Loại *"
+                                    label={t('partners.modal.type')}
                                     value={formData.type}
                                     onChange={(val: any) => handleTypeChange(val)}
                                     options={[
-                                        { value: 'WORKER', label: 'Nhân viên' },
-                                        { value: 'SUPPLIER', label: 'Nhà cung cấp' },
-                                        { value: 'BUYER', label: 'Người mua' },
-                                        { value: 'FAMILY', label: 'Gia đình' }
+                                        { value: 'WORKER', label: t('partners.types.worker') },
+                                        { value: 'SUPPLIER', label: t('partners.types.supplier') },
+                                        { value: 'BUYER', label: t('partners.types.buyer') },
+                                        { value: 'FAMILY', label: t('partners.types.family') }
                                     ]}
-                                    placeholder="-- Chọn loại --"
+                                    placeholder={t('partners.modal.placeholder.select_type')}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Điện thoại</label>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">{t('partners.modal.phone')}</label>
                                 <input
                                     type="tel"
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                     className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#13ec49]/30 outline-none"
-                                    placeholder="0901234567"
+                                    placeholder={t('partners.modal.placeholder.phone')}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Địa chỉ</label>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">{t('partners.modal.address')}</label>
                                 <textarea
                                     value={formData.address}
                                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                                     className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#13ec49]/30 outline-none"
                                     rows={3}
-                                    placeholder="Nhập địa chỉ"
+                                    placeholder={t('partners.modal.placeholder.address')}
                                 />
                             </div>
                             <div className="flex justify-end gap-3 mt-6">
@@ -443,13 +446,13 @@ const Workers: React.FC = () => {
                                     }}
                                     className="px-6 py-2.5 border border-slate-300 rounded-lg hover:bg-slate-50 font-medium transition-all"
                                 >
-                                    Hủy
+                                    {t('partners.modal.cancel')}
                                 </button>
                                 <button
                                     type="submit"
                                     className="px-6 py-2.5 bg-[#13ec49] text-black font-bold rounded-lg hover:bg-[#13ec49]/90 transition-all active:scale-95"
                                 >
-                                    {editingWorker ? 'Cập nhật' : 'Tạo mới'}
+                                    {editingWorker ? t('partners.modal.save') : t('partners.modal.create')}
                                 </button>
                             </div>
                         </form>
@@ -467,8 +470,8 @@ const Workers: React.FC = () => {
                 open={showImportModal}
                 onClose={() => setShowImportModal(false)}
                 onImport={handleImport}
-                entityName="tài khoản"
-                columnGuide={['Mã đối tác', 'Tên đối tác', 'Loại (WORKER/SUPPLIER/BUYER/FAMILY)', 'Điện thoại', 'Địa chỉ']}
+                entityName={t('partners.import.entity_name')}
+                columnGuide={t('partners.import.columns', { returnObjects: true }) as string[]}
                 onDownloadTemplate={downloadTemplate}
             />
         </div>

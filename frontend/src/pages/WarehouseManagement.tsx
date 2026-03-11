@@ -4,6 +4,8 @@ import { getWarehouseTypes, WarehouseType } from '../api/warehouse-type.api';
 import { getMediaFiles, MediaFile } from '../services/media.service';
 import { getMediaUrl } from '../services/products.service';
 import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../components';
+import { useTranslation } from 'react-i18next';
+
 
 const WarehouseManagement: React.FC = () => {
     const [warehouseTypes, setWarehouseTypes] = useState<WarehouseType[]>([]);
@@ -11,7 +13,9 @@ const WarehouseManagement: React.FC = () => {
     const [items, setItems] = useState<WarehouseItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const { t, i18n } = useTranslation();
     const [showModal, setShowModal] = useState(false);
+
     const [editingItem, setEditingItem] = useState<WarehouseItem | null>(null);
     const [selectedItem, setSelectedItem] = useState<WarehouseItem | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<WarehouseItem | null>(null);
@@ -146,8 +150,9 @@ const WarehouseManagement: React.FC = () => {
             loadItems();
         } catch (error) {
             console.error('Error saving item:', error);
-            alert('Có lỗi xảy ra khi lưu mặt hàng');
+            alert(t('warehouse_management.messages.save_error'));
         }
+
     };
 
     const handleDelete = async (id: string) => {
@@ -159,8 +164,9 @@ const WarehouseManagement: React.FC = () => {
             loadItems();
         } catch (error) {
             console.error('Error deleting item:', error);
-            alert('Không thể xóa mặt hàng');
+            alert(t('warehouse_management.messages.delete_error'));
         } finally {
+
             setIsDeleting(false);
         }
     };
@@ -172,17 +178,20 @@ const WarehouseManagement: React.FC = () => {
 
     const handleExport = () => {
         console.log('Exporting warehouse items...');
-        alert('Đang trích xuất danh sách hàng tồn kho ra file Excel...');
+        alert(t('common.exporting'));
     };
+
 
     const handleDownloadTemplate = () => {
         console.log('Downloading warehouse template...');
-        alert('Đang tải tệp mẫu hàng tồn kho...');
+        alert(t('common.downloading_template'));
     };
 
+
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+        return new Intl.NumberFormat(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { style: 'currency', currency: 'VND' }).format(amount);
     };
+
 
     const totalValue = items.reduce((sum, item) => sum + (Number(item.quantity) * Number(item.price)), 0);
 
@@ -191,10 +200,11 @@ const WarehouseManagement: React.FC = () => {
             {/* Header */}
             <div>
                 <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-tight">
-                    Quản lý Kho tổng hợp
+                    {t('warehouse_management.title')}
                 </h1>
-                <p className="text-slate-500 mt-2 font-medium">Toàn bộ vật dụng, thiết bị và tài sản trang trại</p>
+                <p className="text-slate-500 mt-2 font-medium">{t('warehouse_management.subtitle')}</p>
             </div>
+
 
             {/* Warehouse Type Filter Tabs */}
             <div className="flex flex-wrap gap-2 p-1.5 bg-slate-100 rounded-[24px] w-fit border border-slate-200">
@@ -202,8 +212,9 @@ const WarehouseManagement: React.FC = () => {
                     onClick={() => setSelectedTypeId('ALL')}
                     className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${selectedTypeId === 'ALL' ? 'bg-white text-[#13ec49] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >
-                    Tất cả kho
+                    {t('warehouse_management.filter_all')}
                 </button>
+
                 {warehouseTypes.map(type => (
                     <button
                         key={type.id}
@@ -218,17 +229,20 @@ const WarehouseManagement: React.FC = () => {
             {/* Stats - 3 cards per row on Mobile */}
             <div className="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-4">
                 <div className="bg-white p-2.5 md:p-6 rounded-xl md:rounded-2xl border border-slate-200 shadow-sm border-b-4 border-b-blue-500 flex flex-col items-center md:items-start text-center md:text-left">
-                    <p className="text-slate-400 text-[8px] md:text-[10px] font-black uppercase tracking-widest truncate w-full">Số loại</p>
+                    <p className="text-slate-400 text-[8px] md:text-[10px] font-black uppercase tracking-widest truncate w-full">{t('warehouse_management.stats.types_count')}</p>
                     <h3 className="text-sm md:text-3xl font-black mt-1 md:mt-2 text-slate-900 truncate w-full">{items.length}</h3>
                 </div>
+
                 <div className="bg-white p-2.5 md:p-6 rounded-xl md:rounded-2xl border border-slate-200 shadow-sm border-b-4 border-b-[#13ec49] flex flex-col items-center md:items-start text-center md:text-left">
-                    <p className="text-slate-400 text-[8px] md:text-[10px] font-black uppercase tracking-widest truncate w-full">Số lượng</p>
+                    <p className="text-slate-400 text-[8px] md:text-[10px] font-black uppercase tracking-widest truncate w-full">{t('warehouse_management.stats.quantity')}</p>
                     <h3 className="text-sm md:text-3xl font-black mt-1 md:mt-2 text-slate-900 truncate w-full">{items.reduce((sum, item) => sum + Number(item.quantity), 0)}</h3>
                 </div>
+
                 <div className="bg-white p-2.5 md:p-6 rounded-xl md:rounded-2xl border border-slate-200 shadow-sm border-b-4 border-b-orange-500 flex flex-col items-center md:items-start text-center md:text-left col-span-1 md:col-span-2">
-                    <p className="text-slate-400 text-[8px] md:text-[10px] font-black uppercase tracking-widest truncate w-full">Tổng giá trị</p>
+                    <p className="text-slate-400 text-[8px] md:text-[10px] font-black uppercase tracking-widest truncate w-full">{t('warehouse_management.stats.total_value')}</p>
                     <h3 className="text-sm md:text-3xl font-black mt-1 md:mt-2 text-green-600 truncate w-full">{formatCurrency(totalValue)}</h3>
                 </div>
+
             </div>
 
             {/* Table Section */}
@@ -241,12 +255,14 @@ const WarehouseManagement: React.FC = () => {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-[#13ec49]/30 transition-all outline-none"
-                            placeholder="Tìm kiếm mặt hàng..."
+                            placeholder={t('warehouse_management.search_placeholder')}
                         />
+
                     </div>
                     <ActionToolbar
                         onAdd={() => handleOpenModal()}
-                        addLabel="Thêm mặt hàng"
+                        addLabel={t('warehouse_management.add_btn')}
+
                         onEdit={() => selectedItem && handleOpenModal(selectedItem)}
                         editDisabled={!selectedItem}
                         onDelete={() => selectedItem && setDeleteTarget(selectedItem)}
@@ -263,15 +279,16 @@ const WarehouseManagement: React.FC = () => {
                     <table className="w-full text-left">
                         <thead className="whitespace-nowrap">
                             <tr className="bg-slate-50/50 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
-                                <th className="px-8 py-5">Thông tin Sản phẩm</th>
-                                <th className="px-8 py-5">Mã / SKU</th>
-                                <th className="px-8 py-5">Kho lưu trữ</th>
-                                <th className="px-8 py-5 text-right">Số lượng</th>
-                                <th className="px-8 py-5 text-right">Đơn giá</th>
-                                <th className="px-8 py-5">Vị trí</th>
-                                <th className="px-8 py-5 text-right">Thao tác</th>
+                                <th className="px-8 py-5">{t('warehouse_management.table.info')}</th>
+                                <th className="px-8 py-5">{t('warehouse_management.table.code_sku')}</th>
+                                <th className="px-8 py-5">{t('warehouse_management.table.warehouse')}</th>
+                                <th className="px-8 py-5 text-right">{t('warehouse_management.table.quantity')}</th>
+                                <th className="px-8 py-5 text-right">{t('warehouse_management.table.price')}</th>
+                                <th className="px-8 py-5">{t('warehouse_management.table.location')}</th>
+                                <th className="px-8 py-5 text-right">{t('warehouse_management.table.actions')}</th>
                             </tr>
                         </thead>
+
                         <tbody className="divide-y divide-slate-50 text-sm font-medium">
                             {loading ? (
                                 <tr>
@@ -284,7 +301,10 @@ const WarehouseManagement: React.FC = () => {
                                 </tr>
                             ) : items.length === 0 ? (
                                 <tr>
-                                    <td colSpan={7} className="px-8 py-20 text-center text-slate-300 italic font-bold">Không tìm thấy mặt hàng nào</td>
+                                    <td colSpan={7} className="px-8 py-20 text-center text-slate-300 italic font-bold">
+                                        {searchTerm ? t('warehouse_management.messages.empty') : t('warehouse_management.messages.empty')}
+                                    </td>
+
                                 </tr>
                             ) : (
                                 (items || []).map((item) => (
@@ -306,8 +326,9 @@ const WarehouseManagement: React.FC = () => {
                                                 </div>
                                                 <div>
                                                     <div className="font-extrabold text-slate-900 group-hover:text-[#13ec49] transition-colors">{item.item_name}</div>
-                                                    <div className="text-[10px] text-slate-400 uppercase tracking-widest mt-1 font-black">{item.category || 'Chưa phân loại'}</div>
+                                                    <div className="text-[10px] text-slate-400 uppercase tracking-widest mt-1 font-black">{item.category || t('warehouse_management.table.unclassified')}</div>
                                                 </div>
+
                                             </div>
                                         </td>
                                         <td className="px-8 py-5">
@@ -331,8 +352,9 @@ const WarehouseManagement: React.FC = () => {
                                         <td className="px-8 py-5">
                                             <div className="flex items-center gap-2 text-slate-500">
                                                 <span className="material-symbols-outlined text-[16px]">location_on</span>
-                                                <span className="text-xs font-bold">{item.location || 'N/A'}</span>
+                                                <span className="text-xs font-bold">{item.location || t('common.na')}</span>
                                             </div>
+
                                         </td>
                                         <td className="px-8 py-5 text-right">
                                             <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
@@ -364,10 +386,11 @@ const WarehouseManagement: React.FC = () => {
                     <div className="bg-white rounded-[40px] w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-300 flex flex-col">
                         <div className="px-10 py-8 border-b border-slate-100 flex items-center justify-between">
                             <div>
-                                <h2 className="text-3xl font-black text-slate-900 tracking-tight">{editingItem ? 'Cập nhật mặt hàng' : 'Thêm mặt hàng mới'}</h2>
-                                <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1">Cấu bản ghi vật kê khai tài sản</p>
+                                <h2 className="text-3xl font-black text-slate-900 tracking-tight">{editingItem ? t('warehouse_management.modal.edit_title') : t('warehouse_management.modal.add_title')}</h2>
+                                <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1">{t('warehouse_management.modal.subtitle')}</p>
                             </div>
                             <button onClick={() => setShowModal(false)} className="size-12 rounded-2xl hover:bg-slate-50 flex items-center justify-center text-slate-400 transition-all">
+
                                 <span className="material-symbols-outlined">close</span>
                             </button>
                         </div>
@@ -384,12 +407,14 @@ const WarehouseManagement: React.FC = () => {
                                                 <span className="material-symbols-outlined text-slate-300 text-5xl">add_photo_alternate</span>
                                             )}
                                         </div>
-                                        <p className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-[#13ec49] transition-colors">Tải ảnh lên</p>
+                                        <p className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-[#13ec49] transition-colors">{t('warehouse_management.modal.upload_image')}</p>
                                     </div>
 
+
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Loại nhà kho *</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('warehouse_management.modal.warehouse_type')}</label>
                                         <select
+
                                             required
                                             value={formData.warehouse_type_id}
                                             onChange={e => handleTypeChangeInForm(e.target.value)}
@@ -402,8 +427,9 @@ const WarehouseManagement: React.FC = () => {
 
                                 <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 content-start">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mã hàng hóa</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('warehouse_management.modal.item_code')}</label>
                                         <input
+
                                             required
                                             type="text"
                                             disabled={!!editingItem}
@@ -414,30 +440,35 @@ const WarehouseManagement: React.FC = () => {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mã SKU / Barcode</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('warehouse_management.modal.sku')}</label>
                                         <input
+
                                             type="text"
                                             value={formData.sku}
                                             onChange={e => setFormData({ ...formData, sku: e.target.value })}
                                             className="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 focus:ring-4 focus:ring-[#13ec49]/20 outline-none font-bold text-slate-900 transition-all"
-                                            placeholder="Dùng để quét mã vạch..."
+                                            placeholder={t('warehouse_management.modal.sku_placeholder')}
                                         />
+
                                     </div>
                                     <div className="md:col-span-2 space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tên mặt hàng *</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('warehouse_management.modal.item_name')}</label>
                                         <input
+
                                             required
                                             type="text"
                                             value={formData.item_name}
                                             onChange={e => setFormData({ ...formData, item_name: e.target.value })}
                                             className="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 focus:ring-4 focus:ring-[#13ec49]/20 outline-none font-bold text-slate-900 transition-all"
-                                            placeholder="Tên sản phẩm..."
+                                            placeholder={t('warehouse_management.modal.item_name_placeholder')}
                                         />
+
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Vị trí lưu kho</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('warehouse_management.modal.location')}</label>
                                         <input
+
                                             type="text"
                                             value={formData.location}
                                             onChange={e => setFormData({ ...formData, location: e.target.value })}
@@ -446,8 +477,9 @@ const WarehouseManagement: React.FC = () => {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Đơn vị tính</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('warehouse_management.modal.unit')}</label>
                                         <select
+
                                             value={formData.unit}
                                             onChange={e => setFormData({ ...formData, unit: e.target.value })}
                                             className="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 focus:ring-4 focus:ring-[#13ec49]/20 outline-none font-bold text-slate-900 transition-all appearance-none"
@@ -456,8 +488,9 @@ const WarehouseManagement: React.FC = () => {
                                         </select>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Số lượng hiện có</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('warehouse_management.modal.quantity')}</label>
                                         <input
+
                                             required
                                             type="number"
                                             value={formData.quantity}
@@ -466,8 +499,9 @@ const WarehouseManagement: React.FC = () => {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Giá trị ước tính (VNĐ)</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('warehouse_management.modal.price')}</label>
                                         <input
+
                                             required
                                             type="number"
                                             value={formData.price}
@@ -477,14 +511,16 @@ const WarehouseManagement: React.FC = () => {
                                     </div>
 
                                     <div className="md:col-span-2 space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Ghi chú bổ sung</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('warehouse_management.modal.note')}</label>
                                         <textarea
+
                                             rows={3}
                                             value={formData.note}
                                             onChange={e => setFormData({ ...formData, note: e.target.value })}
                                             className="w-full bg-slate-50 border-none rounded-2xl px-6 py-4 focus:ring-4 focus:ring-[#13ec49]/20 outline-none font-bold text-slate-900 transition-all resize-none"
-                                            placeholder="Mô tả tình trạng máy móc, thời gian bảo trì..."
+                                            placeholder={t('warehouse_management.modal.note_placeholder')}
                                         />
+
                                     </div>
                                 </div>
                             </div>
@@ -494,7 +530,7 @@ const WarehouseManagement: React.FC = () => {
                                 className="w-full mt-12 bg-[#13ec49] text-black py-6 rounded-3xl font-black text-sm uppercase tracking-widest shadow-2xl shadow-[#13ec49]/30 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-4"
                             >
                                 <span className="material-symbols-outlined font-black">save</span>
-                                {editingItem ? 'Cập nhật thay đổi' : 'Ghi nhận vào kho'}
+                                {editingItem ? t('warehouse_management.modal.save_edit') : t('warehouse_management.modal.save_new')}
                             </button>
                         </form>
                     </div>
@@ -507,8 +543,9 @@ const WarehouseManagement: React.FC = () => {
                     <div className="bg-white rounded-[60px] w-full max-w-5xl h-[85vh] overflow-hidden flex flex-col shadow-2xl animate-in fade-in slide-in-from-bottom-12 duration-500">
                         <div className="p-10 border-b border-slate-100 flex items-center justify-between">
                             <div>
-                                <h3 className="text-3xl font-black text-slate-900 tracking-tight">Thư viện ảnh</h3>
-                                <p className="text-slate-400 text-[11px] font-black uppercase tracking-widest mt-2">Chọn ảnh phù hợp cho vật kê khai</p>
+                                 <h3 className="text-3xl font-black text-slate-900 tracking-tight">{t('warehouse_management.media.title')}</h3>
+                                <p className="text-slate-400 text-[11px] font-black uppercase tracking-widest mt-2">{t('warehouse_management.media.subtitle')}</p>
+
                             </div>
                             <button onClick={() => setShowMediaPicker(false)} className="size-14 rounded-[20px] bg-slate-50 hover:bg-red-50 hover:text-red-500 flex items-center justify-center text-slate-400 transition-all">
                                 <span className="material-symbols-outlined text-3xl">close</span>
@@ -523,7 +560,7 @@ const WarehouseManagement: React.FC = () => {
                             ) : mediaFiles.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center h-full gap-4 text-slate-300">
                                     <span className="material-symbols-outlined text-[100px]">filter_hdr</span>
-                                    <p className="font-black uppercase text-sm tracking-widest">Không có dữ liệu ảnh.</p>
+                                    <p className="font-black uppercase text-sm tracking-widest">{t('warehouse_management.media.no_data')}</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
@@ -562,8 +599,19 @@ const WarehouseManagement: React.FC = () => {
                 open={showImportModal}
                 onClose={() => setShowImportModal(false)}
                 onImport={handleImport}
-                entityName="mặt hàng kho"
-                columnGuide={['Mã mặt hàng', 'Tên mặt hàng', 'Mã SKU', 'Loại nhà kho (ID)', 'Số lượng', 'Đơn vị', 'Đơn giá', 'Vị trí', 'Ghi chú']}
+                entityName={t('sidebar.warehouse_items').toLowerCase()}
+                columnGuide={[
+                    t('warehouse_management.modal.item_code'),
+                    t('warehouse_management.modal.item_name'),
+                    t('warehouse_management.modal.sku'),
+                    t('warehouse_management.modal.warehouse_type'),
+                    t('warehouse_management.modal.quantity'),
+                    t('warehouse_management.modal.unit'),
+                    t('warehouse_management.modal.price'),
+                    t('warehouse_management.modal.location'),
+                    t('warehouse_management.modal.note')
+                ]}
+
                 onDownloadTemplate={handleDownloadTemplate}
             />
         </div>

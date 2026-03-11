@@ -1,0 +1,1348 @@
+{
+  "common": {
+    "welcome": "Welcome to Green Acres Farm",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "search": "Search",
+    "loading": "Loading...",
+    "no_data": "No data",
+    "all_seasons": "All Seasons",
+    "export_report": "Export Report",
+    "income": "Income",
+    "expense": "Expense",
+    "exporting": "Extracting data...",
+    "downloading_template": "Downloading template...",
+    "others": "Others",
+    "na": "N/A"
+  },
+  "dashboard": {
+    "title": "Farm Overview",
+    "current_month": "Current Month",
+    "total_income": "Total Income",
+    "total_expense": "Total Expense",
+    "net_profit": "Net Profit",
+    "season_investment": "Season Investment",
+    "seasons_count": "{{count}} seasons",
+    "load_error": "Could not load stats data",
+    "cash_flow_history": "Cash Flow History",
+    "cash_flow_subtitle": "Income vs Expense (last 6 months)",
+    "low_stock_items": "Low Stock Items",
+    "out_of_stock": "Out of stock",
+    "low_stock": "Soon out",
+    "warning": "Warning",
+    "remaining": "Remaining",
+    "stock_sufficient": "All stock are sufficient",
+    "high_balance_workers": "Workers with high balance",
+    "no_worker_data": "No worker data available",
+    "total_balance": "total balance"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "schedule": "Work Schedule",
+    "inventory": "Inventory",
+    "seasons": "Seasons",
+    "transactions": "Transactions",
+    "payroll_management": "Human Resources",
+    "workers": "Workers",
+    "shifts": "Work Shifts",
+    "jobs": "Jobs",
+    "work_schedules": "Work Schedules",
+    "daily_work_logs": "Daily Work Logs",
+    "payroll": "Payroll",
+    "master_data": "Master Data",
+    "events": "Farm Events",
+    "categories": "Categories",
+    "units": "Units",
+    "products": "Showcase Products",
+    "media": "Media Gallery",
+    "news": "News",
+    "event_mgmt": "Showcase Events",
+    "guest_mgmt": "Guests",
+    "notifications": "Notifications",
+    "warehouse_management": "Warehouse",
+    "warehouse_items": "Warehouse Items",
+    "warehouse_types": "Warehouse Types",
+    "settings": "System Settings",
+    "users": "Users",
+    "roles": "Roles",
+    "permissions": "Permissions",
+    "role_permissions": "Role Permissions",
+    "audit_logs": "Audit Logs",
+    "backup_restore": "Backup & Restore",
+    "app_name": "Our Home Garden",
+    "app_subtitle": "Digital Farm",
+    "view_website": "View Website",
+    "logout": "Logout"
+  },
+  "header": {
+    "search_placeholder": "Search...",
+    "showcase_page": "Showcase Page",
+    "guest": "Guest",
+    "profile": "Profile"
+  },
+  "showcase_header": {
+    "home": "Home",
+    "products": "Products",
+    "events": "Events",
+    "news": "News",
+    "search": "Search...",
+    "guest": "Guest"
+  },
+  "showcase_products": {
+    "search_placeholder": "Search products...",
+    "categories": "Categories",
+    "all": "All",
+    "no_products": "No products found",
+    "featured": "Featured",
+    "out_of_stock": "Out of stock",
+    "in_stock": "{{count}} left"
+  },
+
+  "showcase_blog": {
+    "search_placeholder": "Search articles...",
+    "news": "News",
+    "news_desc": "Latest updates from domestic and international events",
+    "loading": "Loading articles...",
+    "new_news": "New news",
+    "featured_post": "Featured Post",
+    "farm_name": "Our Farm",
+    "read_time": "min read",
+    "views": "views",
+    "read_more": "Read more",
+    "vnexpress_link": "View on VNExpress",
+    "view_details": "View Details",
+    "current_news": "Current news",
+    "view_news": "View on newspaper",
+    "no_posts": "No posts found",
+    "try_search_again": "Try searching with different keywords or check back later"
+  },
+  "showcase_home": {
+    "guest": "Guest",
+    "like": "Like",
+    "reply": "Reply",
+    "view_more_replies": "View {{count}} more replies...",
+    "collapse_replies": "Collapse replies",
+    "delete": "Delete",
+    "submitting": "Submitting...",
+    "submit_reply": "Submit reply",
+    "reply_to": "Reply to {{name}}...",
+    "cancel": "Cancel",
+    "confirm_delete_comment": "Are you sure you want to delete this comment?",
+    "login_to_comment": "You need to log in to comment. Go to login page?",
+    "error_commenting": "Error submitting comment. Please try again!",
+    "login_to_reply": "You need to log in to reply. Go to login page?",
+    "error_replying": "Error submitting reply. Please try again!",
+    "cannot_delete": "Cannot delete this comment.",
+    "login_to_react": "You need to log in to react. Go to login page?",
+    "no_permission_react": "You don't have permission to react. Please check your roles.",
+    "error_reacting": "Action failed. Please try again later.",
+    "farm_name": "Vườn nhà mình",
+    "farm_desc": "Visit our high-quality organic plum farm in My Tho, Tien Giang!",
+    "copy_link_error": "Could not copy link",
+    "welcome": "Welcome",
+    "share": "Share",
+    "favorite": "Favorite",
+    "slogan": "Good land, sweet fruit.",
+    "location": "My Tho, Tien Giang, Vietnam",
+    "hero_title_1": "Harvest Season 2026",
+    "hero_desc_1": "Beautiful moments at the plum farm",
+    "hero_desc_2": "Golden ripe plum garden in summer",
+    "history_title": "Our Farm's Development Journey",
+    "history_intro": "From the early days of reclamation, our family's garden has gone through a journey of more than two decades, associated with the change of soil and the enthusiasm of true gardeners.",
+    "history_step_1": "1. The first steps (2003 - 2013)",
+    "history_step_1_desc": "The story begins in 2003, when the first apple roots were planted. Then, the family decided to switch to planting star apple - a tree that provides shade and high economic value at the time. In 2006, the plum tree officially appeared in the garden, initially just intercropped roots under the star apple canopy.",
+    "history_step_2": "2. Turning point and specialization (2014 - 2024)",
+    "history_step_2_desc_1": "The year 2014 marked an important decision: We realized that the perennial star apple trees had grown too high, making it difficult and dangerous to harvest and care for. With the goal of optimizing yield, the family decided to chop down the star apple trees to focus entirely on the plum trees.",
+    "history_step_2_desc_2": "Since then, plums have become the main source of income and the pride of the garden. To make the most of the land area and create a diverse ecosystem, we also intercropped kumquat and pineapple. This \"take short to feed long\" model not only helps retain moisture for the soil but also provides a stable source of extra income year-round.",
+    "history_step_3": "3. New vision: Combining sustainable farming (2025)",
+    "history_step_3_desc": "Not stopping at cultivating fruit trees, in mid-2025, my father pioneered deploying a frog farming model. This is a strategic step to:",
+    "history_step_3_point_1": "Utilize water resources:",
+    "history_step_3_point_1_desc": "Combine the existing garden ditch to raise frogs.",
+    "history_step_3_point_2": "Increase economic value:",
+    "history_step_3_point_2_desc": "Diversify the supply of products to the market besides fresh fruit.",
+    "history_step_3_point_3": "Towards circular agriculture:",
+    "history_step_3_point_3_desc": "Utilize agricultural by-products and create a natural organic fertilizer source from frog waste to feed back to the plum roots.",
+    "read_more": "Read more",
+    "read_less": "Read less",
+    "updating": "Updating",
+    "vietgap": "VietGAP Certified",
+    "area": "2.5 Hectares",
+    "cultivation_area": "Cultivation Area",
+    "founded": "Founded 2003",
+    "journey": "23 years journey",
+    "farm_images": "Farm Gallery",
+    "view_all": "View All",
+    "reviews_comments": "Reviews & Comments",
+    "reviews_count": "({{count}} reviews)",
+    "share_thoughts": "Share your thoughts about the farm...",
+    "submit_review": "Submit Review",
+    "reactions_data": "Reactions Data",
+    "no_reactions": "No reactions yet",
+    "close": "Close",
+    "view_more_comments": "View {{count}} more comments...",
+    "collapse_comments": "Collapse comments",
+    "visit_us": "Visit Us",
+    "visit_address": "Dong Hoa, My Tho City, Tien Giang, Vietnam",
+    "working_hours": "Mon - Sat: 8:00 - 17:00",
+    "directions": "Get Directions",
+    "gallery_title": "Farm Image Gallery",
+    "link_copied": "Link copied to clipboard!"
+  },
+  "showcase_contact": {
+    "title": "Contact Us",
+    "description": "We are always ready to listen to your feedback, answer your questions, or assist you in experiencing our farm's products.",
+    "contact_info": "Contact Information",
+    "address": "Farm Address",
+    "phone": "Phone Number",
+    "email": "Support Email",
+    "working_hours": "Working Hours",
+    "morning": "Morning: 08:00 - 12:00",
+    "afternoon": "Afternoon: 13:30 - 17:30 (Mon - Sat)",
+    "follow_us": "Follow Us",
+    "send_message": "Send Us a Message",
+    "full_name": "Full Name *",
+    "full_name_placeholder": "Ex: John Doe",
+    "email_address": "Email Address *",
+    "email_placeholder": "email@example.com",
+    "phone_number": "Phone Number",
+    "phone_placeholder": "09xx xxx xxx",
+    "subject": "Subject",
+    "subject_placeholder": "-- Select Subject --",
+    "subject_business": "Business Partnership",
+    "subject_support": "Technical Support",
+    "subject_feedback": "Product Feedback",
+    "subject_other": "Other",
+    "message_content": "Message Content *",
+    "message_placeholder": "How can we assist you?",
+    "submit_button": "Send Contact Message",
+    "success_message": "Thank you! Your message has been sent successfully. We will respond as soon as possible.",
+    "copyright": "© {{year}} Green Acres Farm. All rights reserved."
+  },
+  "showcase_blog_detail": {
+    "loading_post": "Loading post...",
+    "post_not_found": "Post not found",
+    "back_to_list": "Back to list",
+    "breadcrumb_news": "News",
+    "read_time_minutes": "{{minutes}} min read",
+    "default_read_time": "5 min read",
+    "views": "{{count}} views",
+    "share_post": "Share post:",
+    "back_to_news_list": "Back to news list",
+    "related_posts": "Related posts",
+    "view_all": "View all"
+  },
+  "showcase_policy": {
+    "title": "Information Security Policy",
+    "intro_1": "Green Acres Farm always respects customer privacy, which is why we are committed to protecting your personal information.",
+    "intro_2": "In this document, \"personal information\" includes name, address, email, phone number, or any other personal information you provide, or any information about you collected in accordance with applicable laws. We hope this document helps you understand what personal information Green Acres collects and how we use it later.",
+    "intro_3": "When you visit and use the website (including registering for online services), we understand that you fully agree to the terms of this policy.",
+    "sec1_title": "Declaration of Use",
+    "sec1_desc": "All content you see on the website is to serve your informational needs and help you choose a service. Therefore, you may use the website without providing any personal information. However, in some cases related to service registration, we may ask you to provide personal information.",
+    "sec2_title": "Personal Information Provided by You",
+    "sec2_desc_1": "When you provide necessary information, we will use it to meet your request, or we may contact you via letter, email, message, or phone; or in accordance with applicable laws, Green Acres may use these means to introduce you to new products, services, or promotions from Green Acres. By providing information to us through this website, you understand and agree to the collection, use, and disclosure of the aforementioned personal information for some purposes specified on this page.",
+    "sec2_desc_2": "You fully agree and accept that the personal information you provide when using the website may be kept at Green Acres' headquarters or branches, and may be stored on existing or future servers for the purpose of operating and developing the website as well as Green Acres' services.",
+    "sec2_desc_3": "If you order a product, request a service, or send feedback on the website, we may contact you for additional information necessary to process or complete your order or request. However, we will not provide this information to a third party without your permission, unless required by applicable law or necessary to process the order.",
+    "sec3_title": "Provision to Other Entities",
+    "sec3_desc": "We may use other entities to provide products or services to you. We also need to share your personal information with these entities so they can fulfill your request. These entities are not allowed to use your personal information for other purposes, and we require them to comply with security regulations when providing services.",
+    "sec4_title": "Browser Information Recording",
+    "sec4_desc_1": "Sometimes, information may be placed on your computer to help us upgrade the website or improve service quality for you. This information is usually known as \"cookies,\" which many websites use today. \"Cookies\" are pieces of information stored on your computer's hard drive or browser, not on the website. They allow the collection of certain information about your computer, such as IP address, operating system, browser mode, and addresses of related websites.",
+    "sec4_desc_2": "If you do not want to receive these cookies, or want to be notified when these cookies are placed, you can set your browser to do this if your browser supports it. Please note that if you disable cookies, you may not be able to access or use some features on the website properly. We do not intentionally restrict your use in this situation; this is merely a limitation in the programming and construction of the website.",
+    "sec5_title": "Security",
+    "sec5_desc_1": "When programming the website, we may set reasonable commercial rules to prevent unauthorized access and improper use of the personal information you have sent to Green Acres through the use of this website. If this website supports online transactions, an industry-standard technology called SSL (Secure Sockets Layer) is applied to protect security and safety during data transmission.",
+    "sec5_desc_2": "Because there are always risks associated with providing personal data, whether in person, by phone, over the internet, or other technical means; and no technical system is absolutely secure or resistant to all \"hackers\" and \"tampers,\" Green Acres always strives to take appropriate precautions tailored to the nature of the information to prevent and minimize risks when you use this website.",
+    "sec6_title": "Information via E-mail",
+    "sec6_desc": "When you register for a service, the email address you provide will be used as a communication tool with you. First, please ensure you provide a valid email address that you use throughout your use of the service. We may send confidential information via email or receive your support requests. In case you no longer use the provided email, you must inform us of this change. To protect you, Green Acres may temporarily stop processing requests through the email you provided if we detect fraud or abnormal activity until we contact you to confirm.",
+    "sec7_title": "Adjustment of Collected Information",
+    "sec7_desc": "Green Acres will actively or at your request add, correct, or delete inaccurate, incomplete, or un-updated personal data when you are still affiliated with our operations.",
+    "sec8_title": "Subject \"Minors\"",
+    "sec8_desc": "Green Acres refuses to serve individuals who are Minors (as defined by local laws where you reside) who do not have the right to purchase or seek to use under other legal bases on this website without the consent of a parent or legal guardian, unless applicable local law permits it.",
+    "sec9_title": "Links Outside the Website",
+    "sec9_desc": "This website may contain links to other websites provided for introduction or supplementary relevant information for your reference. Green Acres is not responsible for the content or actions of any other website.",
+    "sec10_title": "Changes to Regulations",
+    "sec10_desc": "Green Acres may sporadically change this regulation, including adding, removing part of the content, or temporarily suspending the website without notice. However, if this regulation is changed in a way that may be detrimental to you, Green Acres will try to notify you of the change via the email you provided or directly on the homepage.",
+    "back_home": "Back to Home"
+  },
+  "showcase_terms": {
+    "title": "Terms of Service",
+    "sec1_title": "Acceptance of Terms",
+    "sec1_desc": "By accessing, registering, or using any features of the <strong>Green Acres</strong> management and service system, you confirm that you have read, understood, and fully agree to comply with the terms and conditions outlined here. If you do not agree to any part of these terms, please stop using our services immediately.",
+    "sec2_title": "Registration & Account Security",
+    "sec2_desc_1": "When creating an account at Green Acres, you commit to providing accurate, complete, and updated information. You are solely responsible for keeping your password secure and for all activities that occur under your account.",
+    "sec2_desc_2": "You must notify us immediately if you discover any unauthorized access or security breaches. We are not liable for any loss or damage arising from your failure to comply with this security regulation.",
+    "sec3_title": "Prohibited Behaviors",
+    "sec3_desc": "To ensure a transparent and safe agricultural management environment, you commit to NOT performing the following actions:",
+    "sec3_li_1": "Intentionally entering false or fraudulent information regarding yields, seasons, or financial figures.",
+    "sec3_li_2": "Attempting to interfere with, sabotage the system (hack), spam, or spread malicious code.",
+    "sec3_li_3": "Using the service for any illegal purposes or violating applicable laws.",
+    "sec4_title": "Intellectual Property",
+    "sec4_desc_1": "All content including but not limited to: logos, source code, interface designs, images, text, and other digital assets on the system are the exclusive property of <strong>Green Acres</strong>.",
+    "sec4_desc_2": "Any copying, citation, or commercial use of these assets without our written consent is considered copyright infringement and will be handled in accordance with the law.",
+    "sec5_title": "Limitation of Liability",
+    "sec5_desc": "Green Acres endeavors to maintain stable services. However, we are not responsible for service interruptions due to force majeure such as network incidents, natural disasters, or technical errors beyond our control. We reserve the right to temporarily suspend services for maintenance or system upgrades at any time."
+  },
+  "showcase_event": {
+    "login_required": "You need to log in to view event details. Go to login page?",
+    "join_login_required": "You need to log in to join the event. Go to login page?",
+    "join_success": "See you at the event!",
+    "join_error": "An error occurred while joining the event",
+    "join_failed": "Cannot join the event at this time",
+    "upload_success": "Image uploaded successfully!",
+    "upload_error": "Error uploading image",
+    "breadcrumb_home": "Home",
+    "breadcrumb_events": "Events",
+    "loading": "Loading event details...",
+    "access_denied": "Access Denied",
+    "access_denied_desc": "Sorry, you are not invited to this event. Please contact the administrator if you think this is a mistake.",
+    "back_to_events": "Back to event list",
+    "event_not_found": "Event not found",
+    "participants": "Participants",
+    "participants_desc": "Let's welcome the distinguished guests who will join us to celebrate the new year and harvest luck! 🌸🧧✨",
+    "joined": "Joined",
+    "joining": "Registering...",
+    "join_now": "Join now",
+    "vip": "VIP",
+    "guest": "Guest",
+    "member": "Member",
+    "inviting": "Guest invitation in progress...",
+    "featured": "Featured Event",
+    "end": "End",
+    "event_details": "Event Details",
+    "event_details_desc": "Event details will be updated soon. Get ready for amazing experiences at Green Acres Farm!",
+    "location": "Location",
+    "default_location": "At Green Acres Farm",
+    "location_desc": "My Tho, Tien Giang, Vietnam",
+    "dress_code": "Dress Code",
+    "dress_code_desc_1": "Festival / Free",
+    "dress_code_desc_2": "Anything is fine, as long as you look good🧧✨",
+    "register_now": "Register now!",
+    "register_desc": "Join us for the most memorable experience of the year!",
+    "registering": "Registering...",
+    "interested": "I'm interested",
+    "moments": "Moments",
+    "contribute_photos": "Contribute photos",
+    "view_more": "View more",
+    "no_photos": "No photos shared yet.",
+    "please_contribute": "Please contribute photos!",
+    "tip_title": "Green Acres Tip",
+    "tip_desc": "\"Bring home luck for the new year, may all things be as you wish! Don't miss the chance to receive our exclusive 'new year's luck' gifts with hometown flavors just for you at this event! 🧧🌸✨\"",
+    "welcome": "Welcome!",
+    "awesome": "Awesome!"
+  },
+  "showcase_events": {
+    "loading": "Loading events...",
+    "no_events_title": "No events yet",
+    "no_events_desc": "Check back later for the latest events!",
+    "featured": "Featured",
+    "social_event": "Social Event",
+    "festive_gathering": "Festive Gathering",
+    "default_location": "Main Community Barn",
+    "default_desc": "Celebrate the harvest and toast to the new year with gourmet farm-to-table food, live bluegrass music, and our signature giant bonfire.",
+    "whos_coming": "Who's Coming?",
+    "friends_family": "Friends & Family",
+    "join_event": "Join Event",
+    "other_events": "Other Events",
+    "view_all": "View All",
+    "soil_health": "Soil Health",
+    "default_workshop_desc": "Learn the secrets of black gold. We'll cover rotation, temperature, and moisture control for perfect yield.",
+    "details": "Details",
+    "workshops_coming_soon": "Workshops are being planned...",
+    "copyright": "© {{year}} {{farm_name}}. All rights reserved.",
+    "privacy_policy": "Privacy Policy",
+    "terms_of_service": "Terms of Service"
+  },
+  "seasons": {
+    "breadcrumb": "Seasons & Cultivation",
+    "title": "Season Management",
+    "subtitle": "Manage and track growth process and costs of seasons.",
+    "select_label": "Select Season",
+    "start_new": "Start New Season",
+    "status": {
+      "active": "Active",
+      "ongoing": "Ongoing",
+      "ended": "Ended",
+      "paid": "Paid",
+      "approved": "Approved",
+      "draft": "Draft"
+    },
+    "edit_season": "Edit Season",
+    "record_usage": "Record Usage",
+    "expected_revenue": "Expected Revenue",
+    "financial_goal": "Financial goal",
+    "production_unit": "Production Unit",
+    "primary_unit": "Primary production unit",
+    "investment_efficiency": "Investment Efficiency",
+    "no_data": "NO DATA",
+    "general_stats": "General Statistics",
+    "entire_process": "Entire process",
+    "total_seasons": "Total Seasons",
+    "list_title": "List of Seasons",
+    "recent_transactions": "Recent Transactions",
+    "view_all": "View All",
+    "materials_used": "Materials Used",
+    "usage_in_season": "Usage in Season",
+    "no_medicine": "No materials used yet",
+    "labor_costs": "Labor Costs",
+    "payrolls_in_season": "Payrolls in Season",
+    "table": {
+      "name": "Season Name",
+      "unit": "Unit",
+      "time": "Time",
+      "actions": "Actions"
+    },
+    "transactions_table": {
+      "date": "Date",
+      "content": "Content",
+      "type": "Type",
+      "amount": "Amount",
+      "no_notes": "No notes",
+      "other": "Other",
+      "empty": "No transactions"
+    },
+    "payrolls_table": {
+      "code": "Payroll Code",
+      "employee": "Employee",
+      "date": "Date Created",
+      "status": "Status",
+      "amount": "Amount",
+      "empty": "No payroll data yet"
+    },
+    "modal": {
+      "new_title": "Start New Season",
+      "new_subtitle": "Initialize parameters for new cultivation",
+      "edit_title": "Update Season",
+      "edit_subtitle": "Edit season information {{code}}",
+      "code": "Season Code",
+      "area": "Area",
+      "start_date": "Start Date",
+      "revenue": "Revenue",
+      "cancel": "Cancel",
+      "init_btn": "Initialize Season",
+      "save_btn": "Save Changes"
+    },
+    "usage_modal": {
+      "title": "Record Usage",
+      "subtitle": "Export materials for season",
+      "select_label": "Select material / medicine",
+      "select_placeholder": "Select medicine or fertilizer...",
+      "quantity": "Quantity Used",
+      "date": "Date of Use",
+      "purpose": "Purpose of Use",
+      "purpose_placeholder": "e.g., Spray fungicide 1st time, basal fertilization...",
+      "cancel": "Cancel",
+      "confirm": "Confirm Usage"
+    }
+  },
+  "inventory": {
+    "title": "Inventory Management",
+    "subtitle": "Track fertilizers, pesticides, and animal feed.",
+    "stats": {
+      "total_items": "Total Items",
+      "low_stock": "Low Stock Warning",
+      "action_needed": "Action Needed",
+      "total_value": "Total Inventory Value"
+    },
+    "search_placeholder": "Search by item name, SKU...",
+    "add_btn": "Add Item",
+    "table": {
+      "product": "Product",
+      "category": "Category",
+      "quantity": "Quantity",
+      "price": "Import Price",
+      "date": "Import Date",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "stock_status": {
+      "out_of_stock": "OUT OF STOCK",
+      "low_stock": "LOW STOCK",
+      "in_stock": "IN STOCK"
+    },
+    "modal": {
+      "view_title": "Item Details",
+      "edit_title": "Update Item",
+      "add_title": "Add New Item",
+      "change_image": "Change",
+      "select_image": "Select Image",
+      "item_name": "Item Name",
+      "sku": "SKU Code",
+      "gen_code": "Generate Code",
+      "import_price": "Import Price (VND)",
+      "unit": "Unit of Measure",
+      "select_unit": "-- Select Unit --",
+      "current_stock": "Current Stock",
+      "min_stock": "Minimum Stock",
+      "import_date": "Import Date",
+      "close": "Close Details",
+      "cancel": "Cancel",
+      "save": "Save Changes",
+      "create": "Create Item"
+    },
+    "media": {
+      "title": "Image Library",
+      "empty": "No images in the library (Product section)",
+      "done": "Done"
+    },
+    "import": {
+      "entity_name": "material",
+      "success": "Successfully imported {{count}} items!",
+      "error": "Error importing data. Please check CSV format.",
+      "read_error": "Error reading file",
+      "columns": [
+        "SKU",
+        "Item Name",
+        "Category",
+        "Unit",
+        "Quantity",
+        "Min Level",
+        "Import Price",
+        "Import Date",
+        "Note"
+      ]
+    },
+    "messages": {
+      "delete_error": "Cannot delete this material",
+      "new_item": "New material"
+    }
+  },
+  "partners": {
+    "title": "Partner Management",
+    "subtitle": "List of workers, suppliers, and buyers",
+    "search_placeholder": "Search by partner name, code, phone...",
+    "add_btn": "Add Partner",
+    "table": {
+      "code": "Partner Code",
+      "name": "Partner Name",
+      "type": "Type",
+      "phone": "Phone",
+      "address": "Address",
+      "balance": "Balance",
+      "actions": "Actions"
+    },
+    "types": {
+      "worker": "Worker",
+      "supplier": "Supplier",
+      "buyer": "Buyer",
+      "family": "Family"
+    },
+    "status": {
+      "loading": "Loading...",
+      "not_found": "No partners found",
+      "empty": "No partners yet"
+    },
+    "modal": {
+      "add_title": "Add New Partner",
+      "edit_title": "Edit Partner",
+      "code": "Partner Code *",
+      "name": "Partner Name *",
+      "type": "Type *",
+      "phone": "Phone",
+      "address": "Address",
+      "placeholder": {
+        "code": "e.g. NV-001",
+        "name": "Enter partner name",
+        "phone": "0901234567",
+        "address": "Enter address",
+        "select_type": "-- Select Type --"
+      },
+      "cancel": "Cancel",
+      "save": "Update",
+      "create": "Create"
+    },
+    "import": {
+      "entity_name": "account",
+      "columns": [
+        "Partner Code",
+        "Partner Name",
+        "Type (WORKER/SUPPLIER/BUYER/FAMILY)",
+        "Phone",
+        "Address"
+      ]
+    },
+    "export": {
+      "sheet_name": "Partner List",
+      "filename": "Partner_List_{{date}}.xlsx"
+    },
+    "messages": {
+      "load_error": "Cannot load partner list",
+      "save_error": "Cannot save partner",
+      "delete_error": "Cannot delete partner",
+      "confirm_delete": "Are you sure you want to delete this partner?",
+      "import_empty": "File is empty"
+    }
+  },
+  "payroll": {
+    "title": "Payroll Management",
+    "subtitle": "Automatically creates transactions when status is changed to \"Paid\"",
+    "stats": {
+      "total": "Total Payrolls",
+      "pending": "Pending Processing",
+      "paid": "Paid",
+      "total_spent": "Total Spent"
+    },
+    "table": {
+      "code": "Payroll Code",
+      "worker": "Worker",
+      "total": "Total Amount",
+      "final": "Final Amount",
+      "status": "Status",
+      "transaction": "Transaction ID",
+      "actions": "Actions",
+      "no_transaction": "No transaction yet"
+    },
+    "status": {
+      "draft": "Pending",
+      "paid": "Paid",
+      "cancelled": "Cancelled"
+    },
+    "actions": {
+      "view": "View Details",
+      "pay": "💰 Pay Salary",
+      "cancel": "Cancel Slip"
+    },
+    "automation": {
+      "title": "Automation Process",
+      "subtitle": "When you click \"Pay Salary\", the system automatically follows these steps:",
+      "step1_title": "1. Finance",
+      "step1_desc": "• Create EXPENSE transaction in income/expense book",
+      "step2_title": "2. HR",
+      "step2_desc": "• Automatically updates worker's balance"
+    },
+    "slip": {
+      "title": "Payroll Slip Details",
+      "system_name": "Vuon Nha Minh Management System",
+      "print": "Print Slip",
+      "header": "PAYROLL SLIP",
+      "no": "No:",
+      "date": "Date:",
+      "receiver": "Receiver",
+      "payment_date": "Payment Date:",
+      "table": {
+        "date_job": "Work Date / Task",
+        "shift": "Shift",
+        "rate": "Rate",
+        "amount": "Amount"
+      },
+      "summary": {
+        "base": "Base Total:",
+        "bonus": "Bonus/Penalty:",
+        "final": "Final Amount"
+      },
+      "footer": {
+        "receiver": "Receiver",
+        "representative": "Representative",
+        "management": "Management Board",
+        "generated_by": "Document generated by Vuon Nha Minh system"
+      }
+    },
+    "messages": {
+      "confirm_delete": "Are you sure you want to delete this payroll?",
+      "delete_error": "Error deleting payroll",
+      "status_update_success": "✅ Status updated successfully!",
+      "status_update_error": "Error updating status",
+      "error_prefix": "Error: "
+    }
+  },
+  "transactions": {
+    "title": "Transaction Ledger",
+    "subtitle": "Manage daily farm income and expenses.",
+    "months": [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ],
+    "back_to_current": "Back to current month",
+    "stats": {
+      "income": "Total Income",
+      "expense": "Total Expense",
+      "profit": "Profit"
+    },
+    "filter": {
+      "label": "Filter",
+      "all": "All",
+      "income": "Income",
+      "expense": "Expense"
+    },
+    "table": {
+      "date": "Date",
+      "content": "Content / Details",
+      "category": "Category",
+      "amount": "Amount",
+      "status": "Status",
+      "no_title": "No title",
+      "general": "General expense",
+      "other": "Other",
+      "completed": "Completed",
+      "empty": "No transactions recorded yet"
+    },
+    "modal": {
+      "add_title": "Record Transaction",
+      "edit_title": "Update Transaction",
+      "editing_id": "Editing ID:",
+      "add_subtitle": "Updating latest cash flow",
+      "type_income": "Income",
+      "type_expense": "Expense",
+      "note": "Transaction description",
+      "note_placeholder": "e.g., Sold 10 tons of plums, bought fertilizer...",
+      "quantity": "Quantity",
+      "unit_price": "Unit Price",
+      "unit": "Unit",
+      "total": "Total Amount (VND)",
+      "date": "Transaction Date",
+      "category": "Category",
+      "season": "Season",
+      "partner": "Partner",
+      "save": "Save Transaction",
+      "close": "Close"
+    },
+    "detail": {
+      "income": "Income",
+      "expense": "Expense",
+      "date": "Transaction Date",
+      "item_details": "Item Details",
+      "pricing_info": "Quantity & Pricing",
+      "petty_transaction": "Petty transaction",
+      "paid": "Paid",
+      "edit": "Edit"
+    },
+    "delete": {
+      "item_name": "this transaction",
+      "description": "Related financial data will be affected."
+    },
+    "import": {
+      "success": "Successfully imported {{count}} transactions!",
+      "error": "Error importing file. Please check file format.",
+      "read_error": "Error reading file",
+      "template_name": "Transaction_Import_Template.xlsx",
+      "columns": {
+        "date": "Date (YYYY-MM-DD)",
+        "type": "Type (INCOME/EXPENSE)",
+        "amount": "Amount",
+        "note": "Note",
+        "season_code": "Season Code"
+      }
+    },
+    "export": {
+      "filename": "Transaction_Report_{{date}}.xlsx",
+      "sheet_name": "Transactions",
+      "columns": [
+        "Transaction Date",
+        "Content / Details",
+        "Season / Partner",
+        "Category",
+        "Quantity",
+        "Unit",
+        "Unit Price",
+        "Type",
+        "Amount (VND)",
+        "Status"
+      ]
+    }
+  },
+  "categories": {
+    "title": "Category Management",
+    "subtitle": "Classify income/expense and farm activities",
+    "search_placeholder": "Search categories...",
+    "add_btn": "Add Category",
+    "table": {
+      "code": "Code",
+      "name": "Name",
+      "scope": "Scope",
+      "parent": "Parent",
+      "actions": "Actions",
+      "empty": "No categories found",
+      "not_found": "No categories matching search",
+      "scope_farm": "Farm Wide",
+      "scope_system": "System",
+      "scope_personal": "Personal",
+      "scope_both": "Both"
+    },
+    "scope": {
+      "farm": "Farm",
+      "personal": "Personal",
+      "both": "Both"
+    },
+    "modal": {
+      "add_title": "Add New Category",
+      "edit_title": "Edit Category",
+      "code": "Category Code *",
+      "name": "Category Name *",
+      "scope": "Scope *",
+      "parent": "Parent Category",
+      "code_placeholder": "e.g., CAT-EXP-FUEL",
+      "name_placeholder": "e.g., Supplies - Fuel",
+      "scope_placeholder": "-- Select Scope --",
+      "parent_placeholder": "-- None (Root Category) --",
+      "cancel": "Cancel",
+      "save": "Update",
+      "create": "Create"
+    },
+    "import": {
+      "entity_name": "category",
+      "columns": [
+        "Code",
+        "Name",
+        "Scope",
+        "Parent"
+      ]
+    },
+    "messages": {
+      "load_error": "Cannot load categories",
+      "save_error": "Cannot save category",
+      "delete_error": "Cannot delete category"
+    }
+  },
+  "work_logs": {
+    "title": "Daily Work Logs",
+    "subtitle": "Track and confirm actual work performed by employees.",
+    "pending_confirmation": "PENDING CONFIRMATION ({{count}})",
+    "confirm_btn": "Confirm Work",
+    "search_placeholder": "Search employees, jobs...",
+    "selected_count": "Selected {{count}} mandays",
+    "calc_bulk": "Calculate Bulk Payroll",
+    "table": {
+      "worker_job": "Personnel & Job",
+      "date_shift": "Date & Shift",
+      "status": "Status",
+      "amount": "T. Amount",
+      "payroll": "Payroll",
+      "actions": "Actions"
+    },
+    "status": {
+      "done": "Done",
+      "inprogress": "Waiting",
+      "cancelled": "Cancelled",
+      "rejected": "Rejected",
+      "unpaid": "Unpaid",
+      "view_slip": "VIEW SLIP"
+    },
+    "confirm_modal": {
+      "title": "Confirm Work Completion",
+      "subtitle": "Finalize work day for employee.",
+      "working_type": "Work Schedule Type",
+      "full_day": "Full Day",
+      "half_day": "Half Day",
+      "full_day_rate": "Rate 1.0",
+      "half_day_rate": "Rate 0.5",
+      "cancel": "Cancel",
+      "confirm": "Confirm Work"
+    },
+    "preview_modal": {
+      "title": "Preview Payroll Slip",
+      "print": "Export PDF / Print",
+      "slip_no": "No:",
+      "created_date": "Date:",
+      "receiver": "Receiver",
+      "work_time": "Working time",
+      "table_head": {
+        "content": "Work Date / Content",
+        "shift": "Shift",
+        "mandays": "Mandays",
+        "amount": "Amount"
+      },
+      "summary": {
+        "mandays_count": "Total mandays:",
+        "total": "Total:",
+        "final": "Final Amount"
+      },
+      "validator": "Validator"
+    },
+    "messages": {
+      "delete_error": "Cannot delete daily work log",
+      "calc_error": "An error occurred during payroll calculation.",
+      "uncalculated_error": "You haven't calculated payroll for this day.",
+      "empty": "No work logs recorded",
+      "has_payroll_tooltip": "Payroll slip already exists",
+      "pending_tooltip": "Incomplete",
+      "view_detail_tooltip": "Salary details",
+      "delete_tooltip": "Delete work log"
+    }
+  },
+  "work_schedules": {
+    "title": "Work Schedules",
+    "subtitle": "Plan and assign work to farm staff.",
+    "search_placeholder": "Search staff, jobs...",
+    "add_btn": "Add New Schedule",
+    "table": {
+      "worker_shift": "Staff & Shift",
+      "job": "Job",
+      "date": "Work Date",
+      "status": "Status",
+      "actions": "Actions",
+      "no_shift": "No shift selected",
+      "other_job": "Other",
+      "payroll_calculated": "Payroll Calculated",
+      "lock_tooltip": "Payroll calculated, cannot edit/delete"
+    },
+    "status": {
+      "planned": "Planned",
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled"
+    },
+    "modal": {
+      "add_title": "New Work Schedule",
+      "edit_title": "Edit Schedule",
+      "worker": "Staff",
+      "worker_placeholder": "-- Select Staff --",
+      "shift": "Work Shift",
+      "shift_placeholder": "-- Select Shift --",
+      "job": "Expected Job",
+      "job_placeholder": "-- Job Type --",
+      "season": "Season",
+      "season_placeholder": "-- Select Season (optional) --",
+      "date": "Work Date",
+      "status": "Status",
+      "note": "Note",
+      "note_placeholder": "Specific tasks or notes for staff...",
+      "cancel": "Cancel",
+      "save": "Save Changes",
+      "create": "Confirm Schedule"
+    },
+    "import": {
+      "entity_name": "work schedule",
+      "columns": [
+        "Staff (ID/Name)",
+        "Work Shift (ID/Name)",
+        "Job Type (ID/Name)",
+        "Season (ID/Name)",
+        "Date",
+        "Status",
+        "Note"
+      ]
+    }
+  },
+  "job_types": {
+    "title": "Job Management",
+    "subtitle": "List of job types and base rates",
+    "search_placeholder": "Search jobs...",
+    "add_btn": "Add Job",
+    "table": {
+      "code": "Job Code",
+      "name": "Job Name",
+      "rate": "Base Rate",
+      "desc": "Description",
+      "actions": "Actions",
+      "empty": "No jobs found",
+      "not_found": "No jobs matching search"
+    },
+    "modal": {
+      "add_title": "Add New Job",
+      "edit_title": "Edit Job",
+      "code": "Job Code *",
+      "name": "Job Name *",
+      "rate": "Base Rate *",
+      "desc": "Description",
+      "code_placeholder": "e.g., JOB-HARVEST",
+      "name_placeholder": "e.g., Harvest",
+      "rate_placeholder": "e.g., 200000",
+      "desc_placeholder": "Enter job description",
+      "cancel": "Cancel",
+      "save": "Update",
+      "create": "Create"
+    },
+    "import": {
+      "entity_name": "job type",
+      "columns": [
+        "Job Code",
+        "Job Name",
+        "Base Rate",
+        "Description"
+      ]
+    },
+    "export": {
+      "sheet_name": "Job List",
+      "filename": "Job_List_{{date}}.xlsx"
+    },
+    "template": {
+      "filename": "Job_Import_Template.csv"
+    },
+    "messages": {
+      "load_error": "Cannot load job types",
+      "save_error": "Cannot save job type",
+      "delete_error": "Cannot delete job type"
+    }
+  },
+  "work_shifts": {
+    "title": "Shift Management",
+    "subtitle": "List of daily work shifts",
+    "search_placeholder": "Search shifts...",
+    "add_btn": "Add Shift",
+    "table": {
+      "code": "Shift Code",
+      "name": "Shift Name",
+      "start": "Start Time",
+      "end": "End Time",
+      "duration": "Duration",
+      "actions": "Actions",
+      "hours": "hours",
+      "empty": "No shifts found",
+      "not_found": "No shifts matching search"
+    },
+    "modal": {
+      "add_title": "Add New Shift",
+      "edit_title": "Edit Shift",
+      "code": "Shift Code *",
+      "name": "Shift Name *",
+      "start": "Start Time",
+      "end": "End Time",
+      "code_placeholder": "e.g., MORNING-SHIFT",
+      "name_placeholder": "e.g., Morning Shift",
+      "cancel": "Cancel",
+      "save": "Update",
+      "create": "Create"
+    },
+    "import": {
+      "entity_name": "work shift",
+      "columns": [
+        "Shift Code",
+        "Shift Name",
+        "Start Time",
+        "End Time"
+      ]
+    },
+    "export": {
+      "sheet_name": "Shift List",
+      "filename": "Shift_List_{{date}}.xlsx"
+    },
+    "template": {
+      "filename": "Shift_Import_Template.csv"
+    },
+    "messages": {
+      "load_error": "Cannot load work shifts",
+      "save_error": "Cannot save work shift",
+      "delete_error": "Cannot delete work shift"
+    }
+  },
+  "production_units": {
+    "title": "Production Unit Management",
+    "subtitle": "List of gardens, barns, and production areas",
+    "search_placeholder": "Search production units...",
+    "add_btn": "Add Unit",
+    "table": {
+      "code": "Unit Code",
+      "name": "Unit Name",
+      "type": "Type",
+      "area": "Area (ha)",
+      "desc": "Description",
+      "actions": "Actions"
+    },
+    "types": {
+      "crop": "Crop",
+      "livestock": "Livestock"
+    },
+    "messages": {
+      "load_error": "Cannot load production units",
+      "save_error": "Cannot save production unit",
+      "delete_error": "Cannot delete production unit",
+      "empty": "No production units yet",
+      "not_found": "No production units found matching search"
+    },
+    "modal": {
+      "add_title": "Add New Production Unit",
+      "edit_title": "Edit Production Unit",
+      "code": "Unit Code *",
+      "name": "Unit Name *",
+      "type": "Type *",
+      "area": "Area (ha)",
+      "desc": "Description",
+      "code_placeholder": "e.g., UNIT-GARDEN-A",
+      "name_placeholder": "Enter unit name",
+      "area_placeholder": "e.g., 2.5",
+      "desc_placeholder": "Enter description"
+    }
+  },
+  "warehouse_types": {
+    "title": "Warehouse Types",
+    "subtitle": "Manage physical warehouse types within the farm",
+    "stats": {
+      "total": "Total Types",
+      "active": "In Use",
+      "facility": "Facility",
+      "main": "Main"
+    },
+    "search_placeholder": "Search warehouse types...",
+    "add_btn": "Add Type",
+    "table": {
+      "code": "Type Code",
+      "name": "Display Name",
+      "desc": "Detailed Description",
+      "actions": "Actions"
+    },
+    "messages": {
+      "load_error": "Cannot load warehouse types",
+      "save_error": "Cannot save warehouse type",
+      "delete_error": "Cannot delete warehouse type",
+      "empty": "No warehouse types created yet",
+      "not_found": "No warehouse types matching search"
+    },
+    "modal": {
+      "add_title": "Add New Warehouse Type",
+      "edit_title": "Update Warehouse Type",
+      "subtitle": "Provide detailed warehouse information",
+      "code": "Identifier Code *",
+      "name": "Warehouse Name *",
+      "desc": "Additional Description",
+      "code_hint": "This code is used to identify the warehouse in the system and cannot be changed after creation.",
+      "name_placeholder": "Enter display name of the warehouse",
+      "desc_placeholder": "Notes on location, purpose of use...",
+      "cancel": "Cancel",
+      "save": "Update Now",
+      "create": "Confirm Create"
+    }
+  },
+  "warehouse_management": {
+    "title": "General Warehouse Management",
+    "subtitle": "All items, equipment, and farm assets",
+    "filter_all": "All Warehouses",
+    "stats": {
+      "types_count": "Type Count",
+      "quantity": "Quantity",
+      "total_value": "Total Value"
+    },
+    "search_placeholder": "Search items...",
+    "add_btn": "Add Item",
+    "table": {
+      "info": "Product Information",
+      "code_sku": "Code / SKU",
+      "warehouse": "Storage Warehouse",
+      "quantity": "Quantity",
+      "price": "Unit Price",
+      "location": "Location",
+      "actions": "Actions",
+      "unclassified": "Unclassified"
+    },
+    "modal": {
+      "add_title": "Add New Item",
+      "edit_title": "Update Item",
+      "subtitle": "Configure asset declaration record",
+      "upload_image": "Upload Image",
+      "warehouse_type": "Warehouse Type *",
+      "item_code": "Item Code",
+      "sku": "SKU Code / Barcode",
+      "sku_placeholder": "Used for barcode scanning...",
+      "item_name": "Item Name *",
+      "item_name_placeholder": "Product name...",
+      "location": "Storage Location",
+      "unit": "Unit",
+      "quantity": "Available Quantity",
+      "price": "Estimated Value (VND)",
+      "note": "Additional Notes",
+      "note_placeholder": "Describe equipment condition, maintenance time...",
+      "save_edit": "Update Changes",
+      "save_new": "Record to Warehouse"
+    },
+    "media": {
+      "title": "Image Library",
+      "subtitle": "Choose appropriate image for asset declaration",
+      "no_data": "No image data."
+    },
+    "messages": {
+      "save_error": "An error occurred while saving the item",
+      "delete_error": "Cannot delete item",
+      "empty": "No items found"
+    }
+  },
+  "farm_events": {
+    "title": "Farm Events",
+    "subtitle": "Track important events, harvests, and issues.",
+    "search_placeholder": "Search events...",
+    "add_btn": "Add Event",
+    "table": {
+      "title": "Event Name",
+      "type": "Type",
+      "time": "Time",
+      "location_season": "Location / Season",
+      "actions": "Actions",
+      "no_desc": "No description",
+      "all_day": "All Day",
+      "unassigned": "Unassigned"
+    },
+    "types": {
+      "task": "Task (TASK)",
+      "harvest": "Harvest (HARVEST)",
+      "issue": "Issue (ISSUE)",
+      "other": "Other (OTHER)"
+    },
+    "modal": {
+      "add_title": "Add Farm Event",
+      "edit_title": "Update Event",
+      "title": "Event Name",
+      "title_placeholder": "e.g., Plum harvest at Garden A",
+      "event_type": "Event Type",
+      "production_unit": "Unit / Location",
+      "no_unit": "-- Unassigned --",
+      "start_time": "Start",
+      "all_day": "All Day Event",
+      "season": "Related Season",
+      "season_placeholder": "-- Select Season (if any) --",
+      "description": "Detailed Description",
+      "description_placeholder": "Detailed event content...",
+      "cancel": "Cancel",
+      "save_edit": "Save Changes",
+      "save_new": "Create Event"
+    },
+    "messages": {
+      "delete_error": "Cannot delete this event"
+    }
+  },
+  "schedule": {
+    "title": "Work Schedule",
+    "subtitle": "Manage monthly shifts and farm events",
+    "legend": {
+      "staff": "Staff",
+      "task": "Task",
+      "harvest": "Harvest",
+      "issue": "Issue",
+      "maintenance": "Maintenance",
+      "other": "Other"
+    },
+    "today": "Today",
+    "close": "Close",
+    "delete_confirm": "Are you sure you want to remove this event from the calendar?",
+    "day_modal": {
+      "title": "Events on",
+      "no_events": "No events",
+      "delete_tooltip": "Remove event"
+    },
+    "add_shift_modal": {
+      "title": "Schedule Work",
+      "subtitle": "Assign shifts to employees",
+      "worker": "Select Employee",
+      "worker_placeholder": "-- Select personnel --",
+      "shift": "Select Shift",
+      "shift_placeholder": "-- Select shift --",
+      "job": "Job Type",
+      "job_placeholder": "-- Select job type --",
+      "date": "Work Date",
+      "note": "Work Note",
+      "note_placeholder": "Specific task or note for employee...",
+      "cancel": "Cancel",
+      "confirm": "Confirm Schedule"
+    },
+    "stats": {
+      "title": "Monthly Stats",
+      "events_unit": "Events"
+    }
+  },
+  "user_profile": {
+    "title": "My Profile",
+    "home": "Home",
+    "change_avatar_success": "Avatar changed successfully!",
+    "change_avatar_error": "Could not change avatar. Please try again.",
+    "update_success": "Profile updated successfully!",
+    "update_error": "An error occurred while saving profile.",
+    "guest": "Guest",
+    "your_plum_tree": "Your Plum Tree",
+    "not_updated_address": "Address not updated",
+    "verified_member": "Verified Member",
+    "saving": "Saving...",
+    "save_changes": "Save Changes",
+    "cancel": "Cancel",
+    "edit_profile": "Edit Profile",
+    "logout": "Logout",
+    "personal_info": "Personal Information",
+    "full_name": "Full Name",
+    "phone": "Phone Number",
+    "email": "Email Address",
+    "verified": "Verified",
+    "bio": "Bio / Notes",
+    "bio_placeholder": "Share a little about yourself...",
+    "system_mgmt": "System Management",
+    "admin_dashboard": "Admin Dashboard",
+    "admin_desc": "Manage seasons, staff, finance, and advanced system configurations.",
+    "enter_admin": "Enter Management",
+    "footer": "Empowering farmers with smart digital tools."
+  },
+  "notifications": {
+    "title": "Notification Management",
+    "subtitle": "Internal notification system",
+    "tab_send": "Send New",
+    "tab_history": "Sent History",
+    "compose": "Compose Notification",
+    "form": {
+      "title_label": "Title *",
+      "title_placeholder": "Enter notification title...",
+      "content_label": "Content *",
+      "content_placeholder": "Enter notification details...",
+      "type_label": "Type",
+      "category_label": "Category",
+      "link_label": "Redirect Link",
+      "send_btn": "Send Notification Now",
+      "sending": "Sending..."
+    },
+    "types": {
+      "info": "Info",
+      "success": "Success",
+      "warning": "Warning",
+      "error": "Error",
+      "alert": "Alert"
+    },
+    "recipient": {
+      "title": "Select Recipients",
+      "selected": "SELECTED: {{count}}",
+      "search": "Search name or email...",
+      "select_all": "Select all filtered",
+      "deselect_all": "Deselect all",
+      "loading": "Loading list...",
+      "not_found": "No matching users found"
+    },
+    "history": {
+      "title": "Sent Notifications",
+      "total": "TOTAL: {{count}}",
+      "empty": "No notifications sent yet",
+      "columns": {
+        "content": "Content",
+        "type_category": "Type & Category",
+        "recipient": "Recipient",
+        "date": "Sent Date",
+        "actions": "Actions"
+      },
+      "read_count": "{{count}} read",
+      "revoke": "Revoke"
+    },
+    "messages": {
+      "select_recipient_req": "Please select at least one recipient",
+      "send_success": "Notification sent successfully!",
+      "send_error": "Could not send notification",
+      "revoke_confirm": "Are you sure you want to revoke this notification? It will be deleted from all recipients.",
+      "revoke_success": "Notification revoked successfully",
+      "revoke_error": "Could not revoke notification"
+    }
+  },
+  "personal_finance": {
+    "title": "Personal Finance",
+    "subtitle": "Manage personal expenses separately from farm operations. Keep budgets clear.",
+    "family_space": "Family Space",
+    "record_expense": "Record Expense",
+    "stats": {
+      "total_expense": "Total Family Expense",
+      "remaining_budget": "Remaining Budget",
+      "top_category": "Top Expense Category",
+      "in_control": "In control",
+      "compared_to_last_month": "vs last month"
+    },
+    "budget": {
+      "title": "Budget vs Actual",
+      "subtitle": "Monthly Overview",
+      "used": "Used",
+      "spent": "Spent ({{spent}})",
+      "total": "Total budget ({{total}})",
+      "remaining_info": "You have {{amount}} left for this month."
+    },
+    "categories": {
+      "title": "Expense Breakdown",
+      "subtitle": "Where money goes",
+      "view_report": "View report"
+    }
+  }
+}

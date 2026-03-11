@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { sendNotification, getSentHistory, revokeNotification } from '../api/notification.api';
 import { getPublicUsers, PublicUser } from '../api/user.api';
+import { useTranslation } from 'react-i18next';
 
 const Notifications: React.FC = () => {
+    const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState<'SEND' | 'HISTORY'>('SEND');
 
     // Form States
@@ -72,7 +74,7 @@ const Notifications: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (recipientIds.length === 0) {
-            alert('Vui lòng chọn ít nhất một người nhận');
+            alert(t('notifications.messages.select_recipient_req'));
             return;
         }
 
@@ -86,29 +88,29 @@ const Notifications: React.FC = () => {
                 link,
                 recipient_ids: recipientIds
             });
-            alert('Gửi thông báo thành công!');
+            alert(t('notifications.messages.send_success'));
             // Reset form
             setTitle('');
             setContent('');
             setRecipientIds([]);
         } catch (error: any) {
             console.error('Error sending notification:', error);
-            alert(error.response?.data?.message || 'Không thể gửi thông báo');
+            alert(error.response?.data?.message || t('notifications.messages.send_error'));
         } finally {
             setSending(false);
         }
     };
 
     const handleRevoke = async (notifId: string) => {
-        if (!window.confirm('Bạn có chắc chắn muốn thu hồi thông báo này không? Nó sẽ bị xóa khỏi tất cả người nhận.')) return;
+        if (!window.confirm(t('notifications.messages.revoke_confirm'))) return;
 
         try {
             await revokeNotification(notifId);
-            alert('Đã thu hồi thông báo thành công');
+            alert(t('notifications.messages.revoke_success'));
             loadHistory();
         } catch (error) {
             console.error('Error revoking notification:', error);
-            alert('Không thể thu hồi thông báo');
+            alert(t('notifications.messages.revoke_error'));
         }
     };
 
@@ -132,9 +134,9 @@ const Notifications: React.FC = () => {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
                     <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
-                        Quản lý Thông báo
+                        {t('notifications.title')}
                     </h1>
-                    <p className="text-slate-500 mt-2">Hệ thống gửi tin và quản lý thông báo nội bộ</p>
+                    <p className="text-slate-500 mt-2">{t('notifications.subtitle')}</p>
                 </div>
 
                 <div className="flex bg-white p-1 rounded-2xl border border-slate-200 shadow-sm self-start">
@@ -146,7 +148,7 @@ const Notifications: React.FC = () => {
                             }`}
                     >
                         <span className="material-symbols-outlined text-[20px]">send</span>
-                        Gửi mới
+                        {t('notifications.tab_send')}
                     </button>
                     <button
                         onClick={() => setActiveTab('HISTORY')}
@@ -156,7 +158,7 @@ const Notifications: React.FC = () => {
                             }`}
                     >
                         <span className="material-symbols-outlined text-[20px]">history</span>
-                        Lịch sử đã gửi
+                        {t('notifications.tab_history')}
                     </button>
                 </div>
             </div>
@@ -167,51 +169,51 @@ const Notifications: React.FC = () => {
                     <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-8 space-y-6">
                         <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                             <span className="material-symbols-outlined text-[#13ec49]">edit_note</span>
-                            Soạn thông báo
+                            {t('notifications.compose')}
                         </h2>
 
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div className="space-y-2">
-                                <label className="text-sm font-bold text-slate-700 ml-1">Tiêu đề *</label>
+                                <label className="text-sm font-bold text-slate-700 ml-1">{t('notifications.form.title_label')}</label>
                                 <input
                                     type="text"
                                     required
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#13ec49]/30 transition-all outline-none text-slate-700"
-                                    placeholder="Nhập tiêu đề thông báo..."
+                                    placeholder={t('notifications.form.title_placeholder')}
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-bold text-slate-700 ml-1">Nội dung *</label>
+                                <label className="text-sm font-bold text-slate-700 ml-1">{t('notifications.form.content_label')}</label>
                                 <textarea
                                     required
                                     value={content}
                                     onChange={(e) => setContent(e.target.value)}
                                     rows={4}
                                     className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#13ec49]/30 transition-all outline-none resize-none text-slate-600"
-                                    placeholder="Nhập nội dung chi tiết thông báo..."
+                                    placeholder={t('notifications.form.content_placeholder')}
                                 />
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-bold text-slate-700 ml-1">Loại</label>
+                                    <label className="text-sm font-bold text-slate-700 ml-1">{t('notifications.form.type_label')}</label>
                                     <select
                                         value={type}
                                         onChange={(e) => setType(e.target.value as any)}
                                         className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#13ec49]/30 transition-all outline-none text-slate-600 font-medium"
                                     >
-                                        <option value="INFO">Thông tin (Info)</option>
-                                        <option value="SUCCESS">Thành công (Success)</option>
-                                        <option value="WARNING">Cảnh báo (Warning)</option>
-                                        <option value="ERROR">Lỗi (Error)</option>
-                                        <option value="ALERT">Khẩn cấp (Alert)</option>
+                                        <option value="INFO">{t('notifications.types.info')}</option>
+                                        <option value="SUCCESS">{t('notifications.types.success')}</option>
+                                        <option value="WARNING">{t('notifications.types.warning')}</option>
+                                        <option value="ERROR">{t('notifications.types.error')}</option>
+                                        <option value="ALERT">{t('notifications.types.alert')}</option>
                                     </select>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-bold text-slate-700 ml-1">Danh mục</label>
+                                    <label className="text-sm font-bold text-slate-700 ml-1">{t('notifications.form.category_label')}</label>
                                     <input
                                         type="text"
                                         value={category}
@@ -223,7 +225,7 @@ const Notifications: React.FC = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-bold text-slate-700 ml-1">Đường dẫn chuyển hướng (Link)</label>
+                                <label className="text-sm font-bold text-slate-700 ml-1">{t('notifications.form.link_label')}</label>
                                 <input
                                     type="text"
                                     value={link}
@@ -246,7 +248,7 @@ const Notifications: React.FC = () => {
                                 ) : (
                                     <>
                                         <span className="material-symbols-outlined">send</span>
-                                        <span>Gửi thông báo ngay</span>
+                                        <span>{t('notifications.form.send_btn')}</span>
                                     </>
                                 )}
                             </button>
@@ -258,10 +260,10 @@ const Notifications: React.FC = () => {
                         <div className="flex items-center justify-between">
                             <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                                 <span className="material-symbols-outlined text-[#13ec49]">person_add</span>
-                                Chọn người nhận
+                                {t('notifications.recipient.title')}
                             </h2>
                             <span className="text-xs font-black px-3 py-1 bg-slate-100 text-slate-500 rounded-lg">
-                                ĐÃ CHỌN: {recipientIds.length}
+                                {t('notifications.recipient.selected', { count: recipientIds.length })}
                             </span>
                         </div>
 
@@ -272,7 +274,7 @@ const Notifications: React.FC = () => {
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full bg-slate-50 border-none rounded-xl py-3 pl-12 pr-4 text-sm focus:ring-2 focus:ring-[#13ec49]/30 transition-all outline-none"
-                                placeholder="Tìm tên hoặc email..."
+                                placeholder={t('notifications.recipient.search')}
                             />
                         </div>
 
@@ -281,7 +283,7 @@ const Notifications: React.FC = () => {
                                 onClick={handleSelectAll}
                                 className="text-xs font-bold text-[#13ec49] hover:underline"
                             >
-                                {recipientIds.length === filteredUsers.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả lọc được'}
+                                {recipientIds.length === filteredUsers.length ? t('notifications.recipient.deselect_all') : t('notifications.recipient.select_all')}
                             </button>
                         </div>
 
@@ -289,11 +291,11 @@ const Notifications: React.FC = () => {
                             {loadingUsers ? (
                                 <div className="flex flex-col items-center justify-center py-20 grayscale opacity-50">
                                     <div className="size-12 border-4 border-slate-200 border-t-[#13ec49] rounded-full animate-spin" />
-                                    <p className="mt-4 text-xs font-bold uppercase tracking-widest">Đang tải danh sách...</p>
+                                    <p className="mt-4 text-xs font-bold uppercase tracking-widest">{t('notifications.recipient.loading')}</p>
                                 </div>
                             ) : filteredUsers.length === 0 ? (
                                 <div className="text-center py-20 text-slate-400 italic text-sm">
-                                    Không tìm thấy người dùng nào phù hợp
+                                    {t('notifications.recipient.not_found')}
                                 </div>
                             ) : (
                                 filteredUsers.map(user => {
@@ -332,9 +334,9 @@ const Notifications: React.FC = () => {
             ) : (
                 <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <div className="p-8 border-b border-slate-100 flex items-center justify-between">
-                        <h2 className="text-xl font-bold text-slate-800">Thông báo đã gửi</h2>
+                        <h2 className="text-xl font-bold text-slate-800">{t('notifications.history.title')}</h2>
                         <span className="text-xs font-black px-4 py-2 bg-slate-50 text-slate-400 rounded-xl border border-slate-100">
-                            TỔNG SỐ: {history.length}
+                            {t('notifications.history.total', { count: history.length })}
                         </span>
                     </div>
 
@@ -346,18 +348,18 @@ const Notifications: React.FC = () => {
                         ) : history.length === 0 ? (
                             <div className="py-32 flex flex-col items-center justify-center text-slate-400 grayscale">
                                 <span className="material-symbols-outlined text-[64px] opacity-20 mb-4">history</span>
-                                <p className="text-sm font-bold">Chưa có thông báo nào được gửi</p>
+                                <p className="text-sm font-bold">{t('notifications.history.empty')}</p>
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-slate-50/50">
-                                            <th className="px-8 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest">Nội dung</th>
-                                            <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest">Loại & Danh mục</th>
-                                            <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">Người nhận</th>
-                                            <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest">Ngày gửi</th>
-                                            <th className="px-8 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-right">Thao tác</th>
+                                            <th className="px-8 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest">{t('notifications.history.columns.content')}</th>
+                                            <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest">{t('notifications.history.columns.type_category')}</th>
+                                            <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">{t('notifications.history.columns.recipient')}</th>
+                                            <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest">{t('notifications.history.columns.date')}</th>
+                                            <th className="px-8 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-right">{t('notifications.history.columns.actions')}</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-50">
@@ -394,7 +396,7 @@ const Notifications: React.FC = () => {
                                                         <span className="text-sm font-black text-slate-700">{notif.total_recipients}</span>
                                                         <div className="flex items-center gap-1 mt-1">
                                                             <span className="size-1.5 rounded-full bg-emerald-400"></span>
-                                                            <span className="text-[10px] font-bold text-emerald-500">{notif.read_count} đã đọc</span>
+                                                            <span className="text-[10px] font-bold text-emerald-500">{t('notifications.history.read_count', { count: notif.read_count })}</span>
                                                         </div>
                                                     </div>
                                                 </td>
@@ -412,7 +414,7 @@ const Notifications: React.FC = () => {
                                                         className="px-4 py-2 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl text-xs font-black transition-all flex items-center gap-2 ml-auto"
                                                     >
                                                         <span className="material-symbols-outlined text-[18px]">cancel</span>
-                                                        Thu hồi
+                                                        {t('notifications.history.revoke')}
                                                     </button>
                                                 </td>
                                             </tr>

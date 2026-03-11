@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import ShowcaseHeader from '../../templates/ShowcaseHeader';
 import { getBlogPosts, BlogPost, getExternalNews, ExternalNewsItem } from '../../services/blog.service';
 import { getMediaUrl } from '../../services/products.service';
+import { useTranslation } from 'react-i18next';
 
 interface DisplayPost {
     id: string;
@@ -20,6 +21,7 @@ interface DisplayPost {
 
 const ShowcaseBlog: React.FC = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
     const [displayPosts, setDisplayPosts] = useState<DisplayPost[]>([]);
     const [loading, setLoading] = useState(true);
@@ -64,7 +66,7 @@ const ShowcaseBlog: React.FC = () => {
                         excerpt: item.contentSnippet,
                         published_at: item.pubDate,
                         thumbnail: item.thumbnail,
-                        category: 'Tin tức mới',
+                        category: t('showcase_blog.new_news'),
                         link: item.link,
                         source: 'VNExpress',
                         content: item.content
@@ -111,11 +113,11 @@ const ShowcaseBlog: React.FC = () => {
     };
 
     const getReadTime = (content?: string) => {
-        if (!content) return '5 phút đọc';
+        if (!content) return `5 ${t('showcase_blog.read_time')}`;
         const wordsPerMinute = 200;
         const wordCount = content.split(/\s+/).length;
         const minutes = Math.ceil(wordCount / wordsPerMinute);
-        return `${minutes} phút đọc`;
+        return `${minutes} ${t('showcase_blog.read_time')}`;
     };
 
     return (
@@ -123,7 +125,7 @@ const ShowcaseBlog: React.FC = () => {
             <ShowcaseHeader
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-                placeholder="Tìm bài viết..."
+                placeholder={t('showcase_blog.search_placeholder')}
             />
 
             <div className="layout-container flex h-full grow flex-col">
@@ -137,17 +139,16 @@ const ShowcaseBlog: React.FC = () => {
                                     <span className="material-symbols-outlined text-3xl">article</span>
                                 </div>
                                 <div>
-                                    <h1 className="text-4xl md:text-5xl font-black text-[#111813] tracking-tight">Tin tức</h1>
-                                    <p className="text-[#61896b] text-lg mt-1">Cập nhật thông tin mới nhất về trong nước và thế giới</p>
+                                    <h1 className="text-4xl md:text-5xl font-black text-[#111813] tracking-tight">{t('showcase_blog.news')}</h1>
+                                    <p className="text-[#61896b] text-lg mt-1">{t('showcase_blog.news_desc')}</p>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Loading State */}
                         {loading && (
                             <div className="text-center py-20">
                                 <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#13ec49]"></div>
-                                <p className="text-gray-500 mt-4">Đang tải bài viết...</p>
+                                <p className="text-gray-500 mt-4">{t('showcase_blog.loading')}</p>
                             </div>
                         )}
 
@@ -179,12 +180,12 @@ const ShowcaseBlog: React.FC = () => {
                                         )}
                                         <div className="absolute top-4 right-4">
                                             <span className={`px-3 py-1 rounded-lg text-xs font-bold ${displayPosts[0].source === 'INTERNAL' ? 'bg-green-500 text-white' : 'bg-orange-500 text-white'}`}>
-                                                {displayPosts[0].source === 'INTERNAL' ? 'Vườn Nhà' : 'VNExpress'}
+                                                {displayPosts[0].source === 'INTERNAL' ? t('showcase_blog.farm_name') : 'VNExpress'}
                                             </span>
                                         </div>
                                     </div>
                                     <div className="p-8 flex flex-col justify-center">
-                                        <span className="text-xs font-bold text-[#13ec49] uppercase tracking-wider">Bài viết nổi bật</span>
+                                        <span className="text-xs font-bold text-[#13ec49] uppercase tracking-wider">{t('showcase_blog.featured_post')}</span>
                                         <h2 className="text-3xl font-black text-[#111813] mt-3 mb-4 line-clamp-2">{displayPosts[0].title}</h2>
                                         <p className="text-[#61896b] text-base leading-relaxed mb-6 line-clamp-3">{displayPosts[0].excerpt}</p>
                                         <div className="flex items-center gap-4 text-sm text-[#61896b] mb-6">
@@ -200,7 +201,7 @@ const ShowcaseBlog: React.FC = () => {
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <span className="material-symbols-outlined text-[18px]">visibility</span>
-                                                        <span>{displayPosts[0].view_count || 0} lượt xem</span>
+                                                        <span>{displayPosts[0].view_count || 0} {t('showcase_blog.views')}</span>
                                                     </div>
                                                 </>
                                             )}
@@ -210,7 +211,7 @@ const ShowcaseBlog: React.FC = () => {
                                                 to={`/showcase/blog/${displayPosts[0].slug}`}
                                                 className="bg-[#13ec49] text-[#102215] px-6 py-3 rounded-xl font-bold text-sm hover:brightness-110 transition-all w-fit"
                                             >
-                                                Đọc tiếp →
+                                                {t('showcase_blog.read_more')} &rarr;
                                             </Link>
                                         ) : (
                                             <a
@@ -219,7 +220,7 @@ const ShowcaseBlog: React.FC = () => {
                                                 rel="noopener noreferrer"
                                                 className="bg-orange-500 text-white px-6 py-3 rounded-xl font-bold text-sm hover:brightness-110 transition-all w-fit"
                                             >
-                                                Xem tại VNExpress ↗
+                                                {t('showcase_blog.vnexpress_link')} &nearr;
                                             </a>
                                         )}
                                     </div>
@@ -247,7 +248,7 @@ const ShowcaseBlog: React.FC = () => {
                                                     }}
                                                 ></div>
                                                 <div className="absolute top-3 right-3">
-                                                    <span className="bg-green-500 text-white px-2 py-0.5 rounded-md text-[10px] font-bold">Vườn Nhà</span>
+                                                    <span className="bg-green-500 text-white px-2 py-0.5 rounded-md text-[10px] font-bold">{t('showcase_blog.farm_name')}</span>
                                                 </div>
                                                 {post.category && (
                                                     <div className="absolute top-3 left-3">
@@ -268,7 +269,7 @@ const ShowcaseBlog: React.FC = () => {
                                                         <span className="material-symbols-outlined text-[16px]">calendar_today</span>
                                                         <span>{formatDate(post.published_at)}</span>
                                                     </div>
-                                                    <span className="font-bold text-[#13ec49]">Xem chi tiết →</span>
+                                                    <span className="font-bold text-[#13ec49]">{t('showcase_blog.view_details')} &rarr;</span>
                                                 </div>
                                             </div>
                                         </Link>
@@ -294,7 +295,7 @@ const ShowcaseBlog: React.FC = () => {
                                                 </div>
                                                 <div className="absolute top-3 left-3">
                                                     <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-bold bg-orange-50 text-orange-700">
-                                                        Tin thời sự
+                                                        {t('showcase_blog.current_news')}
                                                     </span>
                                                 </div>
                                             </div>
@@ -309,7 +310,7 @@ const ShowcaseBlog: React.FC = () => {
                                                         <span className="material-symbols-outlined text-[16px]">calendar_today</span>
                                                         <span>{formatDate(post.published_at)}</span>
                                                     </div>
-                                                    <span className="font-bold text-orange-500">Xem tại báo ↗</span>
+                                                    <span className="font-bold text-orange-500">{t('showcase_blog.view_news')} &nearr;</span>
                                                 </div>
                                             </div>
                                         </a>
@@ -322,8 +323,8 @@ const ShowcaseBlog: React.FC = () => {
                         {!loading && displayPosts.length === 0 && (
                             <div className="text-center py-20">
                                 <span className="material-symbols-outlined text-6xl text-gray-300">search_off</span>
-                                <p className="text-xl font-bold text-gray-400 mt-4">Không tìm thấy bài viết</p>
-                                <p className="text-gray-400 mt-2">Thử tìm kiếm với từ khóa khác hoặc kiểm tra lại sau</p>
+                                <p className="text-xl font-bold text-gray-400 mt-4">{t('showcase_blog.no_posts')}</p>
+                                <p className="text-gray-400 mt-2">{t('showcase_blog.try_search_again')}</p>
                             </div>
                         )}
                     </div>

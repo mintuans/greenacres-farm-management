@@ -4,8 +4,10 @@ import ShowcaseHeader from '../../templates/ShowcaseHeader';
 import { getPublicEvents, ShowcaseEvent } from '../../services/events.service';
 import { getMediaUrl } from '../../services/products.service';
 import logoWeb from '../../assets/logo_web.png';
+import { useTranslation } from 'react-i18next';
 
 const ShowcaseEvents: React.FC = () => {
+    const { t, i18n } = useTranslation();
     const [events, setEvents] = useState<ShowcaseEvent[]>([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
@@ -38,7 +40,7 @@ const ShowcaseEvents: React.FC = () => {
 
     const formatFullDate = (dateString: string) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
+        return date.toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', {
             month: 'short',
             day: 'numeric',
             year: 'numeric'
@@ -47,10 +49,10 @@ const ShowcaseEvents: React.FC = () => {
 
     const formatTime = (dateString: string) => {
         const date = new Date(dateString);
-        return date.toLocaleTimeString('en-US', {
+        return date.toLocaleTimeString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', {
             hour: 'numeric',
             minute: '2-digit',
-            hour12: true
+            hour12: i18n.language !== 'vi'
         });
     };
 
@@ -65,13 +67,13 @@ const ShowcaseEvents: React.FC = () => {
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20 animate-pulse">
                         <div className="size-16 border-4 border-[#13ec49] border-t-transparent rounded-full animate-spin mb-4"></div>
-                        <p className="text-[#61896b] font-bold">Đang tải những sự kiện đặc sắc...</p>
+                        <p className="text-[#61896b] font-bold">{t('showcase_events.loading')}</p>
                     </div>
                 ) : !featuredEvent ? (
                     <div className="text-center py-24 bg-white rounded-[2rem] shadow-sm border border-slate-100">
                         <span className="material-symbols-outlined text-6xl text-slate-200 mb-4">calendar_today</span>
-                        <h2 className="text-2xl font-bold text-[#111813]">Hiện chưa có sự kiện nào</h2>
-                        <p className="text-[#61896b] mt-2">Hãy quay lại sau để cập nhật các sự kiện mới nhất từ Vườn Nhà Mình!</p>
+                        <h2 className="text-2xl font-bold text-[#111813]">{t('showcase_events.no_events_title')}</h2>
+                        <p className="text-[#61896b] mt-2">{t('showcase_events.no_events_desc')}</p>
                     </div>
                 ) : (
                     <div className="flex flex-col gap-12">
@@ -85,8 +87,8 @@ const ShowcaseEvents: React.FC = () => {
                                     alt={featuredEvent.title}
                                 />
                                 <div className="absolute top-6 left-6 flex gap-2">
-                                    <span className="bg-[#13ec49] text-black text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider">Featured</span>
-                                    <span className="bg-black/50 backdrop-blur-md text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider">Social Event</span>
+                                    <span className="bg-[#13ec49] text-black text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider">{t('showcase_events.featured')}</span>
+                                    <span className="bg-black/50 backdrop-blur-md text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider">{t('showcase_events.social_event')}</span>
                                 </div>
                             </div>
 
@@ -94,7 +96,7 @@ const ShowcaseEvents: React.FC = () => {
                             <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
                                 <div className="flex items-center gap-2 text-[#13ec49] mb-4">
                                     <img src={logoWeb} alt="Logo" className="size-5 object-contain" />
-                                    <span className="text-xs font-black uppercase tracking-[0.2em]">Festive Gathering</span>
+                                    <span className="text-xs font-black uppercase tracking-[0.2em]">{t('showcase_events.festive_gathering')}</span>
                                 </div>
                                 <h2 className="text-[#111813] text-3xl md:text-5xl font-black leading-tight mb-6">
                                     {featuredEvent.title}
@@ -106,16 +108,16 @@ const ShowcaseEvents: React.FC = () => {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <span className="material-symbols-outlined text-lg">location_on</span>
-                                        {featuredEvent.location || 'Main Community Barn'}
+                                        {featuredEvent.location || t('showcase_events.default_location')}
                                     </div>
                                 </div>
                                 <p className="text-slate-500 leading-relaxed mb-10 text-lg">
-                                    {featuredEvent.description || 'Celebrate the harvest and toast to the new year with gourmet farm-to-table food, live bluegrass music, and our signature giant bonfire.'}
+                                    {featuredEvent.description || t('showcase_events.default_desc')}
                                 </p>
 
                                 <div className="flex items-center justify-between pt-8 border-t border-slate-100">
                                     <div className="flex flex-col gap-2">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Who's coming?</span>
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('showcase_events.whos_coming')}</span>
                                         <div className="flex items-center">
                                             <div className="flex -space-x-3 overflow-hidden">
                                                 {featuredEvent.participants.slice(0, 4).map((p) => {
@@ -150,14 +152,14 @@ const ShowcaseEvents: React.FC = () => {
                                                     </div>
                                                 )}
                                             </div>
-                                            <span className="ml-4 text-xs font-bold text-slate-400">Bạn bè & Người thân</span>
+                                            <span className="ml-4 text-xs font-bold text-slate-400">{t('showcase_events.friends_family')}</span>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => navigate(`/showcase/events/${featuredEvent.id}`)}
                                         className="bg-[#13ec49] hover:bg-[#20bd4a] text-black font-black px-10 py-5 rounded-2xl shadow-xl shadow-[#13ec49]/20 transition-all active:scale-95 group"
                                     >
-                                        Join Event
+                                        {t('showcase_events.join_event')}
                                     </button>
                                 </div>
                             </div>
@@ -166,8 +168,8 @@ const ShowcaseEvents: React.FC = () => {
                         {/* UPCOMING WORKSHOPS SECTION */}
                         <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
                             <div className="flex items-center justify-between mb-8">
-                                <h3 className="text-[#111813] text-2xl font-black">Sự kiện khác</h3>
-                                <button className="text-[#13ec49] font-black text-xs uppercase tracking-wider hover:underline">View All</button>
+                                <h3 className="text-[#111813] text-2xl font-black">{t('showcase_events.other_events')}</h3>
+                                <button className="text-[#13ec49] font-black text-xs uppercase tracking-wider hover:underline">{t('showcase_events.view_all')}</button>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -185,10 +187,10 @@ const ShowcaseEvents: React.FC = () => {
                                                 </div>
                                             </div>
                                             <div className="p-8">
-                                                <span className="text-[#13ec49] text-[10px] font-black uppercase tracking-[0.2em] mb-2 block">Soil Health</span>
+                                                <span className="text-[#13ec49] text-[10px] font-black uppercase tracking-[0.2em] mb-2 block">{t('showcase_events.soil_health')}</span>
                                                 <h4 className="text-[#111813] text-xl font-black mb-3 line-clamp-2 leading-snug group-hover:text-[#13ec49] transition-colors">{ev.title}</h4>
                                                 <p className="text-slate-400 text-sm leading-relaxed mb-8 line-clamp-2">
-                                                    {ev.description || 'Learn the secrets of black gold. We\'ll cover rotation, temperature, and moisture control for perfect yield.'}
+                                                    {ev.description || t('showcase_events.default_workshop_desc')}
                                                 </p>
                                                 <div className="flex items-center justify-between pt-6 border-t border-slate-50">
                                                     <div className="flex -space-x-2">
@@ -224,7 +226,7 @@ const ShowcaseEvents: React.FC = () => {
                                                         onClick={() => navigate(`/showcase/events/${ev.id}`)}
                                                         className="bg-[#f0f4f2] hover:bg-[#13ec49] text-[#111813] hover:text-black font-black text-[11px] px-6 py-2.5 rounded-full transition-all active:scale-95"
                                                     >
-                                                        Details
+                                                        {t('showcase_events.details')}
                                                     </button>
                                                 </div>
                                             </div>
@@ -233,7 +235,7 @@ const ShowcaseEvents: React.FC = () => {
                                 ) : (
                                     <div className="col-span-full py-20 text-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200 flex flex-col items-center">
                                         <span className="material-symbols-outlined text-4xl text-slate-300 mb-2">event</span>
-                                        <p className="text-slate-400 font-bold italic">Nhiều workshop hấp dẫn sắp được công bố!</p>
+                                        <p className="text-slate-400 font-bold italic">{t('showcase_events.workshops_coming_soon')}</p>
                                     </div>
                                 )}
                             </div>
@@ -247,13 +249,13 @@ const ShowcaseEvents: React.FC = () => {
                 <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-[#61896b] text-sm">
                     <div className="flex items-center gap-2">
                         <img src={logoWeb} alt="Logo" className="size-5 object-contain" />
-                        <span className="font-bold text-[#111813]">Vườn Nhà Mình</span>
+                        <span className="font-bold text-[#111813]">{t('showcase_home.farm_name')}</span>
                         <span className="mx-2">|</span>
-                        <span>© {new Date().getFullYear()} Vườn Nhà Mình. All rights reserved.</span>
+                        <span>{t('showcase_events.copyright', { year: new Date().getFullYear(), farm_name: t('showcase_home.farm_name') })}</span>
                     </div>
                     <div className="flex gap-6">
-                        <Link to="/showcase/privacy-policy" className="hover:text-[#13ec49] transition-colors">Chính sách bảo mật</Link>
-                        <Link to="/showcase/terms-of-service" className="hover:text-[#13ec49] transition-colors">Điều khoản dịch vụ</Link>
+                        <Link to="/showcase/privacy-policy" className="hover:text-[#13ec49] transition-colors">{t('showcase_events.privacy_policy')}</Link>
+                        <Link to="/showcase/terms-of-service" className="hover:text-[#13ec49] transition-colors">{t('showcase_events.terms_of_service')}</Link>
                     </div>
                 </div>
             </footer>

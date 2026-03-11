@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getDashboardStats, getCashFlowHistory, getLowStockItems, getTopWorkers, DashboardStats, CashFlowData, LowStockItem, TopWorker } from '../api/dashboard.api';
 import { getSeasons, Season } from '../api/season.api';
+import { useTranslation } from 'react-i18next';
 
 const StatCard: React.FC<{
   label: string;
@@ -36,6 +37,7 @@ const Dashboard: React.FC = () => {
   const [loadingChart, setLoadingChart] = useState(true);
   const [loadingLowStock, setLoadingLowStock] = useState(true);
   const [loadingTopWorkers, setLoadingTopWorkers] = useState(true);
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     const fetchSeasons = async () => {
@@ -110,9 +112,9 @@ const Dashboard: React.FC = () => {
   }, []);
 
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('vi-VN', {
+    return new Intl.NumberFormat(i18n.language === 'vi' ? 'vi-VN' : 'en-US', {
       style: 'currency',
-      currency: 'VND',
+      currency: i18n.language === 'vi' ? 'VND' : 'USD',
       minimumFractionDigits: 0
     }).format(amount);
   };
@@ -146,11 +148,11 @@ const Dashboard: React.FC = () => {
   const getUrgencyLabel = (level: string) => {
     switch (level) {
       case 'CRITICAL':
-        return 'Hết hàng';
+        return t('dashboard.out_of_stock');
       case 'WARNING':
-        return 'Sắp hết';
+        return t('dashboard.low_stock');
       default:
-        return 'Cảnh báo';
+        return t('dashboard.warning');
     }
   };
 
@@ -158,10 +160,10 @@ const Dashboard: React.FC = () => {
     <div className="p-3 md:p-4 space-y-4 w-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900 tracking-tight">Tổng quan trang trại</h2>
+          <h2 className="text-xl font-black text-slate-900 tracking-tight">{t('dashboard.title')}</h2>
           <div className="flex items-center gap-2 mt-1 text-slate-500 text-sm">
             <span className="material-symbols-outlined text-[18px]">calendar_today</span>
-            <span>Tháng hiện tại</span>
+            <span>{t('dashboard.current_month')}</span>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -172,7 +174,7 @@ const Dashboard: React.FC = () => {
               onChange={(e) => setSelectedSeason(e.target.value)}
               className="bg-transparent border-none outline-none font-bold text-sm text-slate-700 cursor-pointer min-w-[150px]"
             >
-              <option value="">Tất cả mùa vụ</option>
+              <option value="">{t('common.all_seasons')}</option>
               {seasons.map(s => (
                 <option key={s.id} value={s.id}>{s.season_name}</option>
               ))}
@@ -180,7 +182,7 @@ const Dashboard: React.FC = () => {
           </div>
           <button className="bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-bold transition-all hover:bg-slate-50 flex items-center gap-2">
             <span className="material-symbols-outlined text-[20px]">file_download</span>
-            Xuất báo cáo
+            {t('common.export_report')}
           </button>
         </div>
       </div>
@@ -198,7 +200,7 @@ const Dashboard: React.FC = () => {
       ) : stats ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <StatCard
-            label="Tổng thu nhập"
+            label={t('dashboard.total_income')}
             value={formatCurrency(stats.total_income)}
             trend={formatGrowth(stats.income_growth_rate)}
             trendUp={stats.income_growth_rate >= 0}
@@ -206,7 +208,7 @@ const Dashboard: React.FC = () => {
             colorClass="bg-green-50 text-green-600"
           />
           <StatCard
-            label="Tổng chi phí"
+            label={t('dashboard.total_expense')}
             value={formatCurrency(stats.total_expense)}
             trend={formatGrowth(stats.expense_growth_rate)}
             trendUp={stats.expense_growth_rate < 0}
@@ -214,7 +216,7 @@ const Dashboard: React.FC = () => {
             colorClass="bg-orange-50 text-orange-600"
           />
           <StatCard
-            label="Lợi nhuận ròng"
+            label={t('dashboard.net_profit')}
             value={formatCurrency(stats.net_profit)}
             trend={formatGrowth(stats.income_growth_rate - stats.expense_growth_rate)}
             trendUp={stats.net_profit >= 0}
@@ -222,9 +224,9 @@ const Dashboard: React.FC = () => {
             colorClass="bg-blue-50 text-blue-600"
           />
           <StatCard
-            label="Đầu tư mùa vụ"
+            label={t('dashboard.season_investment')}
             value={formatCurrency(stats.total_season_investment)}
-            trend={`${stats.active_seasons_count} vụ`}
+            trend={t('dashboard.seasons_count', { count: stats.active_seasons_count })}
             trendUp={true}
             icon="spa"
             colorClass="bg-purple-50 text-purple-600"
@@ -232,7 +234,7 @@ const Dashboard: React.FC = () => {
         </div>
       ) : (
         <div className="text-center py-12 text-slate-500">
-          Không thể tải dữ liệu thống kê
+          {t('dashboard.load_error')}
         </div>
       )}
 
@@ -240,17 +242,17 @@ const Dashboard: React.FC = () => {
         <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h3 className="text-lg font-black text-slate-900">Lịch sử dòng tiền</h3>
-              <p className="text-sm text-slate-500">Thu nhập vs Chi phí (6 tháng qua)</p>
+              <h3 className="text-lg font-black text-slate-900">{t('dashboard.cash_flow_history')}</h3>
+              <p className="text-sm text-slate-500">{t('dashboard.cash_flow_subtitle')}</p>
             </div>
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
                 <span className="size-3 rounded-full bg-[#13ec49]"></span>
-                <span className="text-sm font-medium text-slate-600">Thu nhập</span>
+                <span className="text-sm font-medium text-slate-600">{t('common.income')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="size-3 rounded-full bg-slate-800"></span>
-                <span className="text-sm font-medium text-slate-600">Chi phí</span>
+                <span className="text-sm font-medium text-slate-600">{t('common.expense')}</span>
               </div>
             </div>
           </div>
@@ -267,12 +269,12 @@ const Dashboard: React.FC = () => {
                     <div
                       className="w-full max-w-[24px] bg-[#13ec49] rounded-t-lg transition-all group-hover:opacity-80 group-hover:shadow-[0_-8px_16px_rgba(19,236,73,0.2)]"
                       style={{ height: `${getChartHeight(d.total_income, maxCashFlowValue)}%` }}
-                      title={`Thu nhập: ${formatCurrency(d.total_income)}`}
+                      title={`${t('common.income')}: ${formatCurrency(d.total_income)}`}
                     ></div>
                     <div
                       className="w-full max-w-[24px] bg-slate-800 rounded-t-lg transition-all group-hover:opacity-80"
                       style={{ height: `${getChartHeight(d.total_expense, maxCashFlowValue)}%` }}
-                      title={`Chi phí: ${formatCurrency(d.total_expense)}`}
+                      title={`${t('common.expense')}: ${formatCurrency(d.total_expense)}`}
                     ></div>
                   </div>
                   <span className={`text-xs font-bold ${idx === cashFlow.length - 1 ? 'text-slate-900' : 'text-slate-400'}`}>
@@ -283,7 +285,7 @@ const Dashboard: React.FC = () => {
             </div>
           ) : (
             <div className="h-72 flex items-center justify-center text-slate-400">
-              Không có dữ liệu
+              {t('common.no_data')}
             </div>
           )}
         </div>
@@ -293,7 +295,7 @@ const Dashboard: React.FC = () => {
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
                 <span className="material-symbols-outlined text-orange-500">warning</span>
-                Vật tư sắp hết
+                {t('dashboard.low_stock_items')}
               </h3>
               {!loadingLowStock && lowStockItems.length > 0 && (
                 <span className="bg-orange-100 text-orange-700 text-xs font-black px-2.5 py-1 rounded-full">
@@ -321,7 +323,7 @@ const Dashboard: React.FC = () => {
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-bold text-slate-900 truncate">{item.item_name}</p>
                           <p className="text-xs text-slate-500 mt-1">
-                            Còn {item.current_quantity} {item.unit_of_measure}
+                            {t('dashboard.remaining')} {item.current_quantity} {item.unit_of_measure}
                           </p>
                         </div>
                         <span className={`text-xs font-black px-2.5 py-1 rounded-full ${colors.badge} whitespace-nowrap`}>
@@ -334,14 +336,14 @@ const Dashboard: React.FC = () => {
               </div>
             ) : (
               <div className="text-center py-8 text-slate-400 text-sm">
-                Tất cả vật tư đều đủ
+                {t('dashboard.stock_sufficient')}
               </div>
             )}
           </div>
 
           <div className="hidden md:block bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex-1">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-black text-slate-900">Nhân viên có số dư cao</h3>
+              <h3 className="text-lg font-black text-slate-900">{t('dashboard.high_balance_workers')}</h3>
             </div>
 
             {loadingTopWorkers ? (
@@ -373,7 +375,7 @@ const Dashboard: React.FC = () => {
                         ></div>
                       </div>
                       <p className="text-[10px] text-slate-400 font-bold text-right uppercase tracking-widest">
-                        {percentage.toFixed(0)}% tổng số dư
+                        {percentage.toFixed(0)}% {t('dashboard.total_balance')}
                       </p>
                     </div>
                   );
@@ -381,7 +383,7 @@ const Dashboard: React.FC = () => {
               </div>
             ) : (
               <div className="text-center py-8 text-slate-400 text-sm">
-                Không có dữ liệu nhân viên
+                {t('dashboard.no_worker_data')}
               </div>
             )}
           </div>

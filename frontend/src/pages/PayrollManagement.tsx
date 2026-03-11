@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     getAllPayrolls,
     updatePayrollStatus,
@@ -9,6 +9,7 @@ import {
 } from '../api/payroll.api';
 import { getDailyWorkLogs, DailyWorkLog } from '../api/daily-work-log.api';
 import logoWeb from '../assets/logo_web.png';
+import { useTranslation } from 'react-i18next';
 
 const PayrollManagement: React.FC = () => {
     const [payrolls, setPayrolls] = useState<Payroll[]>([]);
@@ -18,6 +19,7 @@ const PayrollManagement: React.FC = () => {
     const [selectedPayrollForPreview, setSelectedPayrollForPreview] = useState<any>(null);
     const [showPreviewModal, setShowPreviewModal] = useState(false);
     const [allLogs, setAllLogs] = useState<DailyWorkLog[]>([]);
+    const { t, i18n } = useTranslation();
 
     useEffect(() => {
         fetchData();
@@ -47,13 +49,13 @@ const PayrollManagement: React.FC = () => {
             await updatePayrollStatus(id, status);
 
             if (status === 'PAID') {
-                console.log('✅ Đã thanh toán lương thành công!');
+                console.log(t('payroll.messages.status_update_success'));
             }
 
             await fetchData(); // Refresh data
         } catch (error: any) {
             console.error('Error updating status:', error);
-            alert('Lỗi: ' + error.message);
+            alert(t('payroll.messages.error_prefix') + error.message);
         } finally {
             setProcessingId(null);
         }
@@ -69,19 +71,19 @@ const PayrollManagement: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Bạn có chắc muốn xóa phiếu lương này?')) return;
+        if (!confirm(t('payroll.messages.confirm_delete'))) return;
 
         try {
             await deletePayroll(id);
             await fetchData();
         } catch (error: any) {
             console.error('Error deleting payroll:', error);
-            alert('Lỗi: ' + error.message);
+            alert(t('payroll.messages.error_prefix') + error.message);
         }
     };
 
     const formatVND = (amount: number) => {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+        return new Intl.NumberFormat(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { style: 'currency', currency: 'VND' }).format(amount);
     };
 
     const getStatusColor = (status: string) => {
@@ -95,9 +97,9 @@ const PayrollManagement: React.FC = () => {
 
     const getStatusLabel = (status: string) => {
         switch (status) {
-            case 'DRAFT': return 'Chờ thanh toán';
-            case 'PAID': return 'Đã trả';
-            case 'CANCELLED': return 'Đã hủy';
+            case 'DRAFT': return t('payroll.status.draft');
+            case 'PAID': return t('payroll.status.paid');
+            case 'CANCELLED': return t('payroll.status.cancelled');
             default: return status;
         }
     };
@@ -115,10 +117,10 @@ const PayrollManagement: React.FC = () => {
             {/* Header */}
             <div>
                 <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
-                    Quản lý Phiếu lương
+                    {t('payroll.title')}
                 </h1>
                 <p className="text-slate-500 mt-2">
-                    Tự động tạo transaction khi chuyển trạng thái sang "Đã trả"
+                    {t('payroll.subtitle')}
                 </p>
             </div>
 
@@ -126,23 +128,23 @@ const PayrollManagement: React.FC = () => {
             {stats && (
                 <div className="grid grid-cols-2 gap-4 md:gap-6">
                     <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <p className="text-sm font-medium text-slate-500">Tổng phiếu lương</p>
+                        <p className="text-sm font-medium text-slate-500">{t('payroll.stats.total')}</p>
                         <h3 className="text-3xl font-black text-slate-900 mt-2">{stats.total_payrolls}</h3>
                     </div>
                     <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <p className="text-sm font-medium text-slate-500">Chờ xử lý</p>
+                        <p className="text-sm font-medium text-slate-500">{t('payroll.stats.pending')}</p>
                         <h3 className="text-3xl font-black text-orange-600 mt-2">
                             {Number(stats.draft_count) + Number(stats.approved_count)}
                         </h3>
                         <p className="text-xs text-slate-400 mt-1">{formatVND(stats.pending_amount)}</p>
                     </div>
                     <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <p className="text-sm font-medium text-slate-500">Đã thanh toán</p>
+                        <p className="text-sm font-medium text-slate-500">{t('payroll.stats.paid')}</p>
                         <h3 className="text-3xl font-black text-green-600 mt-2">{stats.paid_count}</h3>
                         <p className="text-xs text-slate-400 mt-1">{formatVND(stats.total_paid_amount)}</p>
                     </div>
                     <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <p className="text-sm font-medium text-slate-500">Tổng đã chi</p>
+                        <p className="text-sm font-medium text-slate-500">{t('payroll.stats.total_spent')}</p>
                         <h3 className="text-2xl font-black text-emerald-600 mt-2">
                             {formatVND(stats.total_paid_amount)}
                         </h3>
@@ -156,13 +158,13 @@ const PayrollManagement: React.FC = () => {
                     <table className="w-full text-left">
                         <thead className="bg-slate-50/50 text-xs font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">
                             <tr>
-                                <th className="px-6 py-4">Mã phiếu</th>
-                                <th className="px-6 py-4">Nhân viên</th>
-                                <th className="px-6 py-4">Tổng tiền</th>
-                                <th className="px-6 py-4">Thực nhận</th>
-                                <th className="px-6 py-4">Trạng thái</th>
-                                <th className="px-6 py-4">Transaction ID</th>
-                                <th className="px-6 py-4 text-right">Thao tác</th>
+                                <th className="px-6 py-4">{t('payroll.table.code')}</th>
+                                <th className="px-6 py-4">{t('payroll.table.worker')}</th>
+                                <th className="px-6 py-4">{t('payroll.table.total')}</th>
+                                <th className="px-6 py-4">{t('payroll.table.final')}</th>
+                                <th className="px-6 py-4">{t('payroll.table.status')}</th>
+                                <th className="px-6 py-4">{t('payroll.table.transaction')}</th>
+                                <th className="px-6 py-4 text-right">{t('payroll.table.actions')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -171,7 +173,7 @@ const PayrollManagement: React.FC = () => {
                                     <td className="px-6 py-4">
                                         <p className="font-mono text-sm font-bold text-slate-900">{payroll.payroll_code}</p>
                                         <p className="text-xs text-slate-400">
-                                            {new Date(payroll.created_at).toLocaleDateString('vi-VN')}
+                                            {new Date(payroll.created_at).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}
                                         </p>
                                     </td>
                                     <td className="px-6 py-4">
@@ -194,7 +196,7 @@ const PayrollManagement: React.FC = () => {
                                                 ✓ {payroll.transaction_id.substring(0, 8)}...
                                             </span>
                                         ) : (
-                                            <span className="text-slate-300 text-xs italic">Chưa tạo GD</span>
+                                            <span className="text-slate-300 text-xs italic">{t('payroll.table.no_transaction')}</span>
                                         )}
                                     </td>
                                     <td className="px-6 py-4 text-right">
@@ -202,7 +204,7 @@ const PayrollManagement: React.FC = () => {
                                             <button
                                                 onClick={() => handleViewSlip(payroll)}
                                                 className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
-                                                title="Xem chi tiết"
+                                                title={t('payroll.actions.view')}
                                             >
                                                 <span className="material-symbols-outlined">visibility</span>
                                             </button>
@@ -213,7 +215,7 @@ const PayrollManagement: React.FC = () => {
                                                     disabled={processingId === payroll.id}
                                                     className="px-4 py-2 bg-slate-900 text-white text-xs font-black rounded-xl hover:bg-black disabled:opacity-50 transition-all active:scale-95 shadow-lg shadow-slate-900/10"
                                                 >
-                                                    {processingId === payroll.id ? '...' : '💰 Trả lương'}
+                                                    {processingId === payroll.id ? '...' : t('payroll.actions.pay')}
                                                 </button>
                                             )}
 
@@ -222,7 +224,7 @@ const PayrollManagement: React.FC = () => {
                                                     onClick={() => handleUpdateStatus(payroll.id, 'CANCELLED')}
                                                     disabled={processingId === payroll.id}
                                                     className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                                                    title="Hủy phiếu"
+                                                    title={t('payroll.actions.cancel')}
                                                 >
                                                     <span className="material-symbols-outlined">block</span>
                                                 </button>
@@ -241,18 +243,18 @@ const PayrollManagement: React.FC = () => {
                 <div className="flex items-start gap-6">
                     <span className="material-symbols-outlined text-blue-600 text-4xl">lightbulb</span>
                     <div>
-                        <h3 className="font-black text-blue-900 text-lg mb-2">Quy trình tự động hóa</h3>
+                        <h3 className="font-black text-blue-900 text-lg mb-2">{t('payroll.automation.title')}</h3>
                         <p className="text-sm text-blue-700/80 leading-relaxed font-medium">
-                            Khi bạn nhấn nút <strong>"Trả lương"</strong>, hệ thống sẽ tự động thực hiện các bước:
+                            {t('payroll.automation.subtitle')}
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                             <div className="bg-white/50 p-4 rounded-2xl border border-blue-100">
-                                <p className="text-xs font-black text-blue-900 uppercase tracking-widest mb-1">1. Tài chính</p>
-                                <p className="text-xs text-blue-700 font-bold italic">• Tạo Transaction EXPENSE trong sổ thu chi</p>
+                                <p className="text-xs font-black text-blue-900 uppercase tracking-widest mb-1">{t('payroll.automation.step1_title')}</p>
+                                <p className="text-xs text-blue-700 font-bold italic">{t('payroll.automation.step1_desc')}</p>
                             </div>
                             <div className="bg-white/50 p-4 rounded-2xl border border-blue-100">
-                                <p className="text-xs font-black text-blue-900 uppercase tracking-widest mb-1">2. Nhân sự</p>
-                                <p className="text-xs text-blue-700 font-bold italic">• Tự cập nhật số dư (current_balance) của nhân viên</p>
+                                <p className="text-xs font-black text-blue-900 uppercase tracking-widest mb-1">{t('payroll.automation.step2_title')}</p>
+                                <p className="text-xs text-blue-700 font-bold italic">{t('payroll.automation.step2_desc')}</p>
                             </div>
                         </div>
                     </div>
@@ -295,8 +297,8 @@ const PayrollManagement: React.FC = () => {
                                     <span className="material-symbols-outlined text-3xl font-black">receipt_long</span>
                                 </div>
                                 <div>
-                                    <h2 className="text-2xl font-black text-slate-900">Chi tiết Phiếu lương</h2>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Hệ thống quản trị Vườn Nhà Mình</p>
+                                    <h2 className="text-2xl font-black text-slate-900">{t('payroll.slip.title')}</h2>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{t('payroll.slip.system_name')}</p>
                                 </div>
                             </div>
                             <div className="flex gap-3">
@@ -305,7 +307,7 @@ const PayrollManagement: React.FC = () => {
                                     className="px-6 py-3 bg-slate-900 text-white rounded-2xl text-xs font-black flex items-center gap-2 hover:bg-black transition-all shadow-xl shadow-slate-900/20"
                                 >
                                     <span className="material-symbols-outlined text-sm">print</span>
-                                    In phiếu
+                                    {t('payroll.slip.print')}
                                 </button>
                                 <button onClick={() => setShowPreviewModal(false)} className="size-12 flex items-center justify-center rounded-2xl bg-white border border-slate-200 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all">
                                     <span className="material-symbols-outlined">close</span>
@@ -321,42 +323,42 @@ const PayrollManagement: React.FC = () => {
                                             <img src={logoWeb} alt="Logo" className="size-8 object-contain" />
                                             Vườn Nhà Mình
                                         </h3>
-                                        <p className="text-xs font-bold text-slate-500 font-sans mt-1 uppercase tracking-widest text-[8px]">Hệ thống quản trị nông trại Vườn Nhà Mình</p>
+                                        <p className="text-xs font-bold text-slate-500 font-sans mt-1 uppercase tracking-widest text-[8px]">{t('payroll.slip.system_name')}</p>
                                     </div>
                                     <div className="text-right">
-                                        <h1 className="text-3xl font-black text-slate-900 font-sans tracking-tight">PHIẾU LƯƠNG</h1>
-                                        <p className="text-sm font-bold text-slate-600 font-sans mt-1">Số: <span className="text-red-600">{selectedPayrollForPreview.payroll_code}</span></p>
-                                        <p className="text-[10px] text-slate-400 font-sans">Ngày lập: {new Date(selectedPayrollForPreview.created_at).toLocaleDateString('vi-VN')}</p>
+                                        <h1 className="text-3xl font-black text-slate-900 font-sans tracking-tight">{t('payroll.slip.header')}</h1>
+                                        <p className="text-sm font-bold text-slate-600 font-sans mt-1">{t('payroll.slip.no')} <span className="text-red-600">{selectedPayrollForPreview.payroll_code}</span></p>
+                                        <p className="text-[10px] text-slate-400 font-sans">{t('payroll.slip.date')} {new Date(selectedPayrollForPreview.created_at).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</p>
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-8 mb-10">
                                     <div>
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 font-sans">Người nhận lương</p>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 font-sans">{t('payroll.slip.receiver')}</p>
                                         <p className="text-xl font-black text-slate-900 font-sans uppercase">{selectedPayrollForPreview.partner_name}</p>
-                                        <p className="text-sm text-slate-600 font-sans italic opacity-80 mt-1">Nhân sự Nông vụ</p>
+                                        <p className="text-sm text-slate-600 font-sans italic opacity-80 mt-1">{t('partners.types.worker')}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 font-sans">Trạng thái</p>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 font-sans">{t('payroll.table.status')}</p>
                                         <p className="text-sm font-bold text-slate-900 font-sans uppercase italic">{getStatusLabel(selectedPayrollForPreview.status)}</p>
-                                        <p className="text-[10px] text-slate-400 font-sans mt-1">Ngày trả: {selectedPayrollForPreview.payment_date ? new Date(selectedPayrollForPreview.payment_date).toLocaleDateString('vi-VN') : '---'}</p>
+                                        <p className="text-[10px] text-slate-400 font-sans mt-1">{t('payroll.slip.payment_date')} {selectedPayrollForPreview.payment_date ? new Date(selectedPayrollForPreview.payment_date).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US') : '---'}</p>
                                     </div>
                                 </div>
 
                                 <table className="w-full mb-10 text-sm">
                                     <thead className="border-y border-slate-200 whitespace-nowrap">
                                         <tr className="font-sans uppercase text-[10px] font-black text-slate-400 tracking-wider">
-                                            <th className="py-3 text-left">Ngày làm / Công việc</th>
-                                            <th className="py-3 text-center">Ca</th>
-                                            <th className="py-3 text-right">Đơn giá</th>
-                                            <th className="py-3 text-right">Thành tiền</th>
+                                            <th className="py-3 text-left">{t('payroll.slip.table.date_job')}</th>
+                                            <th className="py-3 text-center">{t('payroll.slip.table.shift')}</th>
+                                            <th className="py-3 text-right">{t('payroll.slip.table.rate')}</th>
+                                            <th className="py-3 text-right">{t('payroll.slip.table.amount')}</th>
                                         </tr>
                                     </thead>
                                     <tbody className="border-b border-slate-200 divide-y divide-slate-50 italic">
                                         {selectedPayrollForPreview.logs?.map((log: any, idx: number) => (
                                             <tr key={idx}>
                                                 <td className="py-4">
-                                                    <p className="font-bold text-slate-800 tracking-tight">{new Date(log.work_date).toLocaleDateString('vi-VN')}</p>
+                                                    <p className="font-bold text-slate-800 tracking-tight">{new Date(log.work_date).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</p>
                                                     <p className="text-[10px] font-semibold text-slate-500 font-sans not-italic uppercase">{log.job_name}</p>
                                                 </td>
                                                 <td className="py-4 text-center font-sans text-xs">{log.shift_name} ({log.mandays === 0 ? '1.0' : '0.5'})</td>
@@ -371,15 +373,15 @@ const PayrollManagement: React.FC = () => {
 
                                 <div className="ml-auto w-72 space-y-3 mb-12 bg-slate-50 p-6 rounded-[24px] border border-dashed border-slate-200">
                                     <div className="flex justify-between items-center text-sm font-sans">
-                                        <span className="text-slate-500 font-medium">Tổng cộng cố định:</span>
+                                        <span className="text-slate-500 font-medium">{t('payroll.slip.summary.base')}</span>
                                         <span className="font-bold text-slate-900">{formatVND(selectedPayrollForPreview.total_amount)}</span>
                                     </div>
                                     <div className="flex justify-between items-center text-sm font-sans">
-                                        <span className="text-slate-500 font-medium font-sans">Thưởng/Phạt:</span>
+                                        <span className="text-slate-500 font-medium font-sans">{t('payroll.slip.summary.bonus')}</span>
                                         <span className="font-bold text-blue-600 font-sans">+{formatVND(selectedPayrollForPreview.bonus || 0)}</span>
                                     </div>
                                     <div className="pt-3 border-t border-slate-200 flex justify-between items-center">
-                                        <span className="text-xs font-black text-slate-900 font-sans uppercase tracking-[0.1em]">Thực nhận</span>
+                                        <span className="text-xs font-black text-slate-900 font-sans uppercase tracking-[0.1em]">{t('payroll.slip.summary.final')}</span>
                                         <span className="text-2xl font-black text-[#13ec49] font-sans tracking-tight">
                                             {formatVND(selectedPayrollForPreview.final_amount)}
                                         </span>
@@ -388,16 +390,16 @@ const PayrollManagement: React.FC = () => {
 
                                 <div className="mt-auto grid grid-cols-2 gap-20 text-center font-sans">
                                     <div>
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-16">Người nhận lương</p>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-16">{t('payroll.slip.footer.receiver')}</p>
                                         <p className="font-bold text-slate-900 uppercase">{selectedPayrollForPreview.partner_name}</p>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-16">Người đại diện</p>
-                                        <p className="font-bold text-slate-900 uppercase">Ban quản lý Vườn Nhà Mình</p>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-16">{t('payroll.slip.footer.representative')}</p>
+                                        <p className="font-bold text-slate-900 uppercase">{t('payroll.slip.footer.management')}</p>
                                     </div>
                                 </div>
                                 <div className="mt-8 pt-6 border-t border-slate-100 text-[10px] font-medium text-slate-400 font-sans flex justify-between uppercase tracking-widest italic">
-                                    <span>Chứng từ được tạo bởi hệ thống Vườn Nhà Mình</span>
+                                    <span>{t('payroll.slip.footer.generated_by')}</span>
                                     <span>Ver 1.0.0</span>
                                 </div>
                             </div>

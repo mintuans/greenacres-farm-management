@@ -1,8 +1,9 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { WorkShift, getWorkShifts, createWorkShift, updateWorkShift, deleteWorkShift, CreateWorkShiftInput } from '../api/work-shift.api';
 import { ActionToolbar, ConfirmDeleteModal, ImportDataModal } from '../components';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import { useTranslation } from 'react-i18next';
 
 const WorkShifts: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -10,6 +11,7 @@ const WorkShifts: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingShift, setEditingShift] = useState<WorkShift | null>(null);
+    const { t, i18n } = useTranslation();
     const [formData, setFormData] = useState<CreateWorkShiftInput>({
         shift_code: '',
         shift_name: '',
@@ -32,7 +34,7 @@ const WorkShifts: React.FC = () => {
             setShifts(data);
         } catch (error) {
             console.error('Error loading work shifts:', error);
-            console.error('Không thể tải danh sách ca làm việc');
+            alert(t('work_shifts.messages.load_error'));
         } finally {
             setLoading(false);
         }
@@ -51,7 +53,7 @@ const WorkShifts: React.FC = () => {
             loadShifts();
         } catch (error: any) {
             console.error('Error saving work shift:', error);
-            alert(error.response?.data?.message || 'Không thể lưu ca làm việc');
+            alert(error.response?.data?.message || t('work_shifts.messages.save_error'));
         }
     };
 
@@ -75,7 +77,7 @@ const WorkShifts: React.FC = () => {
             loadShifts();
         } catch (error: any) {
             console.error('Error deleting work shift:', error);
-            alert(error.response?.data?.message || 'Không thể xóa ca làm việc');
+            alert(error.response?.data?.message || t('work_shifts.messages.delete_error'));
         } finally {
             setIsDeleting(false);
         }
@@ -83,12 +85,13 @@ const WorkShifts: React.FC = () => {
 
     const handleExport = async () => {
         const workbook = new ExcelJS.Workbook();
-        const ws = workbook.addWorksheet('Danh sách ca làm việc');
+        const ws = workbook.addWorksheet(t('work_shifts.export.sheet_name'));
+        const columns = t('work_shifts.import.columns', { returnObjects: true }) as string[];
         ws.columns = [
-            { header: 'Mã ca', key: 'code', width: 16 },
-            { header: 'Tên ca', key: 'name', width: 30 },
-            { header: 'Bắt đầu', key: 'start', width: 16 },
-            { header: 'Kết thúc', key: 'end', width: 16 },
+            { header: columns[0], key: 'code', width: 16 },
+            { header: columns[1], key: 'name', width: 30 },
+            { header: columns[2], key: 'start', width: 16 },
+            { header: columns[3], key: 'end', width: 16 },
         ];
         ws.getRow(1).eachCell(cell => {
             cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF13EC49' } };
@@ -101,7 +104,7 @@ const WorkShifts: React.FC = () => {
             end: s.end_time || '',
         }));
         const buffer = await workbook.xlsx.writeBuffer();
-        saveAs(new Blob([buffer]), `DanhSach_CaLamViec_${new Date().toISOString().split('T')[0]}.xlsx`);
+        saveAs(new Blob([buffer]), t('work_shifts.export.filename', { date: new Date().toISOString().split('T')[0] }));
     };
 
     const handleImport = async (file: File) => {
@@ -110,12 +113,13 @@ const WorkShifts: React.FC = () => {
     };
 
     const downloadTemplate = () => {
+        const columns = t('work_shifts.import.columns', { returnObjects: true }) as string[];
         const csv = [
-            'Mã ca,Tên ca làm việc,Giờ bắt đầu,Giờ kết thúc',
+            columns.join(','),
             'SHIFT-SANG,Ca sáng,07:00,11:00',
         ].join('\n');
         const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-        saveAs(blob, 'MauNhap_CaLamViec.csv');
+        saveAs(blob, t('work_shifts.template.filename'));
     };
 
     const resetForm = () => {
@@ -145,9 +149,9 @@ const WorkShifts: React.FC = () => {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
                     <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
-                        Quản lý Ca làm việc
+                        {t('work_shifts.title')}
                     </h1>
-                    <p className="text-slate-500 mt-2">Danh sách các ca làm việc trong ngày</p>
+                    <p className="text-slate-500 mt-2">{t('work_shifts.subtitle')}</p>
                 </div>
             </div>
 
@@ -160,12 +164,12 @@ const WorkShifts: React.FC = () => {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full bg-slate-50 border-none rounded-lg py-2.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-[#13ec49]/30 transition-all outline-none"
-                            placeholder="Tìm kiếm ca làm việc..."
+                            placeholder={t('work_shifts.search_placeholder')}
                         />
                     </div>
                     <ActionToolbar
                         onAdd={() => { resetForm(); setShowModal(true); }}
-                        addLabel="Thêm ca làm việc"
+                        addLabel={t('work_shifts.add_btn')}
                         onEdit={() => selectedShift && handleEdit(selectedShift)}
                         editDisabled={!selectedShift}
                         onDelete={() => selectedShift && setDeleteTarget(selectedShift)}
@@ -181,26 +185,26 @@ const WorkShifts: React.FC = () => {
                 {loading ? (
                     <div className="text-center py-12">
                         <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#13ec49]"></div>
-                        <p className="mt-4 text-slate-600">Đang tải...</p>
+                        <p className="mt-4 text-slate-600">{t('common.loading') || 'Đang tải...'}</p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
                             <thead className="bg-slate-50 text-xs font-bold text-slate-500 border-b border-slate-200 whitespace-nowrap">
                                 <tr>
-                                    <th className="px-6 py-4">Mã ca</th>
-                                    <th className="px-6 py-4">Tên ca làm việc</th>
-                                    <th className="px-6 py-4">Giờ bắt đầu</th>
-                                    <th className="px-6 py-4">Giờ kết thúc</th>
-                                    <th className="px-6 py-4">Thời lượng</th>
-                                    <th className="px-6 py-4 text-right">Thao tác</th>
+                                    <th className="px-6 py-4">{t('work_shifts.table.code')}</th>
+                                    <th className="px-6 py-4">{t('work_shifts.table.name')}</th>
+                                    <th className="px-6 py-4">{t('work_shifts.table.start')}</th>
+                                    <th className="px-6 py-4">{t('work_shifts.table.end')}</th>
+                                    <th className="px-6 py-4">{t('work_shifts.table.duration')}</th>
+                                    <th className="px-6 py-4 text-right">{t('work_shifts.table.actions')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 text-sm">
                                 {filteredShifts.length === 0 ? (
                                     <tr>
                                         <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
-                                            {searchTerm ? 'Không tìm thấy ca làm việc nào' : 'Chưa có ca làm việc nào'}
+                                            {searchTerm ? t('work_shifts.table.not_found') : t('work_shifts.table.empty')}
                                         </td>
                                     </tr>
                                 ) : (
@@ -223,7 +227,7 @@ const WorkShifts: React.FC = () => {
                                                 <td className="px-6 py-4">
                                                     {duration > 0 && (
                                                         <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-bold">
-                                                            {duration} giờ
+                                                            {duration} {t('work_shifts.table.hours')}
                                                         </span>
                                                     )}
                                                 </td>
@@ -258,11 +262,11 @@ const WorkShifts: React.FC = () => {
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
                         <h2 className="text-2xl font-bold mb-6 text-slate-900">
-                            {editingShift ? 'Sửa ca làm việc' : 'Thêm ca làm việc mới'}
+                            {editingShift ? t('work_shifts.modal.edit_title') : t('work_shifts.modal.add_title')}
                         </h2>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Mã ca *</label>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">{t('work_shifts.modal.code')}</label>
                                 <input
                                     type="text"
                                     required
@@ -270,22 +274,22 @@ const WorkShifts: React.FC = () => {
                                     value={formData.shift_code}
                                     onChange={(e) => setFormData({ ...formData, shift_code: e.target.value })}
                                     className="w-full border border-slate-300 rounded-lg px-4 py-2.5 disabled:bg-slate-100 focus:ring-2 focus:ring-[#13ec49]/30 outline-none"
-                                    placeholder="VD: SHIFT-SANG"
+                                    placeholder={t('work_shifts.modal.code_placeholder')}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Tên ca *</label>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">{t('work_shifts.modal.name')}</label>
                                 <input
                                     type="text"
                                     required
                                     value={formData.shift_name}
                                     onChange={(e) => setFormData({ ...formData, shift_name: e.target.value })}
                                     className="w-full border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#13ec49]/30 outline-none"
-                                    placeholder="VD: Ca sáng"
+                                    placeholder={t('work_shifts.modal.name_placeholder')}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Giờ bắt đầu</label>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">{t('work_shifts.modal.start')}</label>
                                 <input
                                     type="time"
                                     value={formData.start_time}
@@ -294,7 +298,7 @@ const WorkShifts: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Giờ kết thúc</label>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">{t('work_shifts.modal.end')}</label>
                                 <input
                                     type="time"
                                     value={formData.end_time}
@@ -311,13 +315,13 @@ const WorkShifts: React.FC = () => {
                                     }}
                                     className="px-6 py-2.5 border border-slate-300 rounded-lg hover:bg-slate-50 font-medium transition-all"
                                 >
-                                    Hủy
+                                    {t('work_shifts.modal.cancel')}
                                 </button>
                                 <button
                                     type="submit"
                                     className="px-6 py-2.5 bg-[#13ec49] text-black font-bold rounded-lg hover:bg-[#13ec49]/90 transition-all active:scale-95"
                                 >
-                                    {editingShift ? 'Cập nhật' : 'Tạo mới'}
+                                    {editingShift ? t('work_shifts.modal.save') : t('work_shifts.modal.create')}
                                 </button>
                             </div>
                         </form>
@@ -335,8 +339,8 @@ const WorkShifts: React.FC = () => {
                 open={showImportModal}
                 onClose={() => setShowImportModal(false)}
                 onImport={handleImport}
-                entityName="ca làm việc"
-                columnGuide={['Mã ca', 'Tên ca làm việc', 'Giờ bắt đầu', 'Giờ kết thúc']}
+                entityName={t('work_shifts.import.entity_name')}
+                columnGuide={t('work_shifts.import.columns', { returnObjects: true }) as string[]}
                 onDownloadTemplate={downloadTemplate}
             />
         </div>
